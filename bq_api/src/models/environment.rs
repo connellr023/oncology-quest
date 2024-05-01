@@ -1,11 +1,13 @@
 /// Represents the environment configuration for the application.
+#[derive(Clone)]
 pub struct Environment {
     host_ip: String,
     host_port: String,
     redis_user: String,
     redis_password: String,
     redis_endpoint: String,
-    redis_port: String
+    redis_port: String,
+    redis_db: String
 }
 
 impl Environment {
@@ -21,6 +23,7 @@ impl Environment {
         let redis_password = std::env::var("REDIS_PASSWORD")?;
         let redis_endpoint = std::env::var("REDIS_ENDPOINT")?;
         let redis_port = std::env::var("REDIS_PORT")?;
+        let redis_db = std::env::var("REDIS_DB")?;
 
         Ok(Environment {
             host_ip,
@@ -28,7 +31,8 @@ impl Environment {
             redis_user,
             redis_password,
             redis_endpoint,
-            redis_port
+            redis_port,
+            redis_db
         })
     }
     
@@ -60,6 +64,11 @@ impl Environment {
     /// Returns the Redis port.
     pub fn redis_port(&self) -> &str {
         &self.redis_port
+    }
+
+    /// Returns the Redis database number.
+    pub fn redis_db(&self) -> &str {
+        &self.redis_db
     }
 }
         
