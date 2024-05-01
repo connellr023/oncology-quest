@@ -16,7 +16,7 @@ impl Environment {
     /// # Errors
     ///
     /// This function will return an `anyhow::Error` if any of the required environment variables are missing or invalid.
-    pub fn new() -> anyhow::Result<Environment> {
+    pub fn new() -> anyhow::Result<Self> {
         let host_ip = std::env::var("HOST_IP")?;
         let host_port = std::env::var("HOST_PORT")?;
         let redis_user = std::env::var("REDIS_USER")?;
@@ -25,7 +25,7 @@ impl Environment {
         let redis_port = std::env::var("REDIS_PORT")?;
         let redis_db = std::env::var("REDIS_DB")?;
 
-        Ok(Environment {
+        Ok(Self {
             host_ip,
             host_port,
             redis_user,
