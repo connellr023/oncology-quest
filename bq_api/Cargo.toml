@@ -1,0 +1,10 @@
+[package]
+name = "bq_api"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+anyhow = "1.0.82"
+dotenv = "0.15.0"
+redis = "0.25.3"
