@@ -56,7 +56,7 @@ fn update_task(entries: &mut UserTaskEntries, index: (u16, u16, u16), task: User
     }
 }
 
-#[actix_web::post("/api/tasks/update")]
+#[actix_web::patch("/api/tasks/update")]
 pub(super) async fn update(session: Session, redis: Data<Client>, task_update: Json<UpdateTask>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
@@ -76,6 +76,11 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
         Some(user) => user,
         None => return HttpResponse::NotFound().finish()
     };
+
+    // Admins do not have tasks.
+    if user.is_admin() {
+        return HttpResponse::Forbidden().finish();
+    }
 
     update_task(user.tasks_mut(), task_update.index, task_update.task.clone());
 
