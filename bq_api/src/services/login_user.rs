@@ -13,13 +13,12 @@ struct LoginUser {
 
 #[actix_web::post("/api/user/login")]
 pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Json<LoginUser>) -> impl Responder {
-    let login_user = login_user.into_inner();
-
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
-
+    
+    let login_user = login_user.into_inner();
     let user = match User::fetch(&mut connection, &login_user.username) {
         Some(user) => user,
         None => return HttpResponse::NotFound().finish()

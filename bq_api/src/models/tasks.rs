@@ -1,13 +1,29 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-/// Represents a task entry. Will only be used for serialization and deserialization for editing by admins.
-pub type TaskEntry = HashMap<String, HashMap<String, Vec<String>>>;
+/// Data structure represents all possible task entries.
+/// 
+/// # Type Parameters
+/// 
+/// * `U` - The type of the keys in the subtasks.
+/// * `V` - The type representing the task.
+pub type TaskEntries<U, V> = HashMap<U, HashMap<U, V>>;
+pub type NamedTaskEntries = TaskEntries<String, Vec<String>>;
+pub type UserTaskEntries = TaskEntries<u16, HashMap<u16, UserTask>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct Tasks {
-    entries: HashMap<String, TaskEntry>
+    entries: NamedTaskEntries
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct UserTask {
+    pub completed: bool,
+    pub comment: String
+}
+
+// For now
+#[allow(dead_code)]
 impl Tasks {
     /// Creates a new `Tasks` instance.
     pub fn new() -> Self {
@@ -19,7 +35,7 @@ impl Tasks {
     /// # Returns
     ///
     /// A reference to the map of task entries.
-    pub fn entries(&self) -> &HashMap<String, TaskEntry> {
+    pub fn entries(&self) -> &TaskEntries<String, Vec<String>> {
         &self.entries
     }
 }

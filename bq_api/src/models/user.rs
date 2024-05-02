@@ -1,7 +1,8 @@
-use super::{model::Model, user_task::UserTask};
-use redis::Connection;
+use super::{model::Model, tasks::UserTaskEntries};
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
+use redis::Connection;
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
@@ -12,7 +13,7 @@ pub struct User {
     salt: u64,
     can_reset_password: bool,
     is_admin: bool,
-    tasks: Vec<UserTask>
+    tasks: UserTaskEntries
 }
 
 #[derive(Serialize, Deserialize)]
@@ -20,7 +21,7 @@ pub struct ClientUser {
     username: String,
     name: String,
     email: String,
-    tasks: Vec<UserTask>
+    tasks: UserTaskEntries
 }
 
 impl Model for User {
@@ -99,7 +100,7 @@ impl User {
             salt,
             is_admin,
             can_reset_password: false,
-            tasks: vec![]
+            tasks: HashMap::new()
         })
     }
 
@@ -114,6 +115,15 @@ impl User {
     /// Returns `true` if the provided password matches the user's hashed password, `false` otherwise.
     pub fn validate_password(&self, plain_text_password: &str) -> bool {
         bcrypt::verify(format!("{}{}", plain_text_password, self.salt), &self.password).unwrap_or(false)
+    }
+
+    /// Gets a reference to the user's tasks.
+    /// 
+    /// # Returns
+    /// 
+    /// A mutable reference to the user's tasks.
+    pub fn tasks_mut(&mut self) -> &mut UserTaskEntries {
+        &mut self.tasks
     }
 }
 

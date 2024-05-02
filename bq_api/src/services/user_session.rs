@@ -63,11 +63,8 @@ pub(super) async fn session(session: Session, redis: Data<Client>) -> impl Respo
     };
 
     let username = match session.get::<String>("username") {
-        Ok(username) => match username {
-            Some(username) => username,
-            None => return HttpResponse::Unauthorized().finish()
-        },
-        Err(_) => return HttpResponse::InternalServerError().finish()
+        Ok(Some(username)) => username,
+        _ => return HttpResponse::Unauthorized().finish()
     };
 
     let user = match User::fetch(&mut connection, username.as_str()) {
