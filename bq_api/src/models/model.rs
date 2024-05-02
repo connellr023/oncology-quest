@@ -3,6 +3,9 @@ use serde::{Serialize, Deserialize};
 
 /// Trait representing a Redis model.
 pub trait Model {
+    /// The key format for this model.
+    fn fmt_key(identifier: &str) -> String;
+
     /// Fetches the value associated with the given key from Redis.
     ///
     /// # Arguments

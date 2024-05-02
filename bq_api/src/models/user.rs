@@ -1,4 +1,4 @@
-use super::model::Model;
+use super::{model::Model, user_task::UserTask};
 use redis::Connection;
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
@@ -12,13 +12,25 @@ pub struct User {
     salt: u64,
     can_reset_password: bool,
     is_admin: bool,
-    tasks: Vec<Vec<usize>>
+    tasks: Vec<UserTask>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ClientUser {
+    username: String,
+    name: String,
+    email: String,
+    tasks: Vec<UserTask>
 }
 
 impl Model for User {
+    fn fmt_key(identifier: &str) -> String {
+        format!("user:{}", identifier)
+    }
+
     fn fetch(connection: &mut Connection, key: &str) -> Option<Self> {
         let result = redis::cmd("GET")
-            .arg(key)
+            .arg(Self::fmt_key(key))
             .query::<String>(connection);
 
         match result {
@@ -38,8 +50,9 @@ impl Model for User {
             Err(_) => return false
         };
 
+        let key = Self::fmt_key(self.username.as_str());
         let exists = redis::cmd("EXISTS")
-            .arg(self.username.clone())
+            .arg(&key)
             .query::<bool>(connection);
         
         match exists {
@@ -52,7 +65,7 @@ impl Model for User {
         };
 
         let result = redis::cmd("SET")
-            .arg(self.username.clone())
+            .arg(&key)
             .arg(serialized)
             .query::<()>(connection);
 
@@ -104,6 +117,17 @@ impl User {
     }
 }
 
+impl From<User> for ClientUser {
+    fn from(user: User) -> Self {
+        Self {
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            tasks: user.tasks,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,5 +158,20 @@ mod tests {
         let user = User::new(username, name, email, plain_text_password.clone(), false).unwrap();
 
         assert_eq!(user.validate_password(plain_text_password.as_str()), true);
+    }
+
+    #[test]
+    fn test_from_user_to_client_user() {
+        let username = "test-user".to_string();
+        let name = "Test User".to_string();
+        let email = "test@test.com".to_string();
+        let password = "password".to_string();
+
+        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
+        let client_user: ClientUser = user.into();
+
+        assert_eq!(client_user.username, username);
+        assert_eq!(client_user.name, name);
+        assert_eq!(client_user.email, email);
     }
 }
