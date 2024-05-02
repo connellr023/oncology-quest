@@ -1,6 +1,7 @@
 use actix_web::{web::Data, HttpResponse, Responder};
 use redis::Client;
 
+#[actix_web::get("/redis_test")]
 pub async fn redis_test(redis: Data<Client>) -> impl Responder {
     if let Ok(mut con) = redis.get_connection() {
         let _: () = redis::cmd("SET")

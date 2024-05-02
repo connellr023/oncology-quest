@@ -1,9 +1,9 @@
-mod routes;
+mod services;
 mod models;
 
 use std::io;
 use dotenv::dotenv;
-use routes::*;
+use services::*;
 use models::environment::Environment;
 use actix_web::{web::Data, App, HttpServer};
 use redis::Client;
