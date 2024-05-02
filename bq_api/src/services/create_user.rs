@@ -1,5 +1,6 @@
 use super::validatable::Validatable;
-use crate::models::{redis_model::RedisModel, user::User};
+use crate::utilities::regex_patterns::*;
+use crate::models::{model::Model, user::User};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use serde::Deserialize;
 use regex::Regex;
@@ -15,10 +16,10 @@ struct CreateUser {
 
 impl Validatable for CreateUser {
     fn validate(&self) -> bool {
-        let username_pattern = Regex::new(r"^[a-zA-Z0-9\-\_\.]{0,25}$").unwrap();
-        let name_pattern = Regex::new(r"^[a-zA-Z]+(\s[a-zA-Z]+)*$").unwrap();
-        let email_pattern = Regex::new(r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$").unwrap();
-        let password_pattern = Regex::new(r"^.{8,200}$").unwrap();
+        let username_pattern = Regex::new(USERNAME_REGEX).unwrap();
+        let name_pattern = Regex::new(NAME_REGEX).unwrap();
+        let email_pattern = Regex::new(EMAIL_REGEX).unwrap();
+        let password_pattern = Regex::new(PASSWORD_REGEX).unwrap();
 
         username_pattern.is_match(&self.username) &&
         name_pattern.is_match(&self.name) &&
@@ -27,8 +28,8 @@ impl Validatable for CreateUser {
     }
 }
 
-#[actix_web::post("/api/create-user")]
-pub async fn create_user(redis: Data<Client>, create_user: Json<CreateUser>) -> impl Responder {
+#[actix_web::post("/api/user/create")]
+pub async fn create(redis: Data<Client>, create_user: Json<CreateUser>) -> impl Responder {
     if !create_user.validate() {
         return HttpResponse::BadRequest().finish();
     }
@@ -53,9 +54,8 @@ pub async fn create_user(redis: Data<Client>, create_user: Json<CreateUser>) -> 
     if user.store(&mut connection) {
         return HttpResponse::Created().finish();
     }
-    else {
-        return HttpResponse::InternalServerError().finish();
-    }
+    
+    HttpResponse::InternalServerError().finish()
 }
 
 #[cfg(test)]

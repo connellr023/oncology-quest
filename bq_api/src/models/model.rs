@@ -2,7 +2,7 @@ use redis::Connection;
 use serde::{Serialize, Deserialize};
 
 /// Trait representing a Redis model.
-pub trait RedisModel {
+pub trait Model {
     /// Fetches the value associated with the given key from Redis.
     ///
     /// # Arguments
@@ -13,7 +13,7 @@ pub trait RedisModel {
     /// # Returns
     ///
     /// An `Option<Self>` containing the fetched model, or `None` if the key does not exist.
-    fn fetch(&self, connection: &mut Connection, key: &str) -> Option<Self>
+    fn fetch(connection: &mut Connection, key: &str) -> Option<Self>
     where Self: Serialize + for<'de> Deserialize<'de> + Sized;
 
     /// Stores the model in Redis.

@@ -1,4 +1,4 @@
-use super::redis_model::RedisModel;
+use super::model::Model;
 use redis::Connection;
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
@@ -15,8 +15,8 @@ pub struct User {
     tasks: Vec<Vec<usize>>
 }
 
-impl RedisModel for User {
-    fn fetch(&self, connection: &mut Connection, key: &str) -> Option<Self> {
+impl Model for User {
+    fn fetch(connection: &mut Connection, key: &str) -> Option<Self> {
         let result = redis::cmd("GET")
             .arg(key)
             .query::<String>(connection);
@@ -74,13 +74,7 @@ impl User {
     /// # Returns
     ///
     /// Returns a Result containing the newly created User instance if successful, or an error if the password hashing fails.
-    pub fn new(
-        username: String,
-        name: String,
-        email: String,
-        plain_text_password: String,
-        is_admin: bool
-    ) -> anyhow::Result<Self> {
+    pub fn new(username: String, name: String, email: String, plain_text_password: String, is_admin: bool) -> anyhow::Result<Self> {
         let salt = thread_rng().gen::<u64>();
         let password = bcrypt::hash(format!("{}{}", plain_text_password, salt), bcrypt::DEFAULT_COST)?;
 
@@ -94,6 +88,19 @@ impl User {
             can_reset_password: false,
             tasks: vec![]
         })
+    }
+
+    /// Validates the provided plain text password against the user's hashed password.
+    ///
+    /// # Arguments
+    ///
+    /// * `plain_text_password` - The plain text password to validate.
+    ///
+    /// # Returns
+    ///
+    /// Returns `true` if the provided password matches the user's hashed password, `false` otherwise.
+    pub fn validate_password(&self, plain_text_password: &str) -> bool {
+        bcrypt::verify(format!("{}{}", plain_text_password, self.salt), &self.password).unwrap_or(false)
     }
 }
 
@@ -115,5 +122,17 @@ mod tests {
         assert_eq!(user.name, name);
         assert_ne!(user.password, password);
         assert_eq!(user.is_admin, is_admin);
+    }
+
+    #[test]
+    fn test_validate_password() {
+        let username = "test-user".to_string();
+        let name = "Test User".to_string();
+        let email = "test@test.net".to_string();
+        let plain_text_password = "password".to_string();
+
+        let user = User::new(username, name, email, plain_text_password.clone(), false).unwrap();
+
+        assert_eq!(user.validate_password(plain_text_password.as_str()), true);
     }
 }
