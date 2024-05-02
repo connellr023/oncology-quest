@@ -29,7 +29,7 @@ impl Validatable for CreateUser {
 }
 
 #[actix_web::post("/api/user/create")]
-pub async fn create(redis: Data<Client>, create_user: Json<CreateUser>) -> impl Responder {
+pub(super) async fn create(redis: Data<Client>, create_user: Json<CreateUser>) -> impl Responder {
     if !create_user.validate() {
         return HttpResponse::BadRequest().finish();
     }

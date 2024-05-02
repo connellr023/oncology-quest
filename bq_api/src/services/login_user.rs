@@ -12,7 +12,7 @@ struct LoginUser {
 }
 
 #[actix_web::post("/api/user/login")]
-pub async fn login(session: Session, redis: Data<Client>, login_user: Json<LoginUser>) -> impl Responder {
+pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Json<LoginUser>) -> impl Responder {
     let login_user = login_user.into_inner();
 
     let mut connection = match redis.get_connection() {

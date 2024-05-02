@@ -41,7 +41,7 @@ fn fetch_tasks_json(connection: &mut Connection, tasks_key: &str) -> Option<Stri
 /// # Returns
 /// 
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
-pub fn session_response_json(connection: &mut Connection, user: User) -> HttpResponse {
+pub(super) fn session_response_json(connection: &mut Connection, user: User) -> HttpResponse {
     let tasks_json = match fetch_tasks_json(connection, "tasks") {
         Some(tasks_json) => tasks_json,
         None => return HttpResponse::InternalServerError().finish()
@@ -56,7 +56,7 @@ pub fn session_response_json(connection: &mut Connection, user: User) -> HttpRes
 }
 
 #[actix_web::get("/api/user/session")]
-pub async fn session(session: Session, redis: Data<Client>) -> impl Responder {
+pub(super) async fn session(session: Session, redis: Data<Client>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
