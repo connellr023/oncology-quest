@@ -3,9 +3,9 @@ import { API_ENDPOINT } from "../utility"
 import { UserSession } from "../models/user"
 
 const useApiConnection = () => {
-    let [connectionError, setConnectionError] = useState(false)
-    let [session, setSession] = useState<UserSession | null>(null)
-    let [loading, setLoading] = useState(true)
+    const [connectionError, setConnectionError] = useState(false)
+    const [session, setSession] = useState<UserSession | null>(null)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const checkSession = async () => {

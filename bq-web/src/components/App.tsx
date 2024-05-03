@@ -5,7 +5,7 @@ import Dashboard from "./Dashboard"
 import NoSession from "./NoSession"
 
 const App = () => {
-  let { connectionError, loading, session, setSession } = useApiConnection()
+  const { connectionError, loading, session, setSession } = useApiConnection()
 
   if (loading) {
     return (
