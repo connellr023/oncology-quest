@@ -1,37 +1,34 @@
-import { useEffect, useState } from "preact/hooks"
-import { API_ENDPOINT } from "../utility"
-import { UserSession } from "../models/user"
+import { API_ENDPOINT } from "../utility";
+import { UserSession } from "../models/user";
+import { ref, onMounted } from "vue";
 
 const useApiConnection = () => {
-    const [connectionError, setConnectionError] = useState(false)
-    const [session, setSession] = useState<UserSession | null>(null)
-    const [loading, setLoading] = useState(true)
+    const session = ref<UserSession | null>(null);
+    const loading = ref(true);
+    const connectionError = ref(false);
 
-    useEffect(() => {
-        const checkSession = async () => {
-            try {
-                const response = await fetch(`${API_ENDPOINT}/api/user/session`)
+    const checkSession = async () => {
+        try {
+            const response = await fetch(`${API_ENDPOINT}/api/user/session`);
 
-                if (response.ok) {
-                    const session = await response.json()
-                    setSession(session)
-                }
+            if (response.ok) {
+                const sessionData = await response.json();
+                session.value = sessionData;
             }
-            catch (e) {
-                setConnectionError(true)
-            }
-
-            setLoading(false)
+        }
+        catch (e) {
+            connectionError.value = true;
         }
 
-        checkSession()
-    })
+        loading.value = false;
+    }
+
+    onMounted(checkSession);
 
     return {
-        connectionError,
-        loading,
         session,
-        setSession
+        loading,
+        connectionError
     }
 }
 

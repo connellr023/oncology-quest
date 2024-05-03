@@ -1,24 +1,22 @@
-import { useEffect, useState } from "preact/hooks"
-import debounce from "lodash.debounce"
+import { ref, watch } from "vue";
 
 const useValidateField = (check: (field: string) => boolean, errorMessage: string) => {
-    const [field, setField] = useState("")
-    const [error, setError] = useState("")
+    const field = ref("");
+    const error = ref("");
 
-    useEffect(() => {
-        if (!check(field)) {
-            setError(errorMessage)
+    watch(field, (newField) => {
+        if (!check(newField)) {
+            error.value = errorMessage;
         }
         else {
-            setError("")
+            error.value = "";
         }
-    }, [field]);
+    });
 
     return {
         field,
-        setField: debounce(setField, 350),
         error
     }
 }
 
-export default useValidateField
+export default useValidateField;

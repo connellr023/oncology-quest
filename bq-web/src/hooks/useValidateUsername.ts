@@ -1,15 +1,14 @@
-import { USERNAME_REGEX } from "../utility"
-import useValidateField from "./useValidateField"
+import { USERNAME_REGEX } from "../utility";
+import useValidateField from "./useValidateField";
 
 const useValidateUsername = () => {
-    const { field, setField, error } = useValidateField(
-        (field: string) => USERNAME_REGEX.test(field),
-        "Username must be between 1 and 25 characters and can only contain letters, numbers, underscores, dashes, and periods."
+    const { field, error } = useValidateField(
+        (username: string) => USERNAME_REGEX.test(username),
+        "Invalid username"
     )
 
     return {
         username: field,
-        setUsername: setField,
         usernameError: error
     }
 }
