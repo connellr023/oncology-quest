@@ -1,0 +1,1 @@
+export let API_ENDPOINT = import.meta.env.DEV ? "http://127.0.0.1:8080" : "..."

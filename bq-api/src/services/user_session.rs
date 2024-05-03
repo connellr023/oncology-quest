@@ -1,4 +1,4 @@
-use crate::models::{model::Model, user::{ClientUser, User}};
+use crate::models::{model::Model, tasks::NamedTaskEntries, user::{ClientUser, User}};
 use actix_web::{web::Data, HttpResponse, Responder};
 use actix_session::Session;
 use redis::{Client, Connection};
@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct UserSession {
     pub user: ClientUser,
-    pub tasks: String
+    pub entries: NamedTaskEntries
 }
 
 /// Fetches the JSON representation of tasks from Redis.
@@ -19,16 +19,13 @@ struct UserSession {
 ///
 /// # Returns
 ///
-/// An `Option<String>` containing the JSON representation of tasks if successful, or `None` if an error occurred.
-fn fetch_tasks_json(connection: &mut Connection, tasks_key: &str) -> Option<String> {
+/// The tasks or an error if an error occurred.
+fn fetch_tasks_json(connection: &mut Connection, tasks_key: &str) -> anyhow::Result<NamedTaskEntries> {
     let result = redis::cmd("GET")
         .arg(tasks_key)
-        .query::<String>(connection);
+        .query::<String>(connection)?;
 
-    match result {
-        Ok(value) => Some(value),
-        Err(_) => None
-    }
+    Ok(serde_json::from_str::<NamedTaskEntries>(result.as_str())?)
 }
 
 /// Generates an HTTP response containing the user session data with the task structure.
@@ -42,14 +39,14 @@ fn fetch_tasks_json(connection: &mut Connection, tasks_key: &str) -> Option<Stri
 /// 
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
 pub(super) fn session_response_json(connection: &mut Connection, user: User) -> HttpResponse {
-    let tasks_json = match fetch_tasks_json(connection, "tasks") {
-        Some(tasks_json) => tasks_json,
-        None => return HttpResponse::InternalServerError().finish()
+    let entries = match fetch_tasks_json(connection, "tasks") {
+        Ok(tasks_json) => tasks_json,
+        Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
     let user_client = UserSession {
         user: user.into(),
-        tasks: tasks_json
+        entries
     };
 
     HttpResponse::Ok().json(user_client)

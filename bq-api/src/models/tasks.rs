@@ -8,6 +8,7 @@ use std::collections::HashMap;
 /// * `U` - The type of the keys in the subtasks.
 /// * `V` - The type representing the task.
 pub type TaskEntries<U, V> = HashMap<U, HashMap<U, V>>;
+
 pub type NamedTaskEntries = TaskEntries<String, Vec<String>>;
 pub type UserTaskEntries = TaskEntries<u16, HashMap<u16, UserTask>>;
 

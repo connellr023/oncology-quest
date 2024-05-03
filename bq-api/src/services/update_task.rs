@@ -17,7 +17,6 @@ struct UpdateTask {
 impl Validatable for UpdateTask {
     fn validate(&self) -> bool {
         let comment_pattern = Regex::new(COMMENT_REGEX).unwrap();
-
         comment_pattern.is_match(self.task.comment.as_str())
     }
 }

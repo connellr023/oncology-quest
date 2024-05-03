@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose
-      working-directory: ./bq_api
+      working-directory: ./bq-api
     - name: Run tests
       run: cargo test --verbose
-      working-directory: ./bq_api
+      working-directory: ./bq-api
