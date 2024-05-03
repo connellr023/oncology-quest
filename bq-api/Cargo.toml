@@ -1,5 +1,5 @@
 [package]
-name = "bq_api"
+name = "bq-api"
 version = "1.0.0"
 edition = "2021"
 

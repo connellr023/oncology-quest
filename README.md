@@ -3,6 +3,7 @@
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Preact](https://img.shields.io/badge/preact-6b1ad6.svg?style=for-the-badge&logo=preact)
 
 <br />
 
