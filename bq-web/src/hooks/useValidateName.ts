@@ -1,22 +1,16 @@
-import { useEffect, useRef } from "preact/hooks"
 import { NAME_REGEX } from "../utility"
+import useValidateField from "./useValidateField"
 
 const useValidateName = () => {
-    const name = useRef("");
-    const nameError = useRef("");
-
-    useEffect(() => {
-        if (!NAME_REGEX.test(name.current)) {
-            nameError.current = "Name can only contain letters, and spaces.";
-        }
-        else {
-            nameError.current = "";
-        }
-    }, [name.current]);
+    const { field, setField, error } = useValidateField(
+        (field: string) => NAME_REGEX.test(field),
+        "Names must consist of only letters and spaces."
+    )
 
     return {
-        name,
-        nameError
+        name: field,
+        setName: setField,
+        nameError: error
     }
 }
 

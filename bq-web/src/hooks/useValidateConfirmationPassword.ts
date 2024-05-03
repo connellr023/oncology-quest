@@ -1,27 +1,20 @@
-import { useRef, useEffect } from "preact/hooks"
 import useValidatePassword from "./useValidatePassword"
+import useValidateField from "./useValidateField"
 
 const useValidateConfirmationPassword = () => {
-    const { password, passwordError } = useValidatePassword()
-    const confirmPassword = useRef("")
-    const confirmPasswordError = useRef("")
-
-    useEffect(() => {
-        confirmPasswordError.current = passwordError.current
-
-        if (password.current !== confirmPassword.current) {
-            confirmPasswordError.current = "Passwords do not match."
-        }
-        else {
-            confirmPasswordError.current = ""
-        }
-    }, [password.current, confirmPassword.current])
-
+    const { password, setPassword, passwordError } = useValidatePassword()
+    const { field, setField, error } = useValidateField(
+        (field: string) => password === field,
+        "Passwords do not match."
+    )
 
     return {
         password,
-        confirmPassword,
-        confirmPasswordError
+        setPassword,
+        passwordError,
+        confirmPassword: field,
+        setConfirmPassword: setField,
+        confirmPasswordError: error
     }
 }
 

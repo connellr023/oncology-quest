@@ -1,22 +1,16 @@
-import { useEffect, useRef } from "preact/hooks"
 import { EMAIL_REGEX } from "../utility"
+import useValidateField from "./useValidateField"
 
 const useValidateEmail = () => {
-    const email = useRef("");
-    const emailError = useRef("");
-
-    useEffect(() => {
-        if (!EMAIL_REGEX.test(email.current)) {
-            emailError.current = "Invalid email address.";
-        }
-        else {
-            emailError.current = "";
-        }
-    }, [email.current]);
+    const { field, setField, error } = useValidateField(
+        (field: string) => EMAIL_REGEX.test(field),
+        "Please enter a valid email address."
+    )
 
     return {
-        email,
-        emailError
+        email: field,
+        setEmail: setField,
+        emailError: error
     }
 }
 
