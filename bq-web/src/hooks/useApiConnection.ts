@@ -10,10 +10,10 @@ const useApiConnection = () => {
     useEffect(() => {
         const checkSession = async () => {
             try {
-                let response = await fetch(`${API_ENDPOINT}/api/user/session`)
+                const response = await fetch(`${API_ENDPOINT}/api/user/session`)
 
                 if (response.ok) {
-                    let session = await response.json()
+                    const session = await response.json()
                     setSession(session)
                 }
             }

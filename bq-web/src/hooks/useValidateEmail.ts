@@ -1,20 +1,21 @@
-import { useRef, useState } from "preact/hooks"
+import { useEffect, useRef } from "preact/hooks"
 import { EMAIL_REGEX } from "../utility"
 
 const useValidateEmail = () => {
-    const [email, setEmail] = useState("")
-    const emailError = useRef("")
+    const email = useRef("");
+    const emailError = useRef("");
 
-    if (!EMAIL_REGEX.test(email)) {
-        emailError.current = "Invalid email address."
-    }
-    else {
-        emailError.current = ""
-    }
+    useEffect(() => {
+        if (!EMAIL_REGEX.test(email.current)) {
+            emailError.current = "Invalid email address.";
+        }
+        else {
+            emailError.current = "";
+        }
+    }, [email.current]);
 
     return {
         email,
-        setEmail,
         emailError
     }
 }

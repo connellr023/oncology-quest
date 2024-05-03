@@ -77,7 +77,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
     };
 
     // Admins do not have tasks.
-    if user.is_admin() {
+    if user.is_admin{
         return HttpResponse::Forbidden().finish();
     }
 

@@ -1,19 +1,21 @@
-import { useRef, useState } from "preact/hooks"
+import { useEffect, useRef } from "preact/hooks"
 import { NAME_REGEX } from "../utility"
 
 const useValidateName = () => {
-    const [name, setName] = useState("")
-    const nameError = useRef("")
+    const name = useRef("");
+    const nameError = useRef("");
 
-    if (!NAME_REGEX.test(name)) {
-        nameError.current = "Name can only contain letters, and spaces."
-    }
-    else {
-        nameError.current = ""
-    }
+    useEffect(() => {
+        if (!NAME_REGEX.test(name.current)) {
+            nameError.current = "Name can only contain letters, and spaces.";
+        }
+        else {
+            nameError.current = "";
+        }
+    }, [name.current]);
+
     return {
         name,
-        setName,
         nameError
     }
 }

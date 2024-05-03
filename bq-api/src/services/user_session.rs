@@ -1,4 +1,4 @@
-use crate::models::{model::Model, tasks::NamedTaskEntries, user::{ClientUser, User}};
+use crate::models::{model::Model, tasks::NamedTaskEntries, user::User, client_user::ClientUser};
 use actix_web::{web::Data, HttpResponse, Responder};
 use actix_session::Session;
 use redis::{Client, Connection};
