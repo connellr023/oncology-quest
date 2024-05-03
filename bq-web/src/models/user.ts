@@ -4,6 +4,7 @@ export interface User {
     username: string,
     name: string,
     email: string,
+    isAdmin: boolean,
     tasks: UserTaskEntries
 }
 

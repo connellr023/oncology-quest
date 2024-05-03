@@ -9,9 +9,10 @@ use std::io;
 use dotenv::dotenv;
 use services::config::config;
 use models::environment::Environment;
+use redis::Client;
 use actix_web::{web::Data, cookie::Key, App, HttpServer};
 use actix_session::{SessionMiddleware, storage::CookieSessionStore};
-use redis::Client;
+use actix_cors::Cors;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
@@ -40,11 +41,15 @@ async fn main() -> io::Result<()> {
             Key::from(&[0; 64])
         ).build();
 
+        // Setup CORS. (Permissive for now)
+        let cors = Cors::permissive();
+
         // Initialize the application.
         App::new()
             .app_data(Data::new(redis.clone()))
             .configure(config)
             .wrap(session_middleware)
+            .wrap(cors)
     })
     .bind(format!("{}:{}",
         env_clone.host_ip(),

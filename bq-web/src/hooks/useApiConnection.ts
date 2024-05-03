@@ -10,7 +10,7 @@ const useApiConnection = () => {
     useEffect(() => {
         const checkSession = async () => {
             try {
-                let response = await fetch(`${API_ENDPOINT}/api/session`)
+                let response = await fetch(`${API_ENDPOINT}/api/user/session`)
 
                 if (response.ok) {
                     let session = await response.json()
@@ -29,8 +29,9 @@ const useApiConnection = () => {
 
     return {
         connectionError,
+        loading,
         session,
-        loading
+        setSession
     }
 }
 

@@ -19,11 +19,13 @@ pub struct User {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct ClientUser {
     username: String,
     name: String,
     email: String,
-    tasks: UserTaskEntries
+    tasks: UserTaskEntries,
+    is_admin: bool
 }
 
 impl Model for User {
@@ -145,6 +147,7 @@ impl From<User> for ClientUser {
             name: user.name,
             email: user.email,
             tasks: user.tasks,
+            is_admin: user.is_admin
         }
     }
 }
@@ -226,5 +229,6 @@ mod tests {
         assert_eq!(client_user.username, username);
         assert_eq!(client_user.name, name);
         assert_eq!(client_user.email, email);
+        assert_eq!(client_user.is_admin, false);
     }
 }
