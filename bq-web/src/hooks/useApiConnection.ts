@@ -8,8 +8,13 @@ const useApiConnection = (session: Ref<UserSession | null>) => {
 
     const checkSession = async () => {
         try {
-            const response = await fetch(`${API_ENDPOINT}/api/user/session`);
-
+            const response = await fetch(`${API_ENDPOINT}/api/user/session`, {
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+    
             if (response.ok) {
                 const sessionData = await response.json();
                 session.value = sessionData;

@@ -28,7 +28,7 @@ pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Jso
         return HttpResponse::Unauthorized().finish();
     }
 
-    match session.insert("username", login_user.username.clone()) {
+    match session.insert("username", login_user.username) {
         Ok(_) => session_response_json(&mut connection, user),
         Err(_) => HttpResponse::InternalServerError().finish()
     }

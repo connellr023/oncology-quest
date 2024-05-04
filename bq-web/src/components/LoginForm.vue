@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, provide, ref } from "vue";
+import { Ref, inject, ref } from "vue";
 import { API_ENDPOINT } from "../utility";
 import { UserSession } from "../models/user";
 import useValidateUsername from "../hooks/useValidateUsername"
@@ -17,6 +17,7 @@ const login = async () => {
 
   try {
     const response = await fetch(`${API_ENDPOINT}/api/user/login`, {
+      credentials: "include",
       method: "POST",
       headers: {
         "Content-Type": "application/json"
