@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { API_ENDPOINT } from "../utility";
 import useValidateUsername from "../hooks/useValidateUsername"
 import useValidateName from "../hooks/useValidateName";
 import useValidateEmail from "../hooks/useValidateEmail";
 import useValidateConfirmedPassword from "../hooks/useValidateConfirmedPassword";
-import { ref } from "vue";
 
 const { username, usernameError } = useValidateUsername()
 const { name, nameError } = useValidateName()
