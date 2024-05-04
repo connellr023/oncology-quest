@@ -21,7 +21,7 @@ pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Jso
     let login_user = login_user.into_inner();
     let user = match User::fetch(&mut connection, &login_user.username) {
         Some(user) => user,
-        None => return HttpResponse::NotFound().finish()
+        None => return HttpResponse::Unauthorized().finish()
     };
 
     if !user.validate_password(login_user.password.as_str()) {

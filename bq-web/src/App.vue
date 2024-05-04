@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import useApiConnection from "./hooks/useApiConnection"
 import NoSession from "./components/NoSession.vue"
+import { provide, ref } from "vue";
+import { UserSession } from "./models/user";
 
-const { session, loading, connectionError } = useApiConnection()
+let session = ref<UserSession | null>(null);
+provide("session", session);
+
+const { loading, connectionError } = useApiConnection(session)
 </script>
 
 <template>
@@ -15,6 +20,9 @@ const { session, loading, connectionError } = useApiConnection()
     </div>
     <div v-else>
       <NoSession v-if="!session" />
+      <div v-else>
+        <h1>hi</h1>
+      </div>
     </div>
   </main>
 </template>

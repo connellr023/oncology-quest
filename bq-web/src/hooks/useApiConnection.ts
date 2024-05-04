@@ -1,9 +1,8 @@
 import { API_ENDPOINT } from "../utility";
 import { UserSession } from "../models/user";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, Ref } from "vue";
 
-const useApiConnection = () => {
-    const session = ref<UserSession | null>(null);
+const useApiConnection = (session: Ref<UserSession | null>) => {
     const loading = ref(true);
     const connectionError = ref(false);
 
@@ -26,7 +25,6 @@ const useApiConnection = () => {
     onMounted(checkSession);
 
     return {
-        session,
         loading,
         connectionError
     }
