@@ -71,6 +71,34 @@ impl Model for User {
 
         set_result.is_ok() && set_key_result.is_ok()
     }
+
+    fn update(&self, connection: &mut Connection) -> bool {
+        let serialized = match serde_json::to_string(self) {
+            Ok(serialized) => serialized,
+            Err(_) => return false
+        };
+
+        let key = Self::fmt_key(self.username.as_str());
+        let exists = redis::cmd("EXISTS")
+            .arg(&key)
+            .query::<bool>(connection);
+
+        match exists {
+            Ok(exists) => {
+                if !exists {
+                    return false;
+                }
+            },
+            Err(_) => return false
+        };
+
+        let set_result = redis::cmd("SET")
+            .arg(&key)
+            .arg(serialized)
+            .query::<()>(connection);
+
+        set_result.is_ok()
+    }
 }
 
 impl User {

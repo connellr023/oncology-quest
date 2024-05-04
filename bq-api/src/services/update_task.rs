@@ -1,5 +1,5 @@
 use super::validatable::Validatable;
-use crate::utilities::regex_patterns::COMMENT_REGEX;
+use crate::utilities::COMMENT_REGEX;
 use crate::models::{model::Model, user::User, tasks::{UserTask, UserTaskEntries}};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
@@ -64,7 +64,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
 
     if !task_update.validate() {
         return HttpResponse::BadRequest().finish();
-    }
+    };
 
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
@@ -77,15 +77,15 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
     };
 
     // Admins do not have tasks.
-    if user.is_admin{
+    if user.is_admin {
         return HttpResponse::Forbidden().finish();
-    }
+    };
 
     update_task(user.tasks_mut(), task_update.index, task_update.task.clone());
 
-    if !user.store(&mut connection) {
+    if !user.update(&mut connection) {
         return HttpResponse::InternalServerError().finish();
-    }
+    };
     
     HttpResponse::Ok().finish()
 }

@@ -1,4 +1,4 @@
-import { NAME_REGEX } from "../utility";
+import { NAME_REGEX } from "../utilities";
 import useValidateField from "./useValidateField";
 
 const useValidateName = () => {

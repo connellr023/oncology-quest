@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue";
-import { API_ENDPOINT } from "../utility";
+import { API_ENDPOINT } from "../utilities";
 import { UserSession } from "../models/user";
 import useValidateUsername from "../hooks/useValidateUsername"
 import useValidatePassword from "../hooks/useValidatePassword"

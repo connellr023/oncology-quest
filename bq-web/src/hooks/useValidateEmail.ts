@@ -1,4 +1,4 @@
-import { EMAIL_REGEX } from "../utility";
+import { EMAIL_REGEX } from "../utilities";
 import useValidateField from "./useValidateField";
 
 const useValidateEmail = () => {

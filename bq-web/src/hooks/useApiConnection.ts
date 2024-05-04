@@ -1,4 +1,4 @@
-import { API_ENDPOINT } from "../utility";
+import { API_ENDPOINT } from "../utilities";
 import { UserSession } from "../models/user";
 import { ref, onMounted, Ref } from "vue";
 

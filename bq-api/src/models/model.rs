@@ -29,4 +29,15 @@ pub trait Model {
     ///
     /// A boolean indicating whether the store operation was successful.
     fn store(&self, connection: &mut Connection) -> bool;
+
+    /// Updates the model in Redis.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `connection` - The Redis connection to use for the update operation.
+    /// 
+    /// # Returns
+    /// 
+    /// A boolean indicating whether the update operation was successful.
+    fn update(&self, connection: &mut Connection) -> bool;
 }

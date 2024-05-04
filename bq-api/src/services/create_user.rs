@@ -1,5 +1,5 @@
 use super::validatable::Validatable;
-use crate::utilities::regex_patterns::*;
+use crate::utilities::{USERNAME_REGEX, NAME_REGEX, EMAIL_REGEX, PASSWORD_REGEX};
 use crate::models::{model::Model, user::User};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use serde::Deserialize;
