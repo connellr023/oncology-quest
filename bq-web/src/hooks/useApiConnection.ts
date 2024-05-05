@@ -3,8 +3,8 @@ import { UserSession } from "../models/user";
 import { ref, onMounted, Ref } from "vue";
 
 const useApiConnection = (session: Ref<UserSession | null>) => {
-    const loading = ref(true);
-    const connectionError = ref(false);
+    const loading = ref(true)
+    const connectionError = ref(false)
 
     const checkSession = async () => {
         try {
@@ -16,15 +16,15 @@ const useApiConnection = (session: Ref<UserSession | null>) => {
             });
     
             if (response.ok) {
-                const sessionData = await response.json();
-                session.value = sessionData;
+                const sessionData = await response.json()
+                session.value = sessionData
             }
         }
         catch (e) {
-            connectionError.value = true;
+            connectionError.value = true
         }
 
-        loading.value = false;
+        loading.value = false
     }
 
     onMounted(checkSession);

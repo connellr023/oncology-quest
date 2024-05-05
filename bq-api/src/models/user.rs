@@ -142,9 +142,8 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::client_user::ClientUser;
-
     use super::*;
+    use crate::models::client_user::ClientUser;
 
     #[test]
     fn test_new_user() {
