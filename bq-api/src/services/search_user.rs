@@ -7,7 +7,7 @@ use redis::Client;
 #[derive(Deserialize)]
 #[serde(rename_all="camelCase")]
 pub struct UserSearch {
-    pub username_query: String
+    pub query: String
 }
 
 #[derive(Serialize)]
@@ -15,7 +15,7 @@ pub struct UserSearchResults {
     pub users: Vec<ClientUser>
 }
 
-#[actix_web::get("/api/users/search/{query}")]
+#[actix_web::get("/api/user/search/{query}")]
 pub(super) async fn search(session: Session, search: Path<UserSearch>, redis: Data<Client>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
@@ -37,7 +37,7 @@ pub(super) async fn search(session: Session, search: Path<UserSearch>, redis: Da
         return HttpResponse::Forbidden().finish();
     }
 
-    let users = match ClientUser::text_search(&mut connection, search.username_query.as_str()) {
+    let users = match ClientUser::text_search(&mut connection, search.query.as_str()) {
         Ok(users) => users,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };

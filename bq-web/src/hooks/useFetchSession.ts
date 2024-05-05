@@ -2,7 +2,7 @@ import { API_ENDPOINT } from "../utilities";
 import { UserSession } from "../models/user";
 import { ref, onMounted, Ref } from "vue";
 
-const useApiConnection = (session: Ref<UserSession | null>) => {
+const useFetchSession = (session: Ref<UserSession | null>) => {
     const loading = ref(true)
     const connectionError = ref(false)
 
@@ -20,7 +20,7 @@ const useApiConnection = (session: Ref<UserSession | null>) => {
                 session.value = sessionData
             }
         }
-        catch (e) {
+        catch (_) {
             connectionError.value = true
         }
 
@@ -35,4 +35,4 @@ const useApiConnection = (session: Ref<UserSession | null>) => {
     }
 }
 
-export default useApiConnection;
+export default useFetchSession;

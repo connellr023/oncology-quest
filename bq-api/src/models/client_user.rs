@@ -1,4 +1,4 @@
-use super::{tasks::UserTaskEntries, user::User};
+use super::{tasks::UserTaskEntries, user::User, model::Model};
 use serde::{Serialize, Deserialize};
 use redis::Connection;
 
@@ -25,7 +25,7 @@ impl ClientUser {
     /// Returns a Result containing a vector of users that match the query. If an error occurs, it will be returned.
     pub fn text_search(connection: &mut Connection, query: &str) -> anyhow::Result<Vec<Self>> {
         let mut users = vec![];
-        let pattern = format!("*{}*", query);
+        let pattern = User::fmt_key(format!("*{}*", query).as_str());
         let keys = redis::cmd("KEYS")
             .arg(pattern)
             .query::<Vec<String>>(connection)?;
@@ -40,6 +40,7 @@ impl ClientUser {
             users.push(client_user);
         }
 
+        users.retain(|user| user.is_admin == false);
         Ok(users)
     }
 }

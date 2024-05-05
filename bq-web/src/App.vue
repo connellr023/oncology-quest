@@ -2,16 +2,17 @@
 import { provide, ref } from "vue";
 import { UserSession } from "./models/user"
 
-import useApiConnection from "./hooks/useApiConnection"
+import useFetchSession from "./hooks/useFetchSession"
 import NoSession from "./components/NoSession.vue"
 import Dashboard from "./components/Dashboard.vue"
+import AdminDashboard from "./components/AdminDashboard.vue"
 import AccountBar from "./components/AccountBar.vue"
 import CreditLabel from "./components/CreditLabel.vue"
 
 let session = ref<UserSession | null>(null);
 provide("session", session);
 
-const { loading, connectionError } = useApiConnection(session)
+const { loading, connectionError } = useFetchSession(session)
 </script>
 
 <template>
@@ -26,7 +27,8 @@ const { loading, connectionError } = useApiConnection(session)
       <NoSession v-if="!session" />
       <div v-else>
         <AccountBar />
-        <Dashboard />
+        <AdminDashboard v-if="session.user.isAdmin" />
+        <Dashboard v-else />
       </div>
     </template>
     <CreditLabel />
