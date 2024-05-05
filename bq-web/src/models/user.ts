@@ -1,4 +1,4 @@
-import { UserTaskEntries, NamedTaskEntries } from "./task";
+import { Task, UserTaskEntries } from "./task";
 
 export interface User {
     username: string,
@@ -10,5 +10,5 @@ export interface User {
 
 export interface UserSession {
     user: User,
-    entries: NamedTaskEntries
+    entries: Task[]
 }

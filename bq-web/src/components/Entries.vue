@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { Component, Ref, defineProps, inject, reactive } from "vue"
+import { Ref, defineProps, inject, reactive } from "vue"
 import { UserSession } from "../models/user"
+import { UserTaskEntries } from "../models/task"
 
-defineProps<{ handlerComponent: Component }>()
+import EntryHeading from "./EntryHeading.vue"
+import TaskEditor from "./TaskEditor.vue"
 
-const sessionContext = inject<Ref<UserSession>>("session")!
+defineProps<{ tasks: UserTaskEntries }>()
+
+const entries = inject<Ref<UserSession>>("session")!.value.entries
 let visibility = reactive<Record<string, boolean>>({})
 
 const toggleVisibility = (key: string) => {
@@ -13,19 +17,19 @@ const toggleVisibility = (key: string) => {
 </script>
 
 <template>
-  <div v-for="(entry, index) in sessionContext.entries" :key="index">
-    <h3 class="dropdown" @click="toggleVisibility(entry.title)">{{ entry.title }}</h3>
+  <div v-for="(entry, index) in entries">
+    <EntryHeading :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
     <ul v-show="visibility[entry.title]">
-      <li v-for="(subTask, subIndex) in entry.tasks" :key="subIndex">
-        <h4 class="dropdown" @click="toggleVisibility(entry.title + subTask.title)">{{ subTask.title }}:</h4>
+      <li v-for="(subTask, subIndex) in entry.tasks">
+        <EntryHeading :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
         <ul v-show="visibility[entry.title + subTask.title]">
           <li
             v-for="(task, taskIndex) in subTask.tasks"
             :key="taskIndex"
             :data-index="`${index},${subIndex},${taskIndex}`"
           >
-            <handlerComponent
-              :task="sessionContext.user.tasks[index]?.[subIndex]?.[taskIndex] ?? null"
+            <TaskEditor
+              :task="tasks[index]?.[subIndex]?.[taskIndex] ?? null"
               :value="task"
               :index="[index, subIndex, taskIndex]"
             />
@@ -35,13 +39,3 @@ const toggleVisibility = (key: string) => {
     </ul>
   </div>
 </template>
-
-<style scoped lang="scss">
-.dropdown {
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-</style>

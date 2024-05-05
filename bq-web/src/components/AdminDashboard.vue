@@ -1,24 +1,54 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { User } from "../models/user";
+
+import Entries from "./Entries.vue"
+
 import useUserSearch from "../hooks/useUserSearch"
+import useValidateUsername from "../hooks/useValidateUsername";
 
 const { search, results, loading, searchError } = useUserSearch()
-const query = ref("")
+const { username, usernameError } = useValidateUsername()
+
+const selectedUser = ref<User>({
+  username: "",
+  name: "",
+  email: "",
+  isAdmin: false,
+  tasks: {}
+})
 
 const searchUser = () => {
-  search(query.value)
+  if (!usernameError.value && username.value.length > 0) {
+    search(username.value)
+  }
+}
+
+const setSelectedUser = (user: User) => {
+  selectedUser.value = user
 }
 </script>
 
 <template>
   <h1>Admin Dashboard</h1>
+  <div v-if="selectedUser">
+    <h4>Selected User</h4>
+    <div>
+      <div>Username: {{ selectedUser.username }}</div>
+      <div>Name: {{ selectedUser.name }}</div>
+      <div>Email: {{ selectedUser.email }}</div>
+    </div>
+  </div>
   <div>
-    <input v-model="query" placeholder="Search Username" />
+    <input v-model="username" placeholder="Search Username" />
     <button @click="searchUser">Search</button>
     <div>
+      <span v-if="usernameError">{{ usernameError }}</span>
       <ul v-if="results.length > 0">
         <li v-for="(user, index) in results" :key="index">
-          {{ user.username }} ({{ user.name }})
+          <div class="user-option" @click="setSelectedUser(user)">
+            {{ user.username }} ({{ user.name }})
+          </div>
         </li>
       </ul>
       <div v-else-if="loading">
@@ -32,4 +62,17 @@ const searchUser = () => {
       </div>
     </div>
   </div>
+  <h3>Task Manager</h3>
+  <Entries :key="selectedUser.username" :tasks="selectedUser.tasks" />
 </template>
+
+<style scoped lang="scss">
+input {
+  margin-top: 25px;
+}
+
+div.user-option {
+  cursor: pointer;
+  margin: 5px;
+}
+</style>

@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref } from "vue"
+import { Ref, defineProps, inject, onMounted, ref } from "vue"
 import { UserTask } from "../models/task";
 import { API_ENDPOINT } from "../utilities";
+import { UserSession } from "../models/user";
+
+import EntryHeading from "./EntryHeading.vue";
 
 const optionsVisible = ref(false)
 const completed = ref(false)
 const comment = ref("")
 const message = ref("")
+
+const user = inject<Ref<UserSession>>("session")!.value.user
 
 const props = defineProps<{
   task?: UserTask,
@@ -60,27 +65,21 @@ const save = async () => {
 </script>
 
 <template>
-  <div class="task-name" @click="toggleOptions">{{ value }}</div>
+  <EntryHeading @click="toggleOptions" :index="index" :title="value"/>
   <div class="options" v-show="optionsVisible">
     <label>Completed</label>
-    <input type="checkbox" v-model="completed" />
+    <input type="checkbox" v-model="completed" :disabled="user.isAdmin" />
     <br />
-    <textarea v-model="comment"></textarea>
+    <textarea v-model="comment" :readonly="user.isAdmin"></textarea>
     <br />
-    <button @click="save">Save</button>
-    <div v-if="message">{{ message }}</div>
+    <template v-if="!user.isAdmin">
+      <button @click="save">Save</button>
+      <div v-if="message">{{ message }}</div>
+    </template>
   </div>
 </template>
 
 <style scoped lang="scss">
-div.task-name {
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 div.options {
   margin-top: 10px;
 

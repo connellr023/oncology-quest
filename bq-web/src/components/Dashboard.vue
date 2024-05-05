@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import { Ref, inject } from "vue";
+import { UserSession } from "../models/user";
+
 import Entries from "./Entries.vue"
-import TaskEditor from "./TaskEditor.vue"
+
+const tasks = inject<Ref<UserSession>>("session")!.value.user.tasks
 </script>
 
 <template>
   <h1>Dashboard</h1>
-  <Entries :handlerComponent="TaskEditor" />
+  <Entries :tasks="tasks" />
 </template>
 
 <style scoped lang="scss">
