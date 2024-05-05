@@ -19,10 +19,6 @@ pub struct User {
 }
 
 impl Model for User {
-    fn fmt_key(identifier: &str) -> String {
-        format!("user:{}", identifier)
-    }
-
     fn fetch(connection: &mut Connection, key: &str) -> Option<Self> {
         let result = redis::cmd("GET")
             .arg(Self::fmt_key(key))
@@ -45,19 +41,11 @@ impl Model for User {
             Err(_) => return false
         };
 
-        let key = Self::fmt_key(self.username.as_str());
-        let exists = redis::cmd("EXISTS")
-            .arg(&key)
-            .query::<bool>(connection);
-        
-        match exists {
-            Ok(exists) => {
-                if exists {
-                    return false;
-                }
-            },
-            Err(_) => return false
-        };
+        if self.exists(connection) {
+            return false;
+        }
+
+        let key = self.key();
 
         let set_result = redis::cmd("SET")
             .arg(&key)
@@ -78,26 +66,24 @@ impl Model for User {
             Err(_) => return false
         };
 
-        let key = Self::fmt_key(self.username.as_str());
-        let exists = redis::cmd("EXISTS")
-            .arg(&key)
-            .query::<bool>(connection);
-
-        match exists {
-            Ok(exists) => {
-                if !exists {
-                    return false;
-                }
-            },
-            Err(_) => return false
-        };
+        if !self.exists(connection) {
+            return false;
+        }
 
         let set_result = redis::cmd("SET")
-            .arg(&key)
+            .arg(self.key())
             .arg(serialized)
             .query::<()>(connection);
 
         set_result.is_ok()
+    }
+
+    fn fmt_key(identifier: &str) -> String {
+        format!("user:{}", identifier)
+    }
+
+    fn key(&self) -> String {
+        Self::fmt_key(self.username.as_str())
     }
 }
 

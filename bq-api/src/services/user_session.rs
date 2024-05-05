@@ -1,4 +1,4 @@
-use crate::models::{model::Model, tasks::NamedTaskEntries, user::User, client_user::ClientUser};
+use crate::models::{model::Model, tasks::Task, user::User, client_user::ClientUser};
 use actix_web::{web::Data, HttpResponse, Responder};
 use actix_session::Session;
 use redis::{Client, Connection};
@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct UserSession {
     pub user: ClientUser,
-    pub entries: NamedTaskEntries
+    pub entries: Vec<Task>
 }
 
 /// Fetches the JSON representation of tasks from Redis.
@@ -20,12 +20,12 @@ struct UserSession {
 /// # Returns
 ///
 /// The tasks or an error if an error occurred.
-fn fetch_tasks_json(connection: &mut Connection, tasks_key: &str) -> anyhow::Result<NamedTaskEntries> {
+fn fetch_tasks_json(connection: &mut Connection, tasks_key: &str) -> anyhow::Result<Vec<Task>> {
     let result = redis::cmd("GET")
         .arg(tasks_key)
         .query::<String>(connection)?;
 
-    Ok(serde_json::from_str::<NamedTaskEntries>(result.as_str())?)
+    Ok(serde_json::from_str::<Vec<Task>>(result.as_str())?)
 }
 
 /// Generates an HTTP response containing the user session data with the task structure.

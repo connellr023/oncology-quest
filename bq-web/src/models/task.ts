@@ -1,10 +1,17 @@
-export type TaskEntries<U extends (string | number | symbol), V> = Record<U, Record<U, V>>
+export type UserTaskEntries = Record<number, Record<number, Record<number, UserTask>>>
 
-export type NamedTaskEntries = TaskEntries<string, string[]>
-export type UserTaskEntries = TaskEntries<number, Record<number, UserTask>>
+export interface SubTask {
+    title: string,
+    tasks: string[]
+}
+
+export interface Task {
+    title: string,
+    tasks: SubTask[]
+}
 
 export interface Tasks {
-    entries: NamedTaskEntries
+    entries: Task[]
 }
 
 export interface UserTask {
