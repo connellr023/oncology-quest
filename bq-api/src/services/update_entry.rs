@@ -1,16 +1,17 @@
-use crate::models::{model::Model, task_structure::TaskStructure, tasks::Task, user::User};
+use crate::models::{model::Model, task_structure::TaskStructure, user::User};
 use actix_session::Session;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use redis::Client;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct UpdateEntries {
-    pub entries: Vec<Task>
+struct UpdateEntry {
+    pub title: String,
+    pub index: Vec<u16>
 }
 
 #[actix_web::patch("/api/entries/update")]
-pub(super) async fn update(session: Session, redis: Data<Client>, entries_update: Json<UpdateEntries>) -> impl Responder {
+pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: Json<UpdateEntry>) -> impl Responder {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()
@@ -30,13 +31,15 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entries_update
     if !user.is_admin {
         return HttpResponse::Forbidden().finish();
     };
-    
-    let entries_update = entries_update.into_inner();
-    let task_structure = TaskStructure::new(entries_update.entries);
 
-    if !task_structure.update(&mut connection) {
-        return HttpResponse::InternalServerError().finish();
+    let mut task_structure = match TaskStructure::fetch(&mut connection, "") {
+        Some(task_structure) => task_structure,
+        None => return HttpResponse::InternalServerError().finish()
     };
+
+    if !task_structure.update_existing(&mut connection, entry_update.index.as_slice(), entry_update.title.as_str()) {
+        return HttpResponse::InternalServerError().finish();
+    }
 
     HttpResponse::Ok().finish()
 }   

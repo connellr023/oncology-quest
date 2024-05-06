@@ -6,7 +6,6 @@ import Entries from "./Entries.vue"
 
 import useUserSearch from "../hooks/useUserSearch"
 import useValidateUsername from "../hooks/useValidateUsername";
-import useSaveEntries from "../hooks/useSaveEntries";
 
 const { search, results, loading, searchError } = useUserSearch()
 const { username, usernameError } = useValidateUsername()

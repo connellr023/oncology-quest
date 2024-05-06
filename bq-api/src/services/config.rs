@@ -8,5 +8,5 @@ pub fn config(cfg: &mut ServiceConfig) {
     cfg.service(user_session::session);
     cfg.service(update_task::update);
     cfg.service(search_user::search);
-    cfg.service(update_entries::update);
+    cfg.service(update_entry::update);
 }
