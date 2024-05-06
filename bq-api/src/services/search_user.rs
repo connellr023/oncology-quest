@@ -1,17 +1,12 @@
 use crate::models::{model::Model, user::User, client_user::ClientUser};
 use actix_web::{web::{Data, Path}, HttpResponse, Responder};
 use actix_session::Session;
-use serde::{Serialize, Deserialize};
+use serde::Deserialize;
 use redis::Client;
 
 #[derive(Deserialize)]
 pub struct UserSearch {
     pub query: String
-}
-
-#[derive(Serialize)]
-pub struct UserSearchResults {
-    pub users: Vec<ClientUser>
 }
 
 #[actix_web::get("/api/user/search/{query}")]
@@ -41,5 +36,5 @@ pub(super) async fn search(session: Session, search: Path<UserSearch>, redis: Da
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    HttpResponse::Ok().json(UserSearchResults { users })
+    HttpResponse::Ok().json(users)
 }

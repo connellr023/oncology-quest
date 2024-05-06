@@ -6,3 +6,4 @@ pub mod logout_user;
 pub mod user_session;
 pub mod update_task;
 pub mod search_user;
+pub mod update_entries;

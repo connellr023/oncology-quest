@@ -7,6 +7,11 @@ const TASKS_KEY: &str = "tasks";
 pub struct TaskStructure(Vec<Task>);
 
 impl TaskStructure {
+    /// Creates a new `TaskStructure` instance.
+    pub fn new(entries: Vec<Task>) -> Self {
+        Self(entries)
+    }
+
     /// Returns the owned structure of tasks and consumes self.
     pub fn structure_as_owned(self) -> Vec<Task> {
         self.0

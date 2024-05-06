@@ -57,6 +57,11 @@ fn update_task(entries: &mut UserTaskEntries, index: (u16, u16, u16), task: User
 
 #[actix_web::patch("/api/tasks/update")]
 pub(super) async fn update(session: Session, redis: Data<Client>, task_update: Json<UpdateTask>) -> impl Responder {
+    let username = match session.get::<String>("username") {
+        Ok(Some(username)) => username,
+        _ => return HttpResponse::Unauthorized().finish()
+    };
+    
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
@@ -64,11 +69,6 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
 
     if !task_update.validate() {
         return HttpResponse::BadRequest().finish();
-    };
-
-    let username = match session.get::<String>("username") {
-        Ok(Some(username)) => username,
-        _ => return HttpResponse::Unauthorized().finish()
     };
 
     let mut user = match User::fetch(&mut connection, username.as_str()) {

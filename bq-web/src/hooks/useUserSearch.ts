@@ -25,8 +25,8 @@ const useUserSearch = () => {
             }
             else {
                 try {
-                    const data: { users: User[] } = await response.json()
-                    results.splice(0, results.length, ...data.users)
+                    const users: User[] = await response.json()
+                    results.splice(0, results.length, ...users)
                 }
                 catch (_) {
                     searchError.value = true
