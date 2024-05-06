@@ -9,7 +9,7 @@ struct UpdateEntries {
     pub entries: Vec<Task>
 }
 
-#[actix_web::patch("/api/tasks/update")]
+#[actix_web::patch("/api/entries/update")]
 pub(super) async fn update(session: Session, redis: Data<Client>, entries_update: Json<UpdateEntries>) -> impl Responder {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
@@ -34,7 +34,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entries_update
     let entries_update = entries_update.into_inner();
     let task_structure = TaskStructure::new(entries_update.entries);
 
-    if !task_structure.store(&mut connection) {
+    if !task_structure.update(&mut connection) {
         return HttpResponse::InternalServerError().finish();
     };
 

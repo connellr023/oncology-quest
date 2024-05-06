@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, defineProps, inject, ref } from "vue"
 import { UserSession } from "../models/user";
+import useSaveEntries from "../hooks/useSaveEntries";
 
 const props = defineProps<{
   title: string,
@@ -9,6 +10,8 @@ const props = defineProps<{
 
 const emit = defineEmits(["click"])
 const sessionContext = inject<Ref<UserSession>>("session")!
+
+const { message, save, saveError } = useSaveEntries()
 
 const inEditMode = ref(false)
 const title = ref(props.title)
@@ -24,8 +27,12 @@ const cancelEdit = () => {
   toggleEditMode()
 }
 
-const saveEdit = () => {
-  toggleEditMode()
+const saveEdit = async () => {
+  await save(title.value, props.index)
+
+  if (!saveError.value) {
+    toggleEditMode()
+  }
 }
 </script>
 
@@ -36,6 +43,7 @@ const saveEdit = () => {
     <template v-if="inEditMode">
       <button @click="cancelEdit">Cancel</button>
       <button @click="saveEdit">Save</button>
+      <span v-if="message">{{ message }}</span>
     </template>
     <button v-else @click="toggleEditMode">Edit</button>
   </template>

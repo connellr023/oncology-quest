@@ -1,15 +1,15 @@
 import { Ref, inject, ref } from "vue"
 import { UserSession } from "../models/user"
+import { API_ENDPOINT } from "../utilities"
 
 const useSaveEntries = () => {
     const message = ref("")
-    const saveError = ref("")
-
+    const saveError = ref(false)
     const sessionContext = inject<Ref<UserSession>>("session")!
 
     const save = async (title: string, index: number[]) => {
+        saveError.value = false
         message.value = "Loading..."
-        saveError.value = ""
 
         switch (index.length) {
             case 1:
@@ -23,27 +23,31 @@ const useSaveEntries = () => {
                 break;
             case 0:
             default:
-                return saveError.value = "Invalid index."
+                return message.value = "Invalid index."
         }
 
         try {
-            const response = await fetch("/api/entries", {
+            const response = await fetch(`${API_ENDPOINT}/api/entries/update`, {
                 method: "PATCH",
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(sessionContext.value.entries),
+                body: JSON.stringify({
+                    entries: sessionContext.value.entries
+                }),
             })
 
             if (!response.ok) {
-                saveError.value = "Failed to save entries."
+                message.value = `Server responded with ${response.status}.`
+                saveError.value = true
             }
             else {
                 message.value = "Saved!"
             }
         } catch (_) {
-            saveError.value = "Failed to save entries."
+            message.value = "Failed to save entries."
+            saveError.value = true
         }
     }
 
