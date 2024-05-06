@@ -1,61 +1,15 @@
 <script setup lang="ts">
-import { Ref, inject, ref } from "vue";
-import { API_ENDPOINT } from "../utilities";
-import { UserSession } from "../models/user";
-import useValidateUsername from "../hooks/useValidateUsername"
-import useValidatePassword from "../hooks/useValidatePassword"
+import useLogin from '../hooks/useLogin';
 
-const { username, usernameError } = useValidateUsername()
-const { password, passwordError } = useValidatePassword()
-
-const loading = ref(false)
-const serverError = ref("")
-const sessionContext = inject<Ref<UserSession | null>>("session")
-
-const login = async () => {
-  loading.value = true
-
-  try {
-    const response = await fetch(`${API_ENDPOINT}/api/user/login`, {
-      credentials: "include",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value
-      })
-    })
-
-    if (response.ok) {
-      try {
-        const session: UserSession = await response.json()
-
-        if (!sessionContext) {
-          serverError.value = "Session context not found."
-        }
-        else {
-          sessionContext.value = session
-        }
-      }
-      catch (error) {
-        serverError.value = "Failed to parse response."
-      }
-    }
-    else if (response.status === 401) {
-      serverError.value = "That username and password combination is incorrect."
-    }
-    else {
-      serverError.value = `Received status code ${response.status}`
-    }
-  }
-  catch (error) {
-    serverError.value = "Server error. Please try again later."
-  }
-
-  loading.value = false
-}
+const {
+  loading,
+  login,
+  loginError,
+  password,
+  passwordError,
+  username,
+  usernameError
+} = useLogin()
 
 const handleSubmit = (_: Event) => {
   const isError = (usernameError.value || passwordError.value)
@@ -79,7 +33,7 @@ const handleSubmit = (_: Event) => {
       <p v-if="passwordError">{{ passwordError }}</p>
     </div>
     <div>
-      <p v-if="serverError">{{ serverError }}</p>
+      <p v-if="loginError">{{ loginError }}</p>
       <p v-else-if="loading">Loading...</p>
     </div>
   </form>

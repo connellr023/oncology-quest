@@ -1,56 +1,27 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { API_ENDPOINT } from "../utilities";
-import useValidateUsername from "../hooks/useValidateUsername"
-import useValidateName from "../hooks/useValidateName";
-import useValidateEmail from "../hooks/useValidateEmail";
-import useValidateConfirmedPassword from "../hooks/useValidateConfirmedPassword";
+import useRegister from '../hooks/useRegister'
 
-const { username, usernameError } = useValidateUsername()
-const { name, nameError } = useValidateName()
-const { email, emailError } = useValidateEmail()
 const {
+  username,
+  name,
+  email,
   password,
-  passwordError,
   confirmedPassword,
-  confirmedPasswordError 
-} = useValidateConfirmedPassword()
-
-const message = ref("")
-const serverError = ref("")
-
-const createUser = async () => {
-  try {
-    const response = await fetch(`${API_ENDPOINT}/api/user/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: username.value,
-        name: name.value,
-        email: email.value,
-        password: password.value
-      })
-    })
-
-    if (response.status === 201) {
-      message.value = "User created successfully."
-    }
-    else {
-      serverError.value = `Received status code ${response.status}`
-    }
-  }
-  catch (error) {
-    serverError.value = "Server error. Please try again later."
-  }
-}
+  usernameError,
+  nameError,
+  emailError,
+  passwordError,
+  confirmedPasswordError,
+  serverError,
+  message,
+  register
+} = useRegister()
 
 const handleSubmit = (_: Event) => {
   const isError = (usernameError.value || nameError.value || emailError.value || passwordError.value || confirmedPasswordError.value)
 
   if (!isError) {
-    createUser()
+    register()
   }
 }
 </script>

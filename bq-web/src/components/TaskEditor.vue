@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { Ref, defineProps, inject, onMounted, ref } from "vue"
 import { UserTask } from "../models/task";
-import { API_ENDPOINT } from "../utilities";
 import { UserSession } from "../models/user";
 
 import EntryHeading from "./EntryHeading.vue";
+import useSaveTask from "../hooks/useSaveTask";
 
 const optionsVisible = ref(false)
-const completed = ref(false)
-const comment = ref("")
-const message = ref("")
-
 const user = inject<Ref<UserSession>>("session")!.value.user
+
+const {
+  completed,
+  comment,
+  message,
+  save
+} = useSaveTask()
 
 const props = defineProps<{
   task?: UserTask,
@@ -29,39 +32,6 @@ onMounted(() => {
 const toggleOptions = () => {
   optionsVisible.value = !optionsVisible.value
 }
-
-const save = async () => {
-  message.value = "Saving..."
-
-  try {
-    const task: UserTask = {
-      completed: completed.value,
-      comment: comment.value
-    }
-
-    const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
-      method: "PATCH",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        task,
-        index: props.index
-      })
-    })
-
-    if (response.ok) {
-      message.value = "Saved!"
-    }
-    else {
-      message.value = `Server responded with ${response.status}.`
-    }
-  }
-  catch (error) {
-    message.value = "Failed to save task."
-  }
-}
 </script>
 
 <template>
@@ -73,7 +43,7 @@ const save = async () => {
     <textarea v-model="comment" :readonly="user.isAdmin"></textarea>
     <br />
     <template v-if="!user.isAdmin">
-      <button @click="save">Save</button>
+      <button @click="save($props.index)">Save</button>
       <div v-if="message">{{ message }}</div>
     </template>
   </div>
