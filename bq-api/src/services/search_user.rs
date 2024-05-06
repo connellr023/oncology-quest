@@ -5,7 +5,6 @@ use serde::{Serialize, Deserialize};
 use redis::Client;
 
 #[derive(Deserialize)]
-#[serde(rename_all="camelCase")]
 pub struct UserSearch {
     pub query: String
 }

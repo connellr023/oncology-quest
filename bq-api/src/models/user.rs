@@ -19,22 +19,7 @@ pub struct User {
 }
 
 impl Model for User {
-    fn fetch(connection: &mut Connection, key: &str) -> Option<Self> {
-        let result = redis::cmd("GET")
-            .arg(Self::fmt_key(key))
-            .query::<String>(connection);
-
-        match result {
-            Ok(value) => {
-                match serde_json::from_str(&value) {
-                    Ok(user) => Some(user),
-                    Err(_) => None
-                }
-            },
-            Err(_) => None
-        }
-    }
-
+    /// Overridden method to store a user in Redis.
     fn store(&self, connection: &mut Connection) -> bool {
         let serialized = match serde_json::to_string(self) {
             Ok(serialized) => serialized,
@@ -58,24 +43,6 @@ impl Model for User {
             .query::<()>(connection);
 
         set_result.is_ok() && set_key_result.is_ok()
-    }
-
-    fn update(&self, connection: &mut Connection) -> bool {
-        let serialized = match serde_json::to_string(self) {
-            Ok(serialized) => serialized,
-            Err(_) => return false
-        };
-
-        if !self.exists(connection) {
-            return false;
-        }
-
-        let set_result = redis::cmd("SET")
-            .arg(self.key())
-            .arg(serialized)
-            .query::<()>(connection);
-
-        set_result.is_ok()
     }
 
     fn fmt_key(identifier: &str) -> String {

@@ -1,4 +1,4 @@
-use super::{tasks::UserTaskEntries, user::User, model::Model};
+use super::{model::Model, tasks::UserTaskEntries, user::User};
 use serde::{Serialize, Deserialize};
 use redis::Connection;
 
