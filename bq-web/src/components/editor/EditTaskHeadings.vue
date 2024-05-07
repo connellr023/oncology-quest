@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import EditEntryStructure from "./EditEntryStructure.vue"
-import useEditEntryStructure from "../hooks/useEditEntryStructure";
+import useEditEntryStructure from "../../hooks/useEditEntryStructure";
 
 const { message, pushTaskHeading, popTaskHeading } = useEditEntryStructure()
 </script>

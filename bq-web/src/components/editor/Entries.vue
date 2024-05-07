@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, defineProps, inject, reactive } from "vue"
-import { UserSession } from "../models/user"
-import { UserTaskEntries } from "../models/task"
+import { UserSession } from "../../models/user"
+import { UserTaskEntries } from "../../models/task"
 
-import EntryHeading from "./EntryHeading.vue"
-import TaskEditor from "./TaskEditor.vue"
+import EntryHeading from "../EntryHeading.vue"
+import EditTask from "./EditTask.vue"
 import EditTaskHeadings from "./EditTaskHeadings.vue"
 
 defineProps<{ tasks: UserTaskEntries }>()
@@ -29,7 +29,7 @@ const toggleVisibility = (key: string) => {
             :key="taskIndex"
             :data-index="`${index},${subIndex},${taskIndex}`"
           >
-            <TaskEditor
+            <EditTask
               :task="tasks[index]?.[subIndex]?.[taskIndex] ?? null"
               :value="task"
               :index="[index, subIndex, taskIndex]"

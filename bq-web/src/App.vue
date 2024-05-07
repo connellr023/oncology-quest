@@ -3,9 +3,11 @@ import { provide, ref } from "vue";
 import { UserSession } from "./models/user"
 
 import useFetchSession from "./hooks/useFetchSession"
-import NoSession from "./components/NoSession.vue"
-import Dashboard from "./components/Dashboard.vue"
-import AdminDashboard from "./components/AdminDashboard.vue"
+
+import NoSessionView from "./views/NoSessionView.vue"
+import DashboardView from "./views/DashboardView.vue"
+import AdminDashboardView from "./views/AdminDashboardView.vue"
+
 import AccountBar from "./components/AccountBar.vue"
 import CreditLabel from "./components/CreditLabel.vue"
 
@@ -24,11 +26,11 @@ const { loading, connectionError } = useFetchSession(session)
       <h1>Connection Error</h1>
     </div>
     <template v-else>
-      <NoSession v-if="!session" />
+      <NoSessionView v-if="!session" />
       <div v-else>
         <AccountBar />
-        <AdminDashboard v-if="session.user.isAdmin" />
-        <Dashboard v-else />
+        <AdminDashboardView v-if="session.user.isAdmin" />
+        <DashboardView v-else />
       </div>
     </template>
     <CreditLabel />

@@ -87,3 +87,56 @@ pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<P
     
     handle_update_structure(session, redis, EntryAction::Pop, pop_entry.index.as_slice(), None)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Validatable;
+
+    #[test]
+    fn test_validate_push_entry() {
+        let push_entry = super::PushEntry {
+            title: "Test".to_string(),
+            index: vec![0, 0]
+        };
+
+        assert!(push_entry.validate());
+    }
+
+    #[test]
+    fn test_validate_push_entry_invalid_title() {
+        let push_entry = super::PushEntry {
+            title: "Test!".to_string(),
+            index: vec![0, 0]
+        };
+
+        assert!(!push_entry.validate());
+    }
+
+    #[test]
+    fn test_validate_push_entry_invalid_depth() {
+        let push_entry = super::PushEntry {
+            title: "Test".to_string(),
+            index: vec![0, 0, 0]
+        };
+
+        assert!(!push_entry.validate());
+    }
+
+    #[test]
+    fn test_validate_pop_entry() {
+        let pop_entry = super::PopEntry {
+            index: vec![0, 0]
+        };
+
+        assert!(pop_entry.validate());
+    }
+
+    #[test]
+    fn test_validate_pop_entry_invalid_depth() {
+        let pop_entry = super::PopEntry {
+            index: vec![0, 0, 0]
+        };
+
+        assert!(!pop_entry.validate());
+    }
+}

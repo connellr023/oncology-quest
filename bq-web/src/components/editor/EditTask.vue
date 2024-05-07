@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, inject, onMounted, ref } from "vue"
-import { UserTask } from "../models/task";
-import { UserSession } from "../models/user";
+import { UserTask } from "../../models/task";
+import { UserSession } from "../../models/user";
 
-import EntryHeading from "./EntryHeading.vue";
-import useSaveTask from "../hooks/useSaveTask";
+import EntryHeading from "../EntryHeading.vue";
+import useSaveTask from "../../hooks/useSaveTask";
 
 const optionsVisible = ref(false)
 const user = inject<Ref<UserSession>>("session")!.value.user

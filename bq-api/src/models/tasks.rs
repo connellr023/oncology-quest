@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Represents the structure of user tasks corresponding to their JSON representation.
 pub type UserTaskEntries = HashMap<u16, HashMap<u16, HashMap<u16, UserTask>>>;
 
 #[derive(Serialize, Deserialize)]

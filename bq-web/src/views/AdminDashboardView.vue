@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { User } from "../models/user";
 
-import Entries from "./Entries.vue"
+import Entries from "../components/editor/Entries.vue"
 
 import useUserSearch from "../hooks/useUserSearch"
 import useValidateUsername from "../hooks/useValidateUsername";
