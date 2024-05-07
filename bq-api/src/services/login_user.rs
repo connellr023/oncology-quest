@@ -26,12 +26,12 @@ pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Jso
     if !login_user.is_valid() {
         return HttpResponse::BadRequest().finish();
     }
-    
+
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
-    
+
     let login_user = login_user.into_inner();
     let user = match User::fetch(&mut connection, login_user.username.as_str()) {
         Some(user) => user,

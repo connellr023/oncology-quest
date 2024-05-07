@@ -68,6 +68,11 @@ pub(super) async fn allow_reset(session: Session, redis: Data<Client>, allow_res
         None => return HttpResponse::NotFound().finish()
     };
 
+    // Admins cannot allow themselves to reset their password.
+    if target_user.is_admin {
+        return HttpResponse::Forbidden().finish();
+    }
+
     target_user.can_reset_password = allow_reset_password.allow_reset;
 
     if !target_user.store(&mut connection) {
