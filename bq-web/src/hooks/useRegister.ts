@@ -21,7 +21,7 @@ export function useRegister() {
 
     const register = async () => {
         try {
-            const response = await fetch(`${API_ENDPOINT}/api/user/create`, {
+            const response = await fetch(`${API_ENDPOINT}/api/user/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -1,20 +1,20 @@
-use super::validatable::Validatable;
 use crate::utilities::{USERNAME_REGEX, NAME_REGEX, EMAIL_REGEX, PASSWORD_REGEX};
 use crate::models::{model::Model, user::User};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
+use super::validatable::Validatable;
 use serde::Deserialize;
 use regex::Regex;
 use redis::Client;
 
 #[derive(Deserialize)]
-struct CreateUser {
+struct RegisterUser {
     pub username: String,
     pub name: String,
     pub email: String,
     pub password: String
 }
 
-impl Validatable for CreateUser {
+impl Validatable for RegisterUser {
     fn validate(&self) -> bool {
         let username_pattern = Regex::new(USERNAME_REGEX).unwrap();
         let name_pattern = Regex::new(NAME_REGEX).unwrap();
@@ -28,8 +28,8 @@ impl Validatable for CreateUser {
     }
 }
 
-#[actix_web::post("/api/user/create")]
-pub(super) async fn create(redis: Data<Client>, create_user: Json<CreateUser>) -> impl Responder {
+#[actix_web::post("/api/user/register")]
+pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUser>) -> impl Responder {
     if !create_user.validate() {
         return HttpResponse::BadRequest().finish();
     }
@@ -60,11 +60,11 @@ pub(super) async fn create(redis: Data<Client>, create_user: Json<CreateUser>) -
 
 #[cfg(test)]
 mod tests {
-    use super::{CreateUser, Validatable};
+    use super::{RegisterUser, Validatable};
 
     #[test]
     fn test_validate_create_user() {
-        let create_user = CreateUser {
+        let create_user = RegisterUser {
             username: "test_user".to_string(),
             name: "Test User".to_string(),
             email: "test@test.com".to_string(),
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn test_invalid_username() {
-        let create_user = CreateUser {
+        let create_user = RegisterUser {
             username: "test_user!".to_string(),
             name: "Test User".to_string(),
             email: "test@test.com".to_string(),
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn test_invalid_name() {
-        let create_user = CreateUser {
+        let create_user = RegisterUser {
             username: "test_user".to_string(),
             name: "Test User123".to_string(),
             email: "test@test.com".to_string(),
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_invalid_email() {
-        let create_user = CreateUser {
+        let create_user = RegisterUser {
             username: "test_user".to_string(),
             name: "Test User".to_string(),
             email: "test@test".to_string(),
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_invalid_password() {
-        let create_user = CreateUser {
+        let create_user = RegisterUser {
             username: "test_user".to_string(),
             name: "Test User".to_string(),
             email: "test@test.com".to_string(),

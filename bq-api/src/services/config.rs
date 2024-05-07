@@ -2,7 +2,7 @@ use super::*;
 use actix_web::web::ServiceConfig;
 
 pub fn config(cfg: &mut ServiceConfig) {
-    cfg.service(create_user::create);
+    cfg.service(register_user::register);
     cfg.service(login_user::login);
     cfg.service(logout_user::logout);
     cfg.service(user_session::session);

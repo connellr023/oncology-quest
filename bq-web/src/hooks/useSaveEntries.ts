@@ -1,12 +1,16 @@
 import { ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
+import useValidateTitle from "./useValidateTitle"
 
 const useSaveEntries = () => {
+    const { title, titleError } = useValidateTitle()
     const message = ref("")
-    const saveError = ref(false)
 
-    const save = async (title: string, index: number[]) => {
-        saveError.value = false
+    const save = async (index: number[]): Promise<boolean> => {
+        if (titleError.value) {
+            return false
+        }
+
         message.value = "Loading..."
 
         try {
@@ -17,28 +21,29 @@ const useSaveEntries = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    title,
+                    title: title.value,
                     index
                 }),
             })
 
             if (!response.ok) {
                 message.value = `Server responded with ${response.status}.`
-                saveError.value = true
+                return false
             }
-            else {
-                message.value = "Saved!"
-            }
+
+            message.value = "Saved!"
+            return true
         } catch (_) {
             message.value = "Failed to save entries."
-            saveError.value = true
+            return false
         }
     }
 
     return {
         message,
-        saveError,
-        save
+        save,
+        title,
+        titleError
     }
 }
 
