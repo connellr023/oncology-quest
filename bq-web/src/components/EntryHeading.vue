@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["click"])
 const sessionContext = inject<Ref<UserSession>>("session")!
+const isEditing = inject<Ref<boolean>>("isEditing")!
 
 const { title, titleError, message, save } = useSaveEntries()
 
@@ -21,6 +22,12 @@ let savedTitle = ""
 const toggleEditMode = () => {
   inEditMode.value = !inEditMode.value
   savedTitle = title.value
+
+  if (inEditMode.value) {
+    isEditing.value = true
+  } else {
+    isEditing.value = false
+  }
 }
 
 const cancelEdit = () => {
@@ -45,7 +52,7 @@ const saveEdit = async () => {
       <span v-if="titleError">{{ titleError }}</span>
       <span v-if="message">{{ message }}</span>
     </template>
-    <button v-else @click="toggleEditMode">Edit</button>
+    <button v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
   </template>
 </template>
 

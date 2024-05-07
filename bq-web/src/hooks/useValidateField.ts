@@ -1,4 +1,4 @@
-import { ref, watch } from "vue";
+import { ref, watch } from "vue"
 
 const useValidateField = (check: (field: string) => boolean, errorMessage: string) => {
     const field = ref("")

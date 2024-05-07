@@ -6,6 +6,8 @@ import { UserTaskEntries } from "../../models/task"
 import EntryHeading from "../EntryHeading.vue"
 import EditTask from "./EditTask.vue"
 import EditTaskHeadings from "./EditTaskHeadings.vue"
+import EditSubTaskHeading from "./EditSubTaskHeading.vue"
+import EditSubTaskEntry from "./EditSubTaskEntry.vue"
 
 defineProps<{ tasks: UserTaskEntries }>()
 
@@ -35,12 +37,11 @@ const toggleVisibility = (key: string) => {
               :index="[index, subIndex, taskIndex]"
             />
           </li>
-          <!-- <EditEntryStructure v-if="sessionContext.user.isAdmin" :entryType="EntryType.SUB_TASK_ENTRY" /> -->
+          <EditSubTaskEntry v-if="sessionContext.user.isAdmin" :index="[index, subIndex]" />
         </ul>
       </li>
-      <!-- <EditEntryStructure v-if="sessionContext.user.isAdmin" :entryType="EntryType.SUB_TASK_HEADING" /> -->
+      <EditSubTaskHeading v-if="sessionContext.user.isAdmin" :index="index" />
     </ul>
   </div>
-  <!-- <EditEntryStructure v-if="sessionContext.user.isAdmin" :entryType="EntryType.TASK_HEADING" /> -->
   <EditTaskHeadings v-if="sessionContext.user.isAdmin" />
 </template>

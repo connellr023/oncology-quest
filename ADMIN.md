@@ -12,7 +12,7 @@ A sample admin account represented by the following **JSON** string:
 }
 ```
 The above admin account (to be used for testing only) has a username of *admin* and a password
-of *aaaaaaaa*.
+of *aaaaaaaa*. Ensure the account key (in this case `user:admin`) is added to the `user_keys` set.
 
 Can be inserted into **REDIS** with the following command:
 ```bash

@@ -58,16 +58,22 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
         None => return HttpResponse::InternalServerError().finish()
     };
 
-    let result = match action {
-        EntryAction::Push => task_structure.push_entry(&mut connection, index, title.unwrap()),
-        EntryAction::Pop => task_structure.pop_entry(&mut connection, index)
-    };
+    match action {
+        EntryAction::Push => {
+            if !task_structure.push_entry(&mut connection, index, title.unwrap()) {
+                return HttpResponse::InternalServerError().finish();
+            }
 
-    if !result {
-        return HttpResponse::InternalServerError().finish();
+            return HttpResponse::Created().finish();
+        },
+        EntryAction::Pop => {
+            if !task_structure.pop_entry(&mut connection, index) {
+                return HttpResponse::InternalServerError().finish();
+            }
+
+            return HttpResponse::NoContent().finish();
+        }
     }
-    
-    HttpResponse::Ok().finish()
 }
 
 #[actix_web::patch("/api/entries/update/push")]
@@ -79,7 +85,7 @@ pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json
     handle_update_structure(session, redis, EntryAction::Push, push_entry.index.as_slice(), Some(push_entry.title.as_str()))
 }
 
-#[actix_web::patch("/api/entries/update/pop")]
+#[actix_web::delete("/api/entries/update/pop")]
 pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<PopEntry>) -> impl Responder {
     if !pop_entry.validate() {
         return HttpResponse::BadRequest().finish();

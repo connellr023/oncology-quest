@@ -4,7 +4,7 @@ use rand::{thread_rng, Rng};
 use redis::Connection;
 use std::collections::HashMap;
 
-const USER_KEY_SET: &str = "user_keys";
+pub const USER_KEY_SET: &str = "user_keys";
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
@@ -32,17 +32,12 @@ impl Model for User {
 
         let key = self.key();
 
-        let set_result = redis::cmd("SET")
-            .arg(&key)
-            .arg(serialized)
+        let result_pipe = redis::pipe()
+            .cmd("SET").arg(&key).arg(serialized).ignore()
+            .cmd("SADD").arg(USER_KEY_SET).arg(&key).ignore()
             .query::<()>(connection);
 
-        let set_key_result = redis::cmd("SADD")
-            .arg(USER_KEY_SET)
-            .arg(&key)
-            .query::<()>(connection);
-
-        set_result.is_ok() && set_key_result.is_ok()
+        result_pipe.is_ok()
     }
 
     fn fmt_key(identifier: &str) -> String {
