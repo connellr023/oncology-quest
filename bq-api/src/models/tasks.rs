@@ -20,3 +20,21 @@ pub struct UserTask {
     pub completed: bool,
     pub comment: String
 }
+
+impl Task {
+    pub fn new(title: &str) -> Self {
+        Task {
+            title: title.to_string(),
+            tasks: vec![]
+        }
+    }
+}
+
+impl SubTask {
+    pub fn new(title: &str) -> Self {
+        SubTask {
+            title: title.to_string(),
+            tasks: vec![]
+        }
+    }
+}

@@ -1,4 +1,4 @@
-use crate::models::{model::Model, user::User, client_user::ClientUser};
+use crate::models::{user::User, client_user::ClientUser};
 use actix_web::{web::{Data, Path}, HttpResponse, Responder};
 use actix_session::Session;
 use serde::Deserialize;
@@ -21,15 +21,10 @@ pub(super) async fn search(session: Session, search: Path<UserSearch>, redis: Da
         _ => return HttpResponse::Unauthorized().finish()
     };
 
-    let current_user = match User::fetch(&mut connection, username.as_str()) {
-        Some(user) => user,
-        None => return HttpResponse::NotFound().finish()
-    };
-
     // Only admins can search for users.
-    if !current_user.is_admin {
+    if !User::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
-    }
+    };
 
     let users = match ClientUser::text_search(&mut connection, search.query.as_str()) {
         Ok(users) => users,

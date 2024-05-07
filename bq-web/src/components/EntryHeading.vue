@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, defineProps, inject, ref } from "vue"
+import { Ref, inject, ref } from "vue"
 import { UserSession } from "../models/user";
 import useSaveEntries from "../hooks/useSaveEntries";
 

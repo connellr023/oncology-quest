@@ -15,7 +15,7 @@ struct UpdateEntry {
 impl Validatable for UpdateEntry {
     fn validate(&self) -> bool {
         let title_pattern = Regex::new(ENTRY_TITLE_REGEX).unwrap();
-        title_pattern.is_match(&self.title)
+        title_pattern.is_match(&self.title) && self.index.len() > 0 && self.index.len() <= 3
     }
 }
 
@@ -35,13 +35,8 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: 
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    let user = match User::fetch(&mut connection, username.as_str()) {
-        Some(user) => user,
-        None => return HttpResponse::NotFound().finish()
-    };
-
     // Only admins can update entries.
-    if !user.is_admin {
+    if !User::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
     };
 

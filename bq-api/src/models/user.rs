@@ -105,6 +105,23 @@ impl User {
     pub fn tasks_mut(&mut self) -> &mut UserTaskEntries {
         &mut self.tasks
     }
+
+    /// Checks if a given user is an admin.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `connection` - The Redis connection to use.
+    /// * `username` - The username of the user to check.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns `true` if the user is an admin, `false` otherwise.
+    pub fn validate_is_admin(connection: &mut Connection, username: &str) -> bool {
+        match Self::fetch(connection, username) {
+            Some(user) => user.is_admin,
+            None => false
+        }
+    }
 }
 
 #[cfg(test)]

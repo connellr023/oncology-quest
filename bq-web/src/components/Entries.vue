@@ -5,10 +5,11 @@ import { UserTaskEntries } from "../models/task"
 
 import EntryHeading from "./EntryHeading.vue"
 import TaskEditor from "./TaskEditor.vue"
+import EditTaskHeadings from "./EditTaskHeadings.vue"
 
 defineProps<{ tasks: UserTaskEntries }>()
 
-const entries = inject<Ref<UserSession>>("session")!.value.entries
+const sessionContext = inject<Ref<UserSession>>("session")!
 let visibility = reactive<Record<string, boolean>>({})
 
 const toggleVisibility = (key: string) => {
@@ -17,7 +18,7 @@ const toggleVisibility = (key: string) => {
 </script>
 
 <template>
-  <div v-for="(entry, index) in entries">
+  <div v-for="(entry, index) in sessionContext.entries">
     <EntryHeading :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
     <ul v-show="visibility[entry.title]">
       <li v-for="(subTask, subIndex) in entry.tasks">
@@ -34,8 +35,12 @@ const toggleVisibility = (key: string) => {
               :index="[index, subIndex, taskIndex]"
             />
           </li>
+          <!-- <EditEntryStructure v-if="sessionContext.user.isAdmin" :entryType="EntryType.SUB_TASK_ENTRY" /> -->
         </ul>
       </li>
+      <!-- <EditEntryStructure v-if="sessionContext.user.isAdmin" :entryType="EntryType.SUB_TASK_HEADING" /> -->
     </ul>
   </div>
+  <!-- <EditEntryStructure v-if="sessionContext.user.isAdmin" :entryType="EntryType.TASK_HEADING" /> -->
+  <EditTaskHeadings v-if="sessionContext.user.isAdmin" />
 </template>

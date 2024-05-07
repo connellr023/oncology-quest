@@ -1,4 +1,4 @@
-use super::user_session::session_response_json;
+use super::user_session::handle_session_response;
 use crate::models::{model::Model, user::User};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
@@ -29,7 +29,7 @@ pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Jso
     }
 
     match session.insert("username", login_user.username) {
-        Ok(_) => session_response_json(&mut connection, user),
+        Ok(_) => handle_session_response(&mut connection, user),
         Err(_) => HttpResponse::InternalServerError().finish()
     }
 }

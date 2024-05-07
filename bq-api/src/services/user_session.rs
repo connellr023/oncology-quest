@@ -20,7 +20,7 @@ struct UserSession {
 /// # Returns
 /// 
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
-pub(super) fn session_response_json(connection: &mut Connection, user: User) -> HttpResponse {
+pub(super) fn handle_session_response(connection: &mut Connection, user: User) -> HttpResponse {
     let entries = match TaskStructure::fetch(connection, "") {
         Some(task_structure) => task_structure.structure_as_owned(),
         None => return HttpResponse::InternalServerError().finish()
@@ -51,5 +51,5 @@ pub(super) async fn session(session: Session, redis: Data<Client>) -> impl Respo
         None => return HttpResponse::NotFound().finish()
     };
 
-    session_response_json(&mut connection, user)
+    handle_session_response(&mut connection, user)
 }
