@@ -14,8 +14,8 @@ pub struct User {
     pub can_reset_password: bool,
     pub is_admin: bool,
     pub tasks: UserTaskEntries,
-    salt: u64,
-    password: String
+    pub salt: u64,
+    pub password: String
 }
 
 impl Model for User {
@@ -50,6 +50,23 @@ impl Model for User {
 }
 
 impl User {
+    /// Generates a password hash using the provided salt and password.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `salt` - The salt to use when hashing the password.
+    /// * `password` - The password to hash.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns the hashed password if successful, `None` otherwise.
+    pub fn gen_password_hash(salt: u64, password: &str) -> Option<String> {
+        match bcrypt::hash(format!("{}{}", password, salt), bcrypt::DEFAULT_COST) {
+            Ok(hash) => Some(hash),
+            Err(_) => None
+        }
+    }
+
     /// Creates a new User instance with the provided parameters.
     ///
     /// # Arguments
@@ -62,12 +79,15 @@ impl User {
     ///
     /// # Returns
     ///
-    /// Returns a Result containing the newly created User instance if successful, or an error if the password hashing fails.
-    pub fn new(username: String, name: String, email: String, plain_text_password: String, is_admin: bool) -> anyhow::Result<Self> {
+    /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
+    pub fn new(username: String, name: String, email: String, plain_text_password: String, is_admin: bool) -> Option<Self> {
         let salt = thread_rng().gen::<u64>();
-        let password = bcrypt::hash(format!("{}{}", plain_text_password, salt), bcrypt::DEFAULT_COST)?;
+        let password = match Self::gen_password_hash(salt, plain_text_password.as_str()) {
+            Some(password) => password,
+            None => return None
+        };
 
-        Ok(Self {
+        Some(Self {
             username,
             name,
             email,

@@ -15,7 +15,7 @@ struct UpdateTask {
 }
 
 impl Validatable for UpdateTask {
-    fn validate(&self) -> bool {
+    fn is_valid(&self) -> bool {
         let comment_pattern = Regex::new(COMMENT_REGEX).unwrap();
         comment_pattern.is_match(self.task.comment.as_str())
     }
@@ -67,7 +67,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    if !task_update.validate() {
+    if !task_update.is_valid() {
         return HttpResponse::BadRequest().finish();
     };
 
@@ -104,7 +104,7 @@ mod tests {
             }
         };
 
-        assert!(update_task.validate());
+        assert!(update_task.is_valid());
     }
 
     #[test]
@@ -117,7 +117,7 @@ mod tests {
             }
         };
 
-        assert!(!update_task.validate());
+        assert!(!update_task.is_valid());
     }
 
     #[test]

@@ -8,3 +8,4 @@ pub mod update_task;
 pub mod search_user;
 pub mod update_entry;
 pub mod update_structure;
+pub mod reset_password;

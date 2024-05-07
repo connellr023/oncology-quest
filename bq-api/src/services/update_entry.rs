@@ -13,7 +13,7 @@ struct UpdateEntry {
 }
 
 impl Validatable for UpdateEntry {
-    fn validate(&self) -> bool {
+    fn is_valid(&self) -> bool {
         let title_pattern = Regex::new(ENTRY_TITLE_REGEX).unwrap();
         title_pattern.is_match(&self.title) && self.index.len() > 0 && self.index.len() <= 3
     }
@@ -21,7 +21,7 @@ impl Validatable for UpdateEntry {
 
 #[actix_web::patch("/api/entries/update")]
 pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: Json<UpdateEntry>) -> impl Responder {
-    if !entry_update.validate() {
+    if !entry_update.is_valid() {
         return HttpResponse::BadRequest().finish();
     }
     

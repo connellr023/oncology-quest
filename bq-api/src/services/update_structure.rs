@@ -20,14 +20,14 @@ struct PopEntry {
 }
 
 impl Validatable for PushEntry {
-    fn validate(&self) -> bool {
+    fn is_valid(&self) -> bool {
         let title_pattern = Regex::new(ENTRY_TITLE_REGEX).unwrap();
         title_pattern.is_match(&self.title) && self.index.len() <= MAX_ENTRY_DEPTH
     }
 }
 
 impl Validatable for PopEntry {
-    fn validate(&self) -> bool {
+    fn is_valid(&self) -> bool {
         self.index.len() <= MAX_ENTRY_DEPTH
     }
 }
@@ -78,7 +78,7 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
 
 #[actix_web::patch("/api/entries/update/push")]
 pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json<PushEntry>) -> impl Responder {
-    if !push_entry.validate() {
+    if !push_entry.is_valid() {
         return HttpResponse::BadRequest().finish();
     }
     
@@ -87,7 +87,7 @@ pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json
 
 #[actix_web::delete("/api/entries/update/pop")]
 pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<PopEntry>) -> impl Responder {
-    if !pop_entry.validate() {
+    if !pop_entry.is_valid() {
         return HttpResponse::BadRequest().finish();
     }
     
@@ -105,7 +105,7 @@ mod tests {
             index: vec![0, 0]
         };
 
-        assert!(push_entry.validate());
+        assert!(push_entry.is_valid());
     }
 
     #[test]
@@ -115,7 +115,7 @@ mod tests {
             index: vec![0, 0]
         };
 
-        assert!(!push_entry.validate());
+        assert!(!push_entry.is_valid());
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod tests {
             index: vec![0, 0, 0]
         };
 
-        assert!(!push_entry.validate());
+        assert!(!push_entry.is_valid());
     }
 
     #[test]
@@ -134,7 +134,7 @@ mod tests {
             index: vec![0, 0]
         };
 
-        assert!(pop_entry.validate());
+        assert!(pop_entry.is_valid());
     }
 
     #[test]
@@ -143,6 +143,6 @@ mod tests {
             index: vec![0, 0, 0]
         };
 
-        assert!(!pop_entry.validate());
+        assert!(!pop_entry.is_valid());
     }
 }

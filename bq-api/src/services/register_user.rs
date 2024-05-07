@@ -15,7 +15,7 @@ struct RegisterUser {
 }
 
 impl Validatable for RegisterUser {
-    fn validate(&self) -> bool {
+    fn is_valid(&self) -> bool {
         let username_pattern = Regex::new(USERNAME_REGEX).unwrap();
         let name_pattern = Regex::new(NAME_REGEX).unwrap();
         let email_pattern = Regex::new(EMAIL_REGEX).unwrap();
@@ -30,7 +30,7 @@ impl Validatable for RegisterUser {
 
 #[actix_web::post("/api/user/register")]
 pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUser>) -> impl Responder {
-    if !create_user.validate() {
+    if !create_user.is_valid() {
         return HttpResponse::BadRequest().finish();
     }
 
@@ -42,8 +42,8 @@ pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUser
         create_user.password,
         false
     ) {
-        Ok(user) => user,
-        Err(_) => return HttpResponse::InternalServerError().finish()
+        Some(user) => user,
+        None => return HttpResponse::InternalServerError().finish()
     };
 
     let mut connection = match redis.get_connection() {
@@ -71,7 +71,7 @@ mod tests {
             password: "Password1".to_string(),
         };
 
-        assert_eq!(create_user.validate(), true);
+        assert_eq!(create_user.is_valid(), true);
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod tests {
             password: "Password1".to_string(),
         };
 
-        assert_eq!(create_user.validate(), false);
+        assert_eq!(create_user.is_valid(), false);
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod tests {
             password: "Password1".to_string(),
         };
 
-        assert_eq!(create_user.validate(), false);
+        assert_eq!(create_user.is_valid(), false);
     }
 
     #[test]
@@ -107,7 +107,7 @@ mod tests {
             password: "Password1".to_string(),
         };
 
-        assert_eq!(create_user.validate(), false);
+        assert_eq!(create_user.is_valid(), false);
     }
 
     #[test]
@@ -119,6 +119,6 @@ mod tests {
             password: "poop".to_string(),
         };
 
-        assert_eq!(create_user.validate(), false);
+        assert_eq!(create_user.is_valid(), false);
     }
 }

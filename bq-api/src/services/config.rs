@@ -11,4 +11,6 @@ pub fn config(cfg: &mut ServiceConfig) {
     cfg.service(update_entry::update);
     cfg.service(update_structure::push);
     cfg.service(update_structure::pop);
+    cfg.service(reset_password::reset);
+    cfg.service(reset_password::allow_reset);
 }
