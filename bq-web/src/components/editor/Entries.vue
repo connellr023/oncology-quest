@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, defineProps, inject, reactive } from "vue"
+import { Ref, inject, reactive } from "vue"
 import { UserSession } from "../../models/user"
 import { UserTaskEntries } from "../../models/task"
 

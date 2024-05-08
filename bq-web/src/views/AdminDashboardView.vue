@@ -52,6 +52,8 @@ const setSelectedUser = (user: User) => {
           <div class="user-option" @click="setSelectedUser(user)">
             {{ user.username }} ({{ user.name }})
           </div>
+          <button>Allow Password Reset</button>
+          <button>Remove Account</button>
         </li>
       </ul>
       <div v-else-if="loading">

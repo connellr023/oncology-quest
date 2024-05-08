@@ -105,6 +105,27 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
         }
     }
 
+    /// Deletes the model from Redis without requiring an instance.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `connection` - The Redis connection to use for the delete operation.
+    /// * `identifier` - The identifier of the model to delete.
+    /// 
+    /// # Returns
+    /// 
+    /// A boolean indicating whether the delete operation was successful.
+    fn delete(connection: &mut Connection, identifier: &str) -> bool {
+        let delete = redis::cmd("DEL")
+            .arg(Self::fmt_key(identifier))
+            .query::<bool>(connection);
+
+        match delete {
+            Ok(deleted) => deleted,
+            Err(_) => false
+        }
+    }
+
     /// Formats the key for this model.
     fn fmt_key(identifier: &str) -> String;
 
