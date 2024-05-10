@@ -7,9 +7,7 @@ import useFetchSession from "./hooks/useFetchSession"
 import NoSessionView from "./views/NoSessionView.vue"
 import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
-
 import AccountBar from "./components/AccountBar.vue"
-//import CreditLabel from "./components/CreditLabel.vue"
 
 let session = ref<UserSession | null>(null)
 provide("session", session)
@@ -20,9 +18,9 @@ const { loading, connectionError } = useFetchSession(session)
 <template>
   <main>
     <div class="flex-wrapper">
-      <img :class="'glow ' + ((!loading && !connectionError) ? 'fade-up' : '')" src="/logo.svg" />
+      <img draggable="false" :class="((!loading && !connectionError) ? 'fade-up' : '')" src="/logo.svg" />
       <div v-if="connectionError" id="connect-error">Failed to connect.</div>
-      <div id="main-wrapper" v-else>
+      <div id="main-wrapper" v-if="!connectionError">
         <NoSessionView v-if="!session" />
         <div v-else>
           <AccountBar />
@@ -31,7 +29,6 @@ const { loading, connectionError } = useFetchSession(session)
         </div>
       </div>
     </div>
-    <!-- <CreditLabel /> -->
   </main>
 </template>
 
@@ -54,20 +51,21 @@ div#connect-error {
   animation: fade-in 1s;
 }
 
+$logo-vert-offset: 100px;
+
 img {
-  @include glow(#ffffff, 0.04, 0.1, 13px, 14px);
   width: 15lvw;
   min-width: 125px;
   max-width: 150px;
   margin: 0 auto;
   display: block;
   animation: pulse 4s infinite ease-out;
-  position: absolute;
+  transform: translateY($logo-vert-offset);
 
   &.fade-up {
     animation: move-up 0.8s;
     animation-fill-mode: forwards;
-    animation-delay: 0.2s;
+    animation-delay: 0.3s;
   }
 }
 
@@ -91,10 +89,10 @@ $min-opacity: 0.45;
 
 @keyframes move-up {
   0% {
-    transform: translateY(0);
+    transform: translateY($logo-vert-offset);
   }
   100% {
-    transform: translateY(-100px) scale(0.8);
+    transform: translateY(0) scale(0.8);
     opacity: 0.9;
   }
 }

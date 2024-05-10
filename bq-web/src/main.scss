@@ -9,19 +9,25 @@ $theme-color-2: #5e60ce;
 $theme-color-red: #ff0a1e;
 $theme-color-disabled: #929292;
 
-body {
-  background-color: $main-bg-color;
-  color: $main-txt-color;
-  font-family: $main-font;
-  margin: auto;
-}
+@mixin gradient-button($c1, $c2) {
+  $darken-amount: 12%;
+  $direction: to top;
 
-.flex-wrapper {
-  flex-direction: column;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background: linear-gradient($direction, $c1, $c2);
+  border: none;
+  color: $main-txt-color;
+
+  &:active:enabled, &:disabled {
+    background: linear-gradient($direction, darken($c1, $darken-amount), darken($c2, $darken-amount));
+  }
+
+  &:hover {
+    color: darken($main-txt-color, 15%)
+  }
+
+  &:disabled {
+    background: linear-gradient($direction, darken($theme-color-disabled, 30%), $theme-color-disabled);
+  }
 }
 
 @keyframes fade-in {
@@ -46,8 +52,8 @@ body {
 }
 
 @mixin glow-button($c) {
-  $a1: 0.09;
-  $a2: 0.13;
+  $a1: 0.05;
+  $a2: 0.09;
 
   @include glow($c, $a1, $a2);
 
@@ -65,4 +71,43 @@ body {
   &:disabled {
     @include glow($theme-color-disabled, $a1, $a2);
   }
+}
+
+body {
+  background-color: $main-bg-color;
+  color: $main-txt-color;
+  font-family: $main-font;
+  margin: auto;
+}
+
+.flex-wrapper {
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+button {
+  border: 2px solid white;
+  border-radius: 6px;
+  background: none;
+  color: $main-txt-color;
+  cursor: pointer;
+  padding: 9px;
+  font-size: clamp(15px, 2vw, 18px);
+  font-family: $main-font;
+  transition: all 0.13s ease-in-out;
+}
+
+button.gradient-button-0 {
+  @include gradient-button($theme-color-1, $theme-color-2);
+  @include glow-button($theme-color-1);
+}
+
+button.gradient-button-1 {
+  $main-color: #168aad;
+
+  @include gradient-button($main-color, #52b69a);
+  @include glow-button($main-color);
 }
