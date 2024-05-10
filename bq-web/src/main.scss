@@ -1,0 +1,68 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap");
+
+$main-txt-color: #e7e7e7;
+$main-bg-color: #000000;
+$main-font: "Inter", "sans-serif";
+
+$theme-color-1: #6930c3;
+$theme-color-2: #5e60ce;
+$theme-color-red: #ff0a1e;
+$theme-color-disabled: #929292;
+
+body {
+  background-color: $main-bg-color;
+  color: $main-txt-color;
+  font-family: $main-font;
+  margin: auto;
+}
+
+.flex-wrapper {
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@mixin glow($c, $alpha-initial, $alpha-final, $s1: 10px, $s2: 14px) {
+  transition: filter 0.3s ease-in-out;
+
+  &.glow {
+    filter: drop-shadow(0 0 $s1 rgba($c, $alpha-initial));
+
+    &:hover, &:focus {
+      filter: drop-shadow(0 0 $s2 rgba($c, $alpha-final));
+    }
+  }
+}
+
+@mixin glow-button($c) {
+  $a1: 0.09;
+  $a2: 0.13;
+
+  @include glow($c, $a1, $a2);
+
+  &:disabled {
+    @include glow($theme-color-disabled, $a1, $a2);
+  }
+}
+
+@mixin glow-input($c) {
+  $a1: 0.26;
+  $a2: 0.33;
+
+  @include glow($c, $a1, $a2);
+
+  &:disabled {
+    @include glow($theme-color-disabled, $a1, $a2);
+  }
+}

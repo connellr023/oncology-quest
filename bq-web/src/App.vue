@@ -9,33 +9,93 @@ import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
 
 import AccountBar from "./components/AccountBar.vue"
-import CreditLabel from "./components/CreditLabel.vue"
+//import CreditLabel from "./components/CreditLabel.vue"
 
-let session = ref<UserSession | null>(null);
-provide("session", session);
+let session = ref<UserSession | null>(null)
+provide("session", session)
 
 const { loading, connectionError } = useFetchSession(session)
 </script>
 
 <template>
   <main>
-    <div v-if="loading" id="loading-wrapper">
-      <h1>Loading...</h1>
-    </div>
-    <div v-else-if="connectionError" id="connection-error-wrapper">
-      <h1>Connection Error</h1>
-    </div>
-    <template v-else>
-      <NoSessionView v-if="!session" />
-      <div v-else>
-        <AccountBar />
-        <AdminDashboardView v-if="session.user.isAdmin" />
-        <DashboardView v-else />
+    <div class="flex-wrapper">
+      <img :class="'glow ' + ((!loading && !connectionError) ? 'fade-up' : '')" src="/logo.svg" />
+      <div v-if="connectionError" id="connect-error">Failed to connect.</div>
+      <div id="main-wrapper" v-else>
+        <NoSessionView v-if="!session" />
+        <div v-else>
+          <AccountBar />
+          <AdminDashboardView v-if="session.user.isAdmin" />
+          <DashboardView v-else />
+        </div>
       </div>
-    </template>
-    <CreditLabel />
+    </div>
+    <!-- <CreditLabel /> -->
   </main>
 </template>
 
-<style scoped>
+
+<style scoped lang="scss">
+@import "main.scss";
+
+div#main-wrapper {
+  opacity: 0;
+  animation: fade-in 0.8s;
+  animation-delay: 0.7s;
+  animation-fill-mode: forwards;
+}
+
+div#connect-error {
+  margin-top: 20px;
+  font-size: clamp(25px, 2.5lvw, 33px);
+  color: #ffffff;
+  text-align: center;
+  animation: fade-in 1s;
+}
+
+img {
+  @include glow(#ffffff, 0.04, 0.1, 13px, 14px);
+  width: 15lvw;
+  min-width: 125px;
+  max-width: 150px;
+  margin: 0 auto;
+  display: block;
+  animation: pulse 4s infinite ease-out;
+  position: absolute;
+
+  &.fade-up {
+    animation: move-up 0.8s;
+    animation-fill-mode: forwards;
+    animation-delay: 0.2s;
+  }
+}
+
+$max-opacity: 0.65;
+$min-opacity: 0.45;
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: $min-opacity;
+  }
+  50% {
+    transform: scale(1.07);
+    opacity: $max-opacity;
+  }
+  100% {
+    transform: scale(1);
+    opacity: $min-opacity;
+  }
+}
+
+@keyframes move-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100px) scale(0.8);
+    opacity: 0.9;
+  }
+}
 </style>

@@ -17,10 +17,10 @@ const setView = (newView: Views) => {
 </script>
 
 <template>
-  <div>
-    <h1>bq</h1>
-    <div class="form-container">
+  <div class="container">
+    <div>
       <div v-if="view === Views.SELECT">
+        <h1>Get started with <b><i>bq</i></b> below...</h1>
         <button @click="setView(Views.LOGIN)">Login</button>
         <button @click="setView(Views.REGISTER)">Register</button>
         <button disabled>Reset Password</button>
@@ -36,3 +36,17 @@ const setView = (newView: Views) => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+div.container {
+  margin-top: max(25px, 2.6lvh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  font-weight: normal;
+}
+</style>
