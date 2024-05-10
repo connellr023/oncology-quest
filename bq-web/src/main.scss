@@ -26,7 +26,7 @@ $theme-color-disabled: #929292;
   }
 
   &:disabled {
-    background: linear-gradient($direction, darken($theme-color-disabled, 30%), $theme-color-disabled);
+    background: linear-gradient($direction, darken($theme-color-disabled, 40%), $theme-color-disabled);
   }
 }
 
@@ -53,7 +53,7 @@ $theme-color-disabled: #929292;
 
 @mixin glow-button($c) {
   $a1: 0.05;
-  $a2: 0.09;
+  $a2: 0.08;
 
   @include glow($c, $a1, $a2);
 
@@ -71,6 +71,40 @@ $theme-color-disabled: #929292;
   &:disabled {
     @include glow($theme-color-disabled, $a1, $a2);
   }
+}
+
+
+@mixin fade-up-children($duration: 0.5s, $delay-step: 0.1s, $children: 1, $anim-delay: 0) {
+  & > * {
+    animation: $duration fade-up-0 ease-out forwards;
+    animation-delay: $anim-delay;
+
+    @keyframes fade-up-0 {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  @for $i from 1 through $children {
+    & > *:nth-child(#{$i}) {
+      transform: translate(0, 0);
+      opacity: 0;
+      animation-delay: (($i - 1) * $delay-step) + $anim-delay;
+    }
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 body {
@@ -110,4 +144,63 @@ button.gradient-button-1 {
 
   @include gradient-button($main-color, #52b69a);
   @include glow-button($main-color);
+}
+
+input {
+  @include glow-input($theme-color-1);
+
+  padding: 9px;
+  border: 2px solid $theme-color-1;
+  border-radius: 6px;
+  background: none;
+  color: darken($main-txt-color, 20%);
+  font-family: $main-font;
+  font-size: 19px;
+  outline: none;
+  transition: all 0.15s ease-in-out;
+
+  &::placeholder {
+    color: $main-txt-color;
+  }
+
+  &:focus {
+    color: $main-txt-color;
+    border-color: $theme-color-2;
+  }
+
+  &:disabled {
+    border-color: $theme-color-disabled;
+  }
+}
+
+h1 {
+  font-weight: normal;
+  font-size: clamp(25px, 2.4lvw, 32px);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+
+  $width: calc(100% - 22px);
+
+  label {
+    font-style: italic;
+    font-size: clamp(16px, 1.2lvw, 18px);
+    width: $width;
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  input, button {
+    width: $width;
+  }
+}
+
+button.form-button {
+  width: 100%;
 }

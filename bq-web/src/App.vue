@@ -19,8 +19,9 @@ const { loading, connectionError } = useFetchSession(session)
   <main>
     <div class="flex-wrapper">
       <img draggable="false" :class="((!loading && !connectionError) ? 'fade-up' : '')" src="/logo.svg" />
-      <div v-if="connectionError" id="connect-error">Failed to connect.</div>
-      <div id="main-wrapper" v-if="!connectionError">
+      <div v-if="connectionError" id="connect-error"><b><i>bq</i></b> is currently under maintenance.
+      </div>
+      <div v-if="!connectionError">
         <NoSessionView v-if="!session" />
         <div v-else>
           <AccountBar />
@@ -35,13 +36,6 @@ const { loading, connectionError } = useFetchSession(session)
 
 <style scoped lang="scss">
 @import "main.scss";
-
-div#main-wrapper {
-  opacity: 0;
-  animation: fade-in 0.8s;
-  animation-delay: 0.7s;
-  animation-fill-mode: forwards;
-}
 
 div#connect-error {
   margin-top: 20px;

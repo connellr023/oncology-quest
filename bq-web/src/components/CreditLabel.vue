@@ -7,8 +7,9 @@
 <style scoped lang="scss">
 div {
   position: absolute;
-  font-size: clamp(18px, 2lvw, 20px);
+  font-size: clamp(16px, 2lvw, 18px);
   bottom: 17px;
+  animation: fade-in 1.5s ease-out;
 
   a {
     color: inherit;
