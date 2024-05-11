@@ -40,6 +40,15 @@ $theme-color-disabled: #929292;
   }
 }
 
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @mixin glow($c, $alpha-initial, $alpha-final, $s1: 10px, $s2: 14px) {
   transition: filter 0.3s ease-in-out;
 
