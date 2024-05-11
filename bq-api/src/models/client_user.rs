@@ -1,4 +1,5 @@
 use super::{model::Model, tasks::UserTaskEntries, user::{User, USER_KEY_SET}};
+use crate::utilities::parsables::{Username, Name, Email};
 use serde::{Serialize, Deserialize};
 use redis::Connection;
 
@@ -7,9 +8,9 @@ const MAX_SEARCH_RESULTS: u8 = 15;
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
-    pub username: String,
-    pub name: String,
-    pub email: String,
+    pub username: Username,
+    pub name: Name,
+    pub email: Email,
     pub tasks: UserTaskEntries,
     pub is_admin: bool
 }
@@ -50,7 +51,7 @@ impl ClientUser {
             users.push(client_user);
         }
 
-        users.retain(|user| user.is_admin == false);
+        users.retain(|user| !user.is_admin);
         Ok(users)
     }
 }

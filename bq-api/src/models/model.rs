@@ -1,5 +1,5 @@
 use redis::Connection;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// Trait representing a Redis model.
 pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
@@ -99,10 +99,7 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
             .arg(self.key())
             .query::<bool>(connection);
 
-        match exists {
-            Ok(exists) => exists,
-            Err(_) => false
-        }
+        exists.unwrap_or(false)
     }
 
     /// Deletes the model from Redis without requiring an instance.
@@ -120,10 +117,7 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
             .arg(Self::fmt_key(identifier))
             .query::<bool>(connection);
 
-        match delete {
-            Ok(deleted) => deleted,
-            Err(_) => false
-        }
+        delete.unwrap_or(false)
     }
 
     /// Formats the key for this model.

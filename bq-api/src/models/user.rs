@@ -1,4 +1,5 @@
 use super::{model::Model, tasks::UserTaskEntries};
+use crate::utilities::parsables::{Parsable, Username, Name, Email, PlainTextPassword};
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
 use redis::Connection;
@@ -8,9 +9,9 @@ pub const USER_KEY_SET: &str = "user_keys";
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
-    pub username: String,
-    pub name: String,
-    pub email: String,
+    pub username: Username,
+    pub name: Name,
+    pub email: Email,
     pub can_reset_password: bool,
     pub is_admin: bool,
     pub tasks: UserTaskEntries,
@@ -80,7 +81,7 @@ impl User {
     /// # Returns
     ///
     /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
-    pub fn new(username: String, name: String, email: String, plain_text_password: String, is_admin: bool) -> Option<Self> {
+    pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> Option<Self> {
         let salt = thread_rng().gen::<u64>();
         let password = match Self::gen_password_hash(salt, plain_text_password.as_str()) {
             Some(password) => password,
@@ -146,26 +147,26 @@ mod tests {
 
     #[test]
     fn test_new_user() {
-        let username = "test-user".to_string();
-        let name = "Test User".to_string();
-        let email = "test@test.com".to_string();
-        let password = "password".to_string();
+        let username = Username::parse("test-user".to_string()).unwrap();
+        let name = Name::parse("Test User".to_string()).unwrap();
+        let email = Email::parse("lol@test.com".to_string()).unwrap();
+        let password = PlainTextPassword::parse("password".to_string()).unwrap();
         let is_admin = false;
 
         let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), is_admin).unwrap();
 
         assert_eq!(user.username, username);
         assert_eq!(user.name, name);
-        assert_ne!(user.password, password);
+        assert_ne!(user.password, password.as_str());
         assert_eq!(user.is_admin, is_admin);
     }
 
     #[test]
     fn test_validate_password() {
-        let username = "test-user".to_string();
-        let name = "Test User".to_string();
-        let email = "test@test.net".to_string();
-        let plain_text_password = "password".to_string();
+        let username = Username::parse("test-user".to_string()).unwrap();
+        let name = Name::parse("Test User".to_string()).unwrap();
+        let email = Email::parse("lol@test.com".to_string()).unwrap();
+        let plain_text_password = PlainTextPassword::parse("password".to_string()).unwrap();
 
         let user = User::new(username, name, email, plain_text_password.clone(), false).unwrap();
 
@@ -174,10 +175,10 @@ mod tests {
 
     #[test]
     fn test_from_user_to_client_user() {
-        let username = "test-user".to_string();
-        let name = "Test User".to_string();
-        let email = "test@test.com".to_string();
-        let password = "password".to_string();
+        let username = Username::parse("test-user".to_string()).unwrap();
+        let name = Name::parse("Test User".to_string()).unwrap();
+        let email = Email::parse("lol@test.com".to_string()).unwrap();
+        let password = PlainTextPassword::parse("password".to_string()).unwrap();
 
         let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
         let client_user: ClientUser = user.into();

@@ -1,24 +1,14 @@
-use super::validatable::Validatable;
-use crate::utilities::COMMENT_REGEX;
 use crate::models::{model::Model, user::User, tasks::{UserTask, UserTaskEntries}};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use serde::Deserialize;
 use redis::Client;
-use regex::Regex;
 use std::collections::HashMap;
 
 #[derive(Deserialize)]
 struct UpdateTask {
     pub index: (u16, u16, u16),
     pub task: UserTask
-}
-
-impl Validatable for UpdateTask {
-    fn is_valid(&self) -> bool {
-        let comment_pattern = Regex::new(COMMENT_REGEX).unwrap();
-        comment_pattern.is_match(self.task.comment.as_str())
-    }
 }
 
 /// Updates the task at the given index.
@@ -67,10 +57,6 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    if !task_update.is_valid() {
-        return HttpResponse::BadRequest().finish();
-    };
-
     let mut user = match User::fetch(&mut connection, username.as_str()) {
         Some(user) => user,
         None => return HttpResponse::NotFound().finish()
@@ -93,39 +79,15 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utilities::parsables::{Parsable, Comment};
     
-    #[test]
-    fn test_validate_comment() {
-        let update_task = UpdateTask {
-            index: (0, 0, 0),
-            task: UserTask {
-                completed: false,
-                comment: "Test comment.".to_string()
-            }
-        };
-
-        assert!(update_task.is_valid());
-    }
-
-    #[test]
-    fn test_validate_invalid_comment() {
-        let update_task = UpdateTask {
-            index: (0, 0, 0),
-            task: UserTask {
-                completed: false,
-                comment: "Test comment. <script></script>".to_string()
-            }
-        };
-
-        assert!(!update_task.is_valid());
-    }
-
     #[test]
     fn test_update_task_new() {
         let mut entries = HashMap::new();
+        let comment = Comment::parse(String::from("test comment")).unwrap();
         let task = UserTask {
             completed: false,
-            comment: "Test comment.".to_string()
+            comment: comment
         };
 
         update_task(&mut entries, (0, 0, 0), task.clone());
@@ -138,9 +100,10 @@ mod tests {
     #[test]
     fn test_update_task_existing_subtask() {
         let mut entries = HashMap::new();
+        let comment = Comment::parse(String::from("test comment")).unwrap();
         let task = UserTask {
             completed: false,
-            comment: "Test comment.".to_string()
+            comment: comment
         };
 
         update_task(&mut entries, (0, 0, 0), task.clone());

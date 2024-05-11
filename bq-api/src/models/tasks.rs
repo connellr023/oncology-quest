@@ -1,3 +1,4 @@
+use crate::utilities::parsables::{EntryTitle, Comment};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -6,35 +7,35 @@ pub type UserTaskEntries = HashMap<u16, HashMap<u16, HashMap<u16, UserTask>>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct SubTask {
-    pub title: String,
-    pub tasks: Vec<String>
+    pub title: EntryTitle,
+    pub tasks: Vec<EntryTitle>
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Task {
-    pub title: String,
+    pub title: EntryTitle,
     pub tasks: Vec<SubTask>
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct UserTask {
     pub completed: bool,
-    pub comment: String
+    pub comment: Comment
 }
 
 impl Task {
-    pub fn new(title: &str) -> Self {
+    pub fn new(title: EntryTitle) -> Self {
         Task {
-            title: title.to_string(),
+            title,
             tasks: vec![]
         }
     }
 }
 
 impl SubTask {
-    pub fn new(title: &str) -> Self {
+    pub fn new(title: EntryTitle) -> Self {
         SubTask {
-            title: title.to_string(),
+            title,
             tasks: vec![]
         }
     }

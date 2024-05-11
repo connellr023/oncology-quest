@@ -58,7 +58,7 @@ async fn main() -> io::Result<()> {
 fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     SessionMiddleware::builder(
         CookieSessionStore::default(),
-        Key::from(&key)
+        Key::from(key)
     )
     .cookie_name(String::from("bq-session"))
     .cookie_secure(false) // For now

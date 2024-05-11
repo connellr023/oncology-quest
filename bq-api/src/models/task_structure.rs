@@ -1,4 +1,5 @@
 use super::{model::Model, tasks::{SubTask, Task}};
+use crate::utilities::parsables::EntryTitle;
 use serde::{Deserialize, Serialize};
 use redis::Connection;
 
@@ -24,13 +25,13 @@ impl TaskStructure {
     /// # Returns
     /// 
     /// A boolean indicating whether the update operation was successful.
-    pub fn update_existing(&mut self, connection: &mut Connection, index: &[u16], title: &str) -> bool {
+    pub fn update_existing(&mut self, connection: &mut Connection, index: &[u16], title: EntryTitle) -> bool {
         let entries = &mut self.0;
         
         match index.len() {
-            1 => entries[index[0] as usize].title = title.to_string(),
-            2 => entries[index[0] as usize].tasks[index[1] as usize].title = title.to_string(),
-            3 => entries[index[0] as usize].tasks[index[1] as usize].tasks[index[2] as usize] = title.to_string(),
+            1 => entries[index[0] as usize].title = title,
+            2 => entries[index[0] as usize].tasks[index[1] as usize].title = title,
+            3 => entries[index[0] as usize].tasks[index[1] as usize].tasks[index[2] as usize] = title,
             _ => return false
         };
 
@@ -47,13 +48,13 @@ impl TaskStructure {
     /// # Returns
     /// 
     /// A boolean indicating whether the addition operation was successful.
-    pub fn push_entry(&mut self, connection: &mut Connection, index: &[u16], title: &str) -> bool {
+    pub fn push_entry(&mut self, connection: &mut Connection, index: &[u16], title: EntryTitle) -> bool {
         let entries = &mut self.0;
 
         match index.len() {
             0 => entries.push(Task::new(title)),
             1 => entries[index[0] as usize].tasks.push(SubTask::new(title)),
-            2 => entries[index[0] as usize].tasks[index[1] as usize].tasks.push(title.to_string()),
+            2 => entries[index[0] as usize].tasks[index[1] as usize].tasks.push(title),
             _ => return false
         };
 

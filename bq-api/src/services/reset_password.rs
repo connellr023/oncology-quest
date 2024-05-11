@@ -1,22 +1,12 @@
-use super::validatable::Validatable;
 use crate::{models::{model::Model, user::User}, services::login_user::UserCredentials};
+use crate::utilities::parsables::{Parsable, Username};
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use redis::Client;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
-struct AllowResetPassword {
-    username: String,
-    allow_reset: bool
-}
-
 #[actix_web::post("/api/user/reset-password")]
 pub(super) async fn reset(redis: Data<Client>, reset_password: Json<UserCredentials>) -> impl Responder {
-    if !reset_password.is_valid() {
-        return HttpResponse::BadRequest().finish();
-    }
-    
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
@@ -32,7 +22,7 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<UserCredenti
         return HttpResponse::Forbidden().finish();
     }
 
-    let new_password = match User::gen_password_hash(user.salt, &reset_password.password) {
+    let new_password = match User::gen_password_hash(user.salt, reset_password.password.as_str()) {
         Some(new_password) => new_password,
         None => return HttpResponse::InternalServerError().finish()
     };
@@ -44,6 +34,12 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<UserCredenti
     }
 
     HttpResponse::Ok().finish()
+}
+
+#[derive(Deserialize)]
+struct AllowResetPassword {
+    username: Username,
+    allow_reset: bool
 }
 
 #[actix_web::patch("/api/user/allow-reset-password")]

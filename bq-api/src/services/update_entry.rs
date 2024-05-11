@@ -1,27 +1,19 @@
-use super::validatable::Validatable;
-use crate::{models::{model::Model, task_structure::TaskStructure, user::User}, utilities::ENTRY_TITLE_REGEX};
+use crate::models::{model::Model, task_structure::TaskStructure, user::User};
+use crate::utilities::parsables::EntryTitle;
 use actix_session::Session;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use redis::Client;
-use regex::Regex;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct UpdateEntry {
-    pub title: String,
+    pub title: EntryTitle,
     pub index: Vec<u16>
-}
-
-impl Validatable for UpdateEntry {
-    fn is_valid(&self) -> bool {
-        let title_pattern = Regex::new(ENTRY_TITLE_REGEX).unwrap();
-        title_pattern.is_match(&self.title) && self.index.len() > 0 && self.index.len() <= 3
-    }
 }
 
 #[actix_web::patch("/api/entries/update")]
 pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: Json<UpdateEntry>) -> impl Responder {
-    if !entry_update.is_valid() {
+    if !(entry_update.index.is_empty() && entry_update.index.len() <= 3) {
         return HttpResponse::BadRequest().finish();
     }
     
@@ -45,7 +37,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: 
         None => return HttpResponse::InternalServerError().finish()
     };
 
-    if !task_structure.update_existing(&mut connection, entry_update.index.as_slice(), entry_update.title.as_str()) {
+    if !task_structure.update_existing(&mut connection, entry_update.index.as_slice(), entry_update.title.clone()) {
         return HttpResponse::InternalServerError().finish();
     }
 

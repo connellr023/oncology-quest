@@ -1,4 +1,3 @@
-pub mod validatable;
 pub mod config;
 pub mod register_user;
 pub mod login_user;

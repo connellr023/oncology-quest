@@ -1,35 +1,21 @@
-use super::validatable::Validatable;
-use crate::{models::{model::Model, task_structure::TaskStructure, user::User}, utilities::ENTRY_TITLE_REGEX};
+use crate::models::{model::Model, task_structure::TaskStructure, user::User};
+use crate::utilities::parsables::EntryTitle;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use redis::Client;
 use serde::Deserialize;
-use regex::Regex;
 
 const MAX_ENTRY_DEPTH: usize = 2;
 
 #[derive(Deserialize)]
 struct PushEntry {
-    title: String,
-    index: Vec<u16>
+    pub title: EntryTitle,
+    pub index: Vec<u16>
 }
 
 #[derive(Deserialize)]
 struct PopEntry {
-    index: Vec<u16>
-}
-
-impl Validatable for PushEntry {
-    fn is_valid(&self) -> bool {
-        let title_pattern = Regex::new(ENTRY_TITLE_REGEX).unwrap();
-        title_pattern.is_match(&self.title) && self.index.len() <= MAX_ENTRY_DEPTH
-    }
-}
-
-impl Validatable for PopEntry {
-    fn is_valid(&self) -> bool {
-        self.index.len() <= MAX_ENTRY_DEPTH
-    }
+    pub index: Vec<u16>
 }
 
 enum EntryAction {
@@ -37,7 +23,7 @@ enum EntryAction {
     Pop
 }
 
-fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &[u16], title: Option<&str>) -> HttpResponse {
+fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &[u16], title: Option<EntryTitle>) -> HttpResponse {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()
@@ -64,85 +50,32 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
                 return HttpResponse::InternalServerError().finish();
             }
 
-            return HttpResponse::Created().finish();
+            HttpResponse::Created().finish()
         },
         EntryAction::Pop => {
             if !task_structure.pop_entry(&mut connection, index) {
                 return HttpResponse::InternalServerError().finish();
             }
 
-            return HttpResponse::NoContent().finish();
+            HttpResponse::NoContent().finish()
         }
     }
 }
 
 #[actix_web::patch("/api/entries/update/push")]
 pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json<PushEntry>) -> impl Responder {
-    if !push_entry.is_valid() {
+    if !push_entry.index.len() <= MAX_ENTRY_DEPTH {
         return HttpResponse::BadRequest().finish();
     }
     
-    handle_update_structure(session, redis, EntryAction::Push, push_entry.index.as_slice(), Some(push_entry.title.as_str()))
+    handle_update_structure(session, redis, EntryAction::Push, push_entry.index.as_slice(), Some(push_entry.title.clone()))
 }
 
 #[actix_web::delete("/api/entries/update/pop")]
 pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<PopEntry>) -> impl Responder {
-    if !pop_entry.is_valid() {
+    if !pop_entry.index.len() <= MAX_ENTRY_DEPTH {
         return HttpResponse::BadRequest().finish();
     }
     
     handle_update_structure(session, redis, EntryAction::Pop, pop_entry.index.as_slice(), None)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Validatable;
-
-    #[test]
-    fn test_validate_push_entry() {
-        let push_entry = super::PushEntry {
-            title: "Test".to_string(),
-            index: vec![0, 0]
-        };
-
-        assert!(push_entry.is_valid());
-    }
-
-    #[test]
-    fn test_validate_push_entry_invalid_title() {
-        let push_entry = super::PushEntry {
-            title: "Test!".to_string(),
-            index: vec![0, 0]
-        };
-
-        assert!(!push_entry.is_valid());
-    }
-
-    #[test]
-    fn test_validate_push_entry_invalid_depth() {
-        let push_entry = super::PushEntry {
-            title: "Test".to_string(),
-            index: vec![0, 0, 0]
-        };
-
-        assert!(!push_entry.is_valid());
-    }
-
-    #[test]
-    fn test_validate_pop_entry() {
-        let pop_entry = super::PopEntry {
-            index: vec![0, 0]
-        };
-
-        assert!(pop_entry.is_valid());
-    }
-
-    #[test]
-    fn test_validate_pop_entry_invalid_depth() {
-        let pop_entry = super::PopEntry {
-            index: vec![0, 0, 0]
-        };
-
-        assert!(!pop_entry.is_valid());
-    }
 }
