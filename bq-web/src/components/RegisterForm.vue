@@ -29,22 +29,32 @@ const handleSubmit = (_: Event) => {
 <template>
   <h1>Register a <b><i>bq</i></b> account below.</h1>
   <form @submit.prevent="handleSubmit">
-    <label for="username">Username</label>
+    <label for="username">
+      Username
+      <span class="error-label" v-if="usernameError">{{ usernameError }}</span>
+    </label>
     <input class="glow" type="text" id="username" name="username" v-model="username" required>
-    <label for="name">Name</label>
+    <label for="name">
+      Name
+      <span class="error-label" v-if="nameError">{{ nameError }}</span>
+    </label>
     <input class="glow" type="text" id="name" name="name" v-model="name" required>
-    <label for="email">Email</label>
+    <label for="email">
+      Email
+      <span class="error-label" v-if="emailError">{{ emailError }}</span>
+    </label>
     <input class="glow" type="email" id="email" name="email" v-model="email" required>
-    <label for="password">Password</label>
+    <label for="password">
+      Password
+      <span class="error-label" v-if="passwordError">{{ passwordError }}</span>
+    </label>
     <input class="glow" type="password" id="password" name="password" v-model="password" required>
-    <label for="password-confirm">Confirm Password</label>
+    <label for="password-confirm">
+      Confirm Password
+      <span class="error-label" v-if="confirmedPasswordError">{{ confirmedPasswordError }}</span>
+    </label>
     <input class="glow" type="password" id="password-confirm" name="password-confirm" v-model="confirmedPassword" required>
     <div>
-      <p v-if="usernameError">{{ usernameError }}</p>
-      <p v-if="nameError">{{ nameError }}</p>
-      <p v-if="emailError">{{ emailError }}</p>
-      <p v-if="passwordError">{{ passwordError }}</p>
-      <p v-if="confirmedPasswordError">{{ confirmedPasswordError }}</p>
       <p v-if="serverError">{{ serverError }}</p>
       <p v-else-if="message">{{ message }}</p>
     </div>

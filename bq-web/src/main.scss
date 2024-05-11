@@ -185,22 +185,36 @@ form {
   justify-content: center;
   gap: 8px;
   width: 100%;
+  min-width: 300px;
 
-  $width: calc(100% - 22px);
+  &,
+  & + button {
+    max-width: 400px;
+  }
 
   label {
     font-style: italic;
     font-size: clamp(16px, 1.2lvw, 18px);
-    width: $width;
     margin-top: 10px;
     text-align: left;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
-  input, button {
-    width: $width;
+  label,
+  input {
+    width: calc(100% - 22px);
+  }
+
+  button {
+    width: 100%;
   }
 }
 
-button.form-button {
-  width: 100%;
+span.error-label {
+  color: $theme-color-red;
+  font-weight: 500;
+  margin-top: 5px;
+  font-style: normal;
+  padding-left: 10px;
 }

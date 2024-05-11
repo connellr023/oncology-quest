@@ -23,13 +23,17 @@ const handleSubmit = (_: Event) => {
 <template>
   <h1>Login to <b><i>bq</i></b> below.</h1>
   <form @submit.prevent="handleSubmit">
-    <label for="username">Username</label>
+    <label for="username">
+      Username
+      <span class="error-label" v-if="usernameError">{{ usernameError }}</span>
+    </label>
     <input class="glow" type="text" id="username" name="username" v-model="username" required>
-    <label for="password">Password</label>
+    <label for="password">
+      Password
+      <span class="error-label" v-if="passwordError">{{ passwordError }}</span>
+    </label>
     <input class="glow" type="password" id="password" name="password" v-model="password" required>
     <div>
-      <p v-if="usernameError">{{ usernameError }}</p>
-      <p v-if="passwordError">{{ passwordError }}</p>
       <p v-if="loginError">{{ loginError }}</p>
       <p v-else-if="loading">Loading...</p>
     </div>

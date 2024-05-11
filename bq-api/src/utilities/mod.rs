@@ -1,2 +1,2 @@
-pub mod regex;
+mod regex;
 pub mod parsables;
