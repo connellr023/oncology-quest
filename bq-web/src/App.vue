@@ -36,7 +36,6 @@ const { loading, connectionError } = useFetchSession(session)
   </main>
 </template>
 
-
 <style scoped lang="scss">
 @import "main.scss";
 

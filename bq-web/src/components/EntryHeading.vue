@@ -3,12 +3,12 @@ import { Ref, inject, ref } from "vue"
 import { UserSession } from "../models/user";
 import useSaveEntries from "../hooks/useSaveEntries";
 
+defineEmits(["click"])
 const props = defineProps<{
   title: string,
   index: number[]
 }>()
 
-const emit = defineEmits(["click"])
 const sessionContext = inject<Ref<UserSession>>("session")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 

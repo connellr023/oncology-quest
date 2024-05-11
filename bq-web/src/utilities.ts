@@ -6,3 +6,22 @@ export const EMAIL_REGEX = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/
 export const PASSWORD_REGEX = /^.{8,200}$/
 export const COMMENT_REGEX = /^[a-zA-Z0-9\s.,!?'"()-]{0,150}$/
 export const ENTRY_TITLE_REGEX = /^[a-zA-Z0-9+-/()]+(\s[a-zA-Z0-9+-/()]+)*$/
+
+const BANNED_PASSWORD_PATTERNS = [
+    /^123456.*$/,   // Matches any password starting with "123456"
+    /^password.*$/, // Matches any password starting with "password"
+    /^qwerty.*$/,   // Matches any password starting with "qwerty"
+    /^[0-9]*$/,     // Matches any password containing only numbers
+    /^[a-z]*$/,     // Matches any password containing only lowercase letters
+    /^[A-Z]*$/,     // Matches any password containing only uppercase letters
+]
+
+export const isPasswordBanned = (password: string): boolean => {
+    for (const pattern of BANNED_PASSWORD_PATTERNS) {
+        if (pattern.test(password)) {
+            return true;
+        }
+    }
+
+    return false;
+}

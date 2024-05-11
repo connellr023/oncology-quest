@@ -39,6 +39,10 @@ const switchStage = () => {
 
 <template>
   <h1>Register a <b><i>bq</i></b> account below.</h1>
+  <div class="stage-indicator-container">
+    <div :class="`${inStageOne ? 'active' : ''}`" />
+    <div :class="`${!inStageOne ? 'active' : ''}`" />
+  </div>
   <form @submit.prevent="handleSubmit">
     <template v-if="inStageOne">
       <LabeledFormInput
@@ -90,6 +94,31 @@ const switchStage = () => {
 </template>
 
 <style scoped lang="scss">
+div.stage-indicator-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 5px;
+  margin-bottom: 15px;
+
+  div {
+    $size: 13px;
+
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    background-color: #ffffff;
+    opacity: 0.7;
+    margin: 0 5px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  div.active {
+    opacity: 1;
+    border-radius: 8px;
+    width: 30px;
+  }
+}
+
 button.prev {
   margin-top: 8px;
 }
