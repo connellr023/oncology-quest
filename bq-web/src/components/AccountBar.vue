@@ -5,19 +5,18 @@ import useLogout from "../hooks/useLogout";
 
 const sessionContext = inject<Ref<UserSession | null>>("session")!
 
-const { logout, message } = useLogout()
+const { logout } = useLogout()
 </script>
 
 <template>
   <div v-if="sessionContext" id="account-bar">
-    <span>
-      Logged in as <b><i>{{ sessionContext.user.username }} ({{ sessionContext.user.name }})</i></b>
-      <template v-if="sessionContext.user.isAdmin">
-        <span> (Admin)</span>
-      </template>
-    </span>
-    <button @click="logout">Log out</button>
-    <span>{{ message }}</span>
+    <h1>{{ sessionContext.user.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
+    <div>
+      <span>
+        Logged in as <b><i>{{ sessionContext.user.username }} ({{ sessionContext.user.name }})</i></b>
+      </span>
+      <button @click="logout">Log Out</button>
+    </div>
   </div>
 </template>
 
@@ -25,15 +24,33 @@ const { logout, message } = useLogout()
 @import "../main.scss";
 
 div#account-bar {
-  // background-color: invert($main-bg-color);
-  // color: invert($main-txt-color);
+  //background-color: $main-bg-color;
+  background: linear-gradient(to bottom, $main-bg-color 15%, rgba(0, 0, 0, 0));
   position: fixed;
   top: 0;
   right: 0;
-  padding: 14px;
   width: 100lvw;
+  padding-bottom: 160px;
   text-align: right;
   font-size: clamp(16px, 1.5lvw, 20px);
+  display: flex;
+  justify-self: space-between;
+  align-items: center;
+  pointer-events: none;
+
+  $spacing: 17px;
+
+  h1 {
+    display: inline-block;
+    text-align: left;
+    padding-left: $spacing;
+  }
+
+  & > div {
+    position: absolute;
+    right: $spacing;
+    pointer-events: initial;
+  }
 
   button {
     // color: invert($main-txt-color);

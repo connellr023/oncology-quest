@@ -139,7 +139,7 @@ body {
 }
 
 button {
-  border: 2px solid white;
+  border: 2px solid $main-txt-color;
   border-radius: 6px;
   background: none;
   color: $main-txt-color;
@@ -148,6 +148,11 @@ button {
   font-size: clamp(15px, 2vw, 18px);
   font-family: $main-font;
   transition: all 0.13s ease-in-out;
+
+  &:hover {
+    background-color: $main-txt-color;
+    color: invert($main-txt-color);
+  }
 }
 
 button.gradient-button-0 {

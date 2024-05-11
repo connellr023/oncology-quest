@@ -30,7 +30,6 @@ const setSelectedUser = (user: User) => {
 </script>
 
 <template>
-  <h1>Admin Dashboard</h1>
   <div v-if="selectedUser">
     <h4>Selected User</h4>
     <div>
