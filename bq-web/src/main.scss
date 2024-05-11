@@ -45,7 +45,7 @@ $theme-color-disabled: #929292;
   &.glow {
     filter: drop-shadow(0 0 $s1 rgba($c, $alpha-initial));
 
-    &:hover, &:focus {
+    button:hover, &:focus {
       filter: drop-shadow(0 0 $s2 rgba($c, $alpha-final));
     }
   }
@@ -71,8 +71,17 @@ $theme-color-disabled: #929292;
   &:disabled {
     @include glow($theme-color-disabled, $a1, $a2);
   }
-}
 
+  &.error {
+    @include glow($theme-color-red, $a1 * 0.5, $a2 * 0.5);
+
+    border-color: darken($theme-color-red, 10%);
+
+    &:focus {
+      border-color: darken($theme-color-red, 30%);
+    }
+  }
+}
 
 @mixin fade-up-children($duration: 0.5s, $delay-step: 0.1s, $children: 1, $anim-delay: 0) {
   & > * {
@@ -208,10 +217,19 @@ form {
 
   button {
     width: 100%;
+
+    &.form-button {
+      margin-top: 20px;
+    }
   }
 }
 
-span.error-label {
+button.back {
+  margin-top: 15px;
+  width: 100%;
+}
+
+.error-label {
   color: $theme-color-red;
   font-weight: 500;
   margin-top: 5px;

@@ -47,11 +47,6 @@ onMounted(() => {
 <style scoped lang="scss">
 @import "../main.scss";
 
-button.back {
-  margin-top: 15px;
-  width: 100%;
-}
-
 div.button-container {
   &.animate {
     @include fade-up-children(0.4s, 0.15s, 4, 0.5s);

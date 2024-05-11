@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import useRegister from '../hooks/useRegister'
+import { ref } from "vue";
+import useRegister from "../hooks/useRegister"
+import LabeledFormInput from "./LabeledFormInput.vue"
 
 const {
   username,
@@ -24,40 +26,68 @@ const handleSubmit = (_: Event) => {
     register()
   }
 }
+
+const inStageOne = ref(true)
+
+const switchStage = () => {
+  inStageOne.value = !inStageOne.value
+}
 </script>
 
 <template>
   <h1>Register a <b><i>bq</i></b> account below.</h1>
   <form @submit.prevent="handleSubmit">
-    <label for="username">
-      Username
-      <span class="error-label" v-if="usernameError">{{ usernameError }}</span>
-    </label>
-    <input class="glow" type="text" id="username" name="username" v-model="username" required>
-    <label for="name">
-      Name
-      <span class="error-label" v-if="nameError">{{ nameError }}</span>
-    </label>
-    <input class="glow" type="text" id="name" name="name" v-model="name" required>
-    <label for="email">
-      Email
-      <span class="error-label" v-if="emailError">{{ emailError }}</span>
-    </label>
-    <input class="glow" type="email" id="email" name="email" v-model="email" required>
-    <label for="password">
-      Password
-      <span class="error-label" v-if="passwordError">{{ passwordError }}</span>
-    </label>
-    <input class="glow" type="password" id="password" name="password" v-model="password" required>
-    <label for="password-confirm">
-      Confirm Password
-      <span class="error-label" v-if="confirmedPasswordError">{{ confirmedPasswordError }}</span>
-    </label>
-    <input class="glow" type="password" id="password-confirm" name="password-confirm" v-model="confirmedPassword" required>
-    <div>
-      <p v-if="serverError">{{ serverError }}</p>
-      <p v-else-if="message">{{ message }}</p>
-    </div>
-    <button class="form-button glow gradient-button-0" type="submit">Register</button>
+    <template v-if="inStageOne">
+      <LabeledFormInput
+        title="Username"
+        name="username"
+        type="text"
+        :error="usernameError"
+        v-model="username"
+      />
+      <LabeledFormInput
+        title="Name"
+        name="name"
+        type="text"
+        :error="nameError"
+        v-model="name"
+      />
+      <LabeledFormInput
+        title="Email"
+        name="email"
+        type="email"
+        :error="emailError"
+        v-model="email"
+      />
+      <button class="form-button glow gradient-button-0" @click="switchStage">Next Step</button>
+    </template>
+    <template v-else>
+      <LabeledFormInput
+        title="Password"
+        name="password"
+        type="password"
+        :error="passwordError"
+        v-model="password"
+      />
+      <LabeledFormInput
+        title="Confirm Password"
+        name="password-confirm"
+        type="password"
+        :error="confirmedPasswordError"
+        v-model="confirmedPassword"
+      />
+      <div>
+        <div class="form-error error-label" v-if="serverError">{{ serverError }}</div>
+        <p v-else-if="message">{{ message }}</p>
+      </div>
+      <button class="form-button glow gradient-button-0" type="submit">Register</button>
+      <button class="prev glow gradient-button-0" @click="switchStage">Previous Step</button>
+    </template>
   </form>
 </template>
+
+<style scoped lang="scss">
+button.prev {
+  margin-top: 8px;
+}
+</style>
