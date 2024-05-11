@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import useRegister from "../hooks/useRegister"
+
 import LabeledFormInput from "./LabeledFormInput.vue"
+import FormSubmitButton from "./FormSubmitButton.vue";
 
 const {
   username,
@@ -16,7 +18,8 @@ const {
   confirmedPasswordError,
   serverError,
   message,
-  register
+  register,
+  loading
 } = useRegister()
 
 const handleSubmit = (_: Event) => {
@@ -77,10 +80,10 @@ const switchStage = () => {
         v-model="confirmedPassword"
       />
       <div>
-        <div class="form-error error-label" v-if="serverError">{{ serverError }}</div>
-        <p v-else-if="message">{{ message }}</p>
+        <div class="error-label" v-if="serverError">{{ serverError }}</div>
+        <div class="success-label" v-else-if="message">{{ message }}</div>
       </div>
-      <button class="form-button glow gradient-button-0" type="submit">Register</button>
+      <FormSubmitButton :loading="loading" text="Register" />
       <button class="prev glow gradient-button-0" @click="switchStage">Previous Step</button>
     </template>
   </form>

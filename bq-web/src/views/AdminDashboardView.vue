@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provide, ref } from "vue";
+import { ref } from "vue";
 import { User } from "../models/user";
 
 import Entries from "../components/editor/Entries.vue"
@@ -9,9 +9,6 @@ import useValidateUsername from "../hooks/useValidateUsername";
 
 const { search, results, loading, searchError } = useUserSearch()
 const { username, usernameError } = useValidateUsername()
-
-const isEditing = ref(false)
-provide("isEditing", isEditing)
 
 const selectedUser = ref<User>({
   username: "",

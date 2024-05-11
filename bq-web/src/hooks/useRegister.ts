@@ -18,8 +18,11 @@ export function useRegister() {
 
     const message = ref("")
     const serverError = ref("")
+    const loading = ref(false)
 
     const register = async () => {
+        loading.value = true
+
         try {
             const response = await fetch(`${API_ENDPOINT}/api/user/register`, {
                 method: "POST",
@@ -42,6 +45,8 @@ export function useRegister() {
         } catch (error) {
             serverError.value = "Server error. Please try again later."
         }
+
+        loading.value = false
     }
 
     return {
@@ -57,7 +62,8 @@ export function useRegister() {
         confirmedPasswordError,
         message,
         serverError,
-        register
+        register,
+        loading
     }
 }
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import useLogin from "../hooks/useLogin";
+
 import LabeledFormInput from "./LabeledFormInput.vue";
+import FormSubmitButton from "./FormSubmitButton.vue";
 
 const {
   loading,
@@ -42,6 +44,6 @@ const handleSubmit = (_: Event) => {
       <div class="form-error error-label" v-if="loginError">{{ loginError }}</div>
       <p v-else-if="loading">Loading...</p>
     </div>
-    <button class="form-button glow gradient-button-0" type="submit">Login</button>
+    <FormSubmitButton :loading="loading" text="Login" />
   </form>
 </template>

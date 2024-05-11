@@ -12,6 +12,9 @@ import AccountBar from "./components/AccountBar.vue"
 let session = ref<UserSession | null>(null)
 provide("session", session)
 
+const isEditing = ref(false)
+provide("isEditing", isEditing)
+
 const { loading, connectionError } = useFetchSession(session)
 </script>
 
