@@ -18,7 +18,7 @@ img {
   position: absolute;
   right: 12px;
   opacity: 0;
-  top: 9px;
+  top: 10px;
   animation: fade-in 0.4s forwards, spin 0.6s ease-in-out infinite;
 
   @keyframes spin {

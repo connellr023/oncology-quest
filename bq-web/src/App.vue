@@ -51,7 +51,7 @@ div#dash-container {
   div#dash-content-container {
     flex-grow: 1;
     background-color: $secondary-bg-color;
-    padding-left: 30px;
+    padding: 20px 20px 20px 40px;
   }
 }
 

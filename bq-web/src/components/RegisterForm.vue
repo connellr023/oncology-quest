@@ -99,6 +99,7 @@ div.stage-indicator-container {
   justify-content: center;
   margin-top: 5px;
   margin-bottom: 15px;
+  filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.06));
 
   div {
     $size: 13px;

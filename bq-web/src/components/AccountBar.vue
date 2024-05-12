@@ -46,9 +46,10 @@ div.collapse-indicator-container {
   position: absolute;
   top: 50%;
   left: calc(100% + 8px);
-  transform: translateY(50%);
+  transform: translateY(-50%);
   opacity: 0.5;
   transition: opacity 0.3s ease;
+  filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.06));
 
   &:hover {
     opacity: 1;
@@ -78,11 +79,13 @@ div.collapse-indicator-container {
 }
 
 div.content-container {
+  $anim-speed: 0.3s ease;
+
   width: 30lvw;
   min-width: 180px;
   max-width: 210px;
   height: 100lvh;
-  transition: all 0.4s ease;
+  transition: min-width $anim-speed, max-width $anim-speed, width $anim-speed;
   text-align: center;
   overflow: hidden;
 

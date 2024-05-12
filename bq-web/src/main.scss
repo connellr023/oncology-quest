@@ -3,7 +3,7 @@
 $main-txt-color: #e7e7e7;
 $main-bg-color: #010107;
 $secondary-bg-color: #02020b;
-$tertiary-bg-color: #040412;
+$tertiary-bg-color: #040413;
 $main-font: "Inter", "sans-serif";
 
 $theme-color-1: #6930c3;
@@ -120,44 +120,6 @@ $theme-color-disabled: #929292;
   }
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-body {
-  background-color: $main-bg-color;
-  color: $main-txt-color;
-  font-family: $main-font;
-  margin: auto;
-}
-
-.flex-wrapper {
-  flex-direction: column;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-button {
-  border: 2px solid $main-txt-color;
-  border-radius: 6px;
-  background: none;
-  color: $main-txt-color;
-  cursor: pointer;
-  padding: 9px;
-  font-size: clamp(15px, 2vw, 18px);
-  font-family: $main-font;
-  transition: all 0.13s ease-in-out;
-
-  &:hover {
-    background-color: $main-txt-color;
-    color: invert($main-txt-color);
-  }
-}
-
 button.gradient-button-0 {
   @include gradient-button($theme-color-1, $theme-color-2);
   @include glow-button($theme-color-1);
@@ -199,6 +161,44 @@ input {
 
   &:disabled {
     border-color: $theme-color-disabled;
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+body {
+  background-color: $main-bg-color;
+  color: $main-txt-color;
+  font-family: $main-font;
+  margin: auto;
+}
+
+.flex-wrapper {
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+button {
+  border: 2px solid $main-txt-color;
+  border-radius: 6px;
+  background: none;
+  color: $main-txt-color;
+  cursor: pointer;
+  padding: 9px;
+  font-size: clamp(15px, 2vw, 18px);
+  font-family: $main-font;
+  transition: all 0.13s ease-in-out;
+
+  &:hover {
+    background-color: $main-txt-color;
+    color: invert($main-txt-color);
   }
 }
 

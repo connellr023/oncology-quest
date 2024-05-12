@@ -8,6 +8,7 @@ import EditTask from "./EditTask.vue"
 import EditTaskHeadings from "./EditTaskHeadings.vue"
 import EditSubTaskHeading from "./EditSubTaskHeading.vue"
 import EditSubTaskEntry from "./EditSubTaskEntry.vue"
+import EntryProgress from "./EntryProgress.vue"
 
 defineProps<{ tasks: UserTaskEntries }>()
 
@@ -21,8 +22,11 @@ const toggleVisibility = (key: string) => {
 
 <template>
   <div id="entries-container">
-    <div class="entry" v-for="(entry, index) in sessionContext.entries">
-      <EntryHeading :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
+    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in sessionContext.entries">
+      <div class="progressable-entry-container">
+        <EntryHeading :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
+        <EntryProgress />
+      </div>
       <ul v-show="visibility[entry.title]">
         <li v-for="(subTask, subIndex) in entry.tasks">
           <EntryHeading :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
@@ -54,8 +58,23 @@ const toggleVisibility = (key: string) => {
 div#entries-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   height: 100%;
+}
+
+div.progressable-entry-container {
+  position: relative;
+}
+
+.entry {
+  border-radius: 10px;
+  transition: background-color 0.1s ease;
+  padding-left: 15px;
+  margin-bottom: 15px;
+  
+  &.focused,
+  &:hover {
+    background-color: $tertiary-bg-color;
+  }
 }
 
 ul {
