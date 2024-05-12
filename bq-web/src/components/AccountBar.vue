@@ -24,13 +24,14 @@ const { logout } = useLogout()
 @import "../main.scss";
 
 div#account-bar {
-  //background-color: $main-bg-color;
-  background: linear-gradient(to bottom, $main-bg-color 15%, rgba(0, 0, 0, 0));
+  //background: linear-gradient(to bottom, $main-bg-color 15%, rgba(0, 0, 0, 0));
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  //padding-bottom: 160px;
   position: fixed;
   top: 0;
   right: 0;
   width: 100lvw;
-  padding-bottom: 160px;
   text-align: right;
   font-size: clamp(16px, 1.5lvw, 20px);
   display: flex;

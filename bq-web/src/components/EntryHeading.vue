@@ -57,12 +57,28 @@ const saveEdit = async () => {
 </template>
 
 <style scoped lang="scss">
+@import "../main.scss";
+
+h3 {
+  font-size: clamp(20px, 1.3lvw, 22px);
+  font-weight: normal;
+  color: invert($main-txt-color);
+}
+
 .dropdown {
+  $color: $main-txt-color;
+  $pad: 13px;
+
   cursor: pointer;
-  display: inline-block;
+  width: calc(100% - ($pad * 2));
+  padding: $pad;
+  background-color: $color;
+  border-radius: 13px;
+  transition: background-color 0.3s ease-in-out;
+  margin: auto;
 
   &:hover {
-    text-decoration: underline;
+    background-color: darken($color, 10%);
   }
 }
 

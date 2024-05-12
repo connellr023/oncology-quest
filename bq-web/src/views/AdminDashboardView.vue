@@ -30,44 +30,51 @@ const setSelectedUser = (user: User) => {
 </script>
 
 <template>
-  <div v-if="selectedUser">
-    <h4>Selected User</h4>
-    <div>
-      <div>Username: {{ selectedUser.username }}</div>
-      <div>Name: {{ selectedUser.name }}</div>
-      <div>Email: {{ selectedUser.email }}</div>
-    </div>
-  </div>
-  <div>
-    <input v-model="username" placeholder="Search Username" />
-    <button @click="searchUser">Search</button>
-    <div>
-      <span v-if="usernameError">{{ usernameError }}</span>
-      <ul v-if="results.length > 0">
-        <li v-for="(user, index) in results" :key="index">
-          <div class="user-option" @click="setSelectedUser(user)">
-            {{ user.username }} ({{ user.name }})
-          </div>
-          <button>Allow Password Reset</button>
-          <button>Remove Account</button>
-        </li>
-      </ul>
-      <div v-else-if="loading">
-        <h2>Loading...</h2>
-      </div>
-      <div v-else-if="searchError">
-        <h2>Failed to fetch users</h2>
-      </div>
-      <div v-else>
-        <h2>No results</h2>
+  <div id="admin-dash-container">
+    <div v-if="selectedUser">
+      <h4>Selected User</h4>
+      <div>
+        <div>Username: {{ selectedUser.username }}</div>
+        <div>Name: {{ selectedUser.name }}</div>
+        <div>Email: {{ selectedUser.email }}</div>
       </div>
     </div>
+    <div>
+      <input v-model="username" placeholder="Search Username" />
+      <button @click="searchUser">Search</button>
+      <div>
+        <span v-if="usernameError">{{ usernameError }}</span>
+        <ul v-if="results.length > 0">
+          <li v-for="(user, index) in results" :key="index">
+            <div class="user-option" @click="setSelectedUser(user)">
+              {{ user.username }} ({{ user.name }})
+            </div>
+            <button>Allow Password Reset</button>
+            <button>Remove Account</button>
+          </li>
+        </ul>
+        <div v-else-if="loading">
+          <h2>Loading...</h2>
+        </div>
+        <div v-else-if="searchError">
+          <h2>Failed to fetch users</h2>
+        </div>
+        <div v-else>
+          <h2>No results</h2>
+        </div>
+      </div>
+    </div>
+    <h3>Task Manager</h3>
+    <Entries :key="selectedUser.username" :tasks="selectedUser.tasks" />
   </div>
-  <h3>Task Manager</h3>
-  <Entries :key="selectedUser.username" :tasks="selectedUser.tasks" />
 </template>
 
 <style scoped lang="scss">
+div#admin-dash-container {
+  display: flex;
+  flex-direction: column;
+}
+
 input {
   margin-top: 25px;
 }

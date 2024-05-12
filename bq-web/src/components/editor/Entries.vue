@@ -21,7 +21,7 @@ const toggleVisibility = (key: string) => {
 
 <template>
   <div id="entries-container">
-    <div v-for="(entry, index) in sessionContext.entries">
+    <div class="entry" v-for="(entry, index) in sessionContext.entries">
       <EntryHeading :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
       <ul v-show="visibility[entry.title]">
         <li v-for="(subTask, subIndex) in entry.tasks">
@@ -49,8 +49,21 @@ const toggleVisibility = (key: string) => {
 </template>
 
 <style scoped lang="scss">
+@import "../../main.scss";
+
 div#entries-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100lvw;
   height: 100lvh;
+}
+
+div.entry {
+  margin: 15px;
+}
+
+ul {
+  list-style-type: none;
 }
 </style>
