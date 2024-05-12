@@ -26,7 +26,7 @@ const { loading, connectionError } = useFetchSession(session)
       </div>
       <div v-if="!connectionError && !loading">
         <NoSessionView v-if="!session" />
-        <div id="dash" v-else>
+        <div id="dash-container" v-else>
           <AccountBar />
           <div id="dash-content-container">
             <AdminDashboardView v-if="session.user.isAdmin" />
@@ -41,13 +41,17 @@ const { loading, connectionError } = useFetchSession(session)
 <style scoped lang="scss">
 @import "main.scss";
 
-div#dash {
+div#dash-container {
   opacity: 0;
   animation: fade-in 1s forwards;
   animation-delay: 0.5s;
+  display: flex;
+  width: 100lvw;
 
   div#dash-content-container {
-    margin-top: 100px;
+    flex-grow: 1;
+    background-color: $secondary-bg-color;
+    padding-left: 30px;
   }
 }
 

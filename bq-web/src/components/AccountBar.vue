@@ -1,67 +1,136 @@
 <script setup lang="ts">
-import { Ref, inject } from "vue"
+import { Ref, inject, ref } from "vue"
 import { UserSession } from "../models/user"
 import useLogout from "../hooks/useLogout";
 
 const sessionContext = inject<Ref<UserSession | null>>("session")!
+const isCollapsed = ref(false)
 
 const { logout } = useLogout()
+
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+}
 </script>
 
 <template>
-  <div v-if="sessionContext" id="account-bar">
-    <h1>{{ sessionContext.user.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
-    <div>
-      <span>
-        Logged in as <b><i>{{ sessionContext.user.username }} ({{ sessionContext.user.name }})</i></b>
-      </span>
-      <button @click="logout">Log Out</button>
+
+  <div v-if="sessionContext" id="account-bar-container">
+    <div class="content-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
+      <img draggable="false" src="/logo.svg" />
+      <div>
+        <h1>{{ sessionContext.user.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
+        <div>
+          <div>Logged in as</div>
+          <div class="userinfo">
+            <b><i>{{ sessionContext.user.username }} ({{ sessionContext.user.name }})</i></b>
+          </div>
+          <button class="glow gradient-button-2" @click="logout">Log Out</button>
+        </div>
+      </div>
+    </div>
+    <div title="Toggle Panel" class="collapse-indicator-container" @click="toggleCollapse">
+      <div :class="`${isCollapsed ? 'active' : ''}`" />
+      <div :class="`${!isCollapsed ? 'active' : ''}`" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+div#account-bar-container {
+  position: relative;
+}
 
-div#account-bar {
-  //background: linear-gradient(to bottom, $main-bg-color 15%, rgba(0, 0, 0, 0));
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(6px);
-  //padding-bottom: 160px;
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100lvw;
-  text-align: right;
-  font-size: clamp(16px, 1.5lvw, 20px);
-  display: flex;
-  justify-self: space-between;
-  align-items: center;
-  pointer-events: none;
+div.collapse-indicator-container {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 8px);
+  transform: translateY(50%);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
 
-  $spacing: 17px;
+  &:hover {
+    opacity: 1;
+  }
 
-  h1 {
-    display: inline-block;
-    text-align: left;
-    padding-left: $spacing;
+  div {
+    $size: 11px;
+
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    background-color: #ffffff;
+    opacity: 0.7;
+    margin: 0 5px;
+    transition: all 0.17s ease-in-out;
+  }
+
+  div.active {
+    $margin: 7px;
+
+    margin-top: $margin;
+    margin-bottom: $margin;
+    opacity: 1;
+    border-radius: 8px;
+    height: 35px;
+  }
+}
+
+div.content-container {
+  width: 30lvw;
+  min-width: 180px;
+  max-width: 210px;
+  height: 100lvh;
+  transition: all 0.4s ease;
+  text-align: center;
+  overflow: hidden;
+
+  img {
+    margin-top: 20px;
+    width: 50%;
+    min-width: 110px;
+    margin-bottom: 20px;
   }
 
   & > div {
-    position: absolute;
-    right: $spacing;
-    pointer-events: initial;
+
+    div.userinfo {
+      margin-top: 5px;
+    }
+
+    h1 {
+      margin: auto;
+      margin-bottom: 25px;
+      font-size: clamp(30px, 1.4lvw, 34px);
+    }
   }
 
   button {
-    // color: invert($main-txt-color);
-    // border-color: invert($main-txt-color);
-    font-weight: 500;
-    width: 13lvw;
-    min-width: 120px;
-    max-width: 200px;
-    margin-left: 15px;
-    padding: 4px;
+    $horizontal-pad: 13px;
+
+    left: $horizontal-pad;
+    bottom: 15px;
+    width: 100%;
+    position: absolute;
+    width: calc(100% - ($horizontal-pad * 2));
+  }
+
+  &.collapsed {
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    padding: 0;
+
+    * {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    button {
+      visibility: hidden;
+    }
   }
 }
 </style>

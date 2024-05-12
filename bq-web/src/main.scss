@@ -1,12 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap");
 
 $main-txt-color: #e7e7e7;
-$main-bg-color: #000000;
+$main-bg-color: #010107;
+$secondary-bg-color: #02020b;
+$tertiary-bg-color: #040412;
 $main-font: "Inter", "sans-serif";
 
 $theme-color-1: #6930c3;
 $theme-color-2: #5e60ce;
-$theme-color-red: #ff0a1e;
+$theme-color-red: #e60a1c;
+$theme-color-red-2: #86082c;
 $theme-color-green: #0aff89;
 $theme-color-disabled: #929292;
 
@@ -165,6 +168,11 @@ button.gradient-button-1 {
 
   @include gradient-button($main-color, #52b69a);
   @include glow-button($main-color);
+}
+
+button.gradient-button-2 {
+  @include gradient-button($theme-color-red-2, $theme-color-red);
+  @include glow-button($theme-color-red-2);
 }
 
 input {

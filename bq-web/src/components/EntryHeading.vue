@@ -62,7 +62,7 @@ const saveEdit = async () => {
 h3 {
   font-size: clamp(20px, 1.3lvw, 22px);
   font-weight: normal;
-  color: invert($main-txt-color);
+  //color: invert($main-txt-color);
 }
 
 .dropdown {
@@ -72,14 +72,14 @@ h3 {
   cursor: pointer;
   width: calc(100% - ($pad * 2));
   padding: $pad;
-  background-color: $color;
+  //background-color: $color;
   border-radius: 13px;
   transition: background-color 0.3s ease-in-out;
   margin: auto;
 
-  &:hover {
-    background-color: darken($color, 10%);
-  }
+//   &:hover {
+//     background-color: darken($color, 10%);
+//   }
 }
 
 button {

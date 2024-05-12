@@ -55,12 +55,7 @@ div#entries-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 100lvw;
-  height: 100lvh;
-}
-
-div.entry {
-  margin: 15px;
+  height: 100%;
 }
 
 ul {
