@@ -90,7 +90,7 @@ div.content-container {
   overflow: hidden;
 
   img {
-    margin-top: 20px;
+    margin-top: 55px;
     width: 50%;
     min-width: 110px;
     margin-bottom: 20px;
@@ -113,7 +113,7 @@ div.content-container {
     $horizontal-pad: 13px;
 
     left: $horizontal-pad;
-    bottom: 15px;
+    bottom: 45px;
     width: 100%;
     position: absolute;
     width: calc(100% - ($horizontal-pad * 2));

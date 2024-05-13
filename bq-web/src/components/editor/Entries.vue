@@ -54,7 +54,10 @@ const toggleVisibility = (key: string) => {
 div#entries-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  overflow: scroll;
+  height: 100lvh;
+  padding-right: 25px;
+  margin: auto;
 }
 
 .entry {
