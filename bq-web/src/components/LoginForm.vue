@@ -2,7 +2,7 @@
 import useLogin from "../hooks/useLogin";
 
 import LabeledFormInput from "./LabeledFormInput.vue";
-import FormSubmitButton from "./FormSubmitButton.vue";
+import LoadingButton from "./LoadingButton.vue";
 
 const {
   loading,
@@ -44,6 +44,6 @@ const handleSubmit = (_: Event) => {
       <div class="form-error error-label" v-if="loginError">{{ loginError }}</div>
       <p v-else-if="loading">Loading...</p>
     </div>
-    <FormSubmitButton :loading="loading" text="Login" />
+    <LoadingButton :loading="loading" text="Login" />
   </form>
 </template>

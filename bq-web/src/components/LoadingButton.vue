@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineEmits(["click"])
 defineProps<{
   loading: boolean,
   text: string
@@ -6,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <button :disabled="loading" class="form-button glow gradient-button-0" type="submit">
+  <button :disabled="loading" class="form-button glow gradient-button-0" type="submit" @click="$emit('click')">
     {{ text }}<img v-if="loading" src="/spinner.svg" alt="loading" />
   </button>
 </template>

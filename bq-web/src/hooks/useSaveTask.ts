@@ -6,9 +6,10 @@ const useSaveTask = () => {
     const completed = ref(false)
     const comment = ref("")
     const message = ref("")
+    const loading = ref(false)
 
     const save = async (index: number[]) => {
-        message.value = "Saving..."
+        loading.value = true
 
         try {
             const task: UserTask = {
@@ -38,12 +39,15 @@ const useSaveTask = () => {
         catch (error) {
             message.value = "Failed to save task."
         }
+
+        loading.value = false
     }
 
     return {
         completed,
         comment,
         message,
+        loading,
         save
     }
 }

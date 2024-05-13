@@ -3,7 +3,7 @@ import { ref } from "vue";
 import useRegister from "../hooks/useRegister"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
-import FormSubmitButton from "./FormSubmitButton.vue";
+import LoadingButton from "./LoadingButton.vue";
 
 const {
   username,
@@ -87,7 +87,7 @@ const switchStage = () => {
         <div class="error-label" v-if="serverError">{{ serverError }}</div>
         <div class="success-label" v-else-if="message">{{ message }}</div>
       </div>
-      <FormSubmitButton :loading="loading" text="Register" />
+      <LoadingButton :loading="loading" text="Register" />
       <button class="prev glow gradient-button-0" @click="switchStage">Previous Step</button>
     </template>
   </form>

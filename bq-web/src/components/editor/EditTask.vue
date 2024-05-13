@@ -3,8 +3,10 @@ import { Ref, inject, onMounted, ref } from "vue"
 import { UserTask } from "../../models/task";
 import { UserSession } from "../../models/user";
 
-import EntryHeading from "../EntryHeading.vue";
 import useSaveTask from "../../hooks/useSaveTask";
+
+import EntryHeading from "../EntryHeading.vue";
+import LoadingButton from "../LoadingButton.vue";
 
 const optionsVisible = ref(false)
 const user = inject<Ref<UserSession>>("session")!.value.user
@@ -13,6 +15,7 @@ const {
   completed,
   comment,
   message,
+  loading,
   save
 } = useSaveTask()
 
@@ -39,27 +42,55 @@ const toggleCompleted = () => {
 </script>
 
 <template>
-  <div class="container">
-    <EntryHeading :is-active="optionsVisible" @click="toggleOptions" :index="index" :title="value"/>
-    <div class="check-container" @click="toggleCompleted">
-      <div :class="`completed ${completed ? 'active' : ''}`" />
-      <div :class="`${!completed ? 'active' : ''}`" />
+  <div :class="`container ${optionsVisible ? 'focused' : ''}`">
+    <div class="task-heading-container">
+      <EntryHeading :is-active="optionsVisible" @click="toggleOptions" :index="index" :title="value"/>
+      <div class="check-container" @click="toggleCompleted">
+        <div :class="`completed ${completed ? 'active' : ''}`" />
+        <div :class="`${!completed ? 'active' : ''}`" />
+      </div>
     </div>
-  </div>
-  <div class="options" v-show="optionsVisible">
-    <textarea v-model="comment" :readonly="user.isAdmin"></textarea>
-    <template v-if="!user.isAdmin">
-      <button @click="save($props.index)">Save</button>
-      <div v-if="message">{{ message }}</div>
-    </template>
+    <div class="options" v-show="optionsVisible">
+      <textarea spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
+      <br />
+      <div class="save-container" v-if="!user.isAdmin">
+        <LoadingButton :loading="loading" @click="save(index)" text="Save" />
+        <span v-if="message">{{ message }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 @import "../../main.scss";
 
-div.container {
+div.task-heading-container {
   display: flex;
+}
+
+div.container {
+  padding-right: 7px;
+  padding-left: 15px;
+  margin-right: 15px;
+  margin-top: 10px;
+  border-radius: 8px;
+  transition: background-color 0.1s ease;
+  
+  &.focused,
+  &:hover {
+    background-color: $secondary-bg-color;
+  }
+}
+
+div.save-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  span {
+    margin-left: 15px;
+    font-size: clamp(17px, 1.5vw, 20px);
+  }
 }
 
 div.check-container {
@@ -69,7 +100,7 @@ div.check-container {
   margin-left: auto;
   margin-right: 15px;
   opacity: 0.8;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s ease;
   filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.06));
   cursor: pointer;
 
@@ -108,7 +139,33 @@ div.options {
   }
 
   textarea {
-    height: 50px;
+    $top-border-radius: 10px;
+
+    border: none;
+    border-top-left-radius: $top-border-radius;
+    border-top-right-radius: $top-border-radius;
+    border-bottom: 2px solid $main-txt-color;
+    color: $main-txt-color;
+    font-family: $main-font;
+    font-size: clamp(17px, 1.5vw, 22px);
+    height: 80px;
+    width: calc(100% - 30px);
+    resize: none;
+    background-color: transparent;
+    outline: none;
+    padding: 12px;
+    transition: background-color 0.1s ease;
+
+    &:focus {
+      background-color: $main-bg-color;
+    }
+  }
+
+  button {
+    font-size: clamp(15px, 1.5vw, 19px);
+    margin-top: 10px;
+    margin-bottom: 13px;
+    width: 110px;
   }
 }
 </style>
