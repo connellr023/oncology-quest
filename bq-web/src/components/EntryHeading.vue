@@ -46,7 +46,7 @@ const saveEdit = async () => {
 <template>
   <div :class="`entry-heading-container ${isActive ? 'active' : ''}`">
     <div class="header" v-if="!inEditMode">
-      <img src="/arrow.svg" alt="arrow" class="arrow" />
+      <img draggable="false" src="/arrow.svg" alt="arrow" class="arrow" />
       <h3 @click="$emit('click')" class="dropdown">{{ title }}</h3>
     </div>
     <input v-else v-model="title" />
@@ -71,12 +71,14 @@ div.header {
 }
 
 img.arrow {
+  user-select: none;
   opacity: 0.6;
   width: 16px;
   margin-right: 10px;
   display: inline-block;
   transform: rotate(90deg);
   transition: all 0.2s ease;
+  filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.03));
 }
 
 div.active {
@@ -92,6 +94,7 @@ h3.dropdown {
   font-weight: normal;
   color: $main-txt-color;
   display: inline-block;
+  padding-right: 15px;
 }
 
 button {

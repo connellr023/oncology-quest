@@ -3,12 +3,11 @@ import { Ref, inject, reactive } from "vue"
 import { UserSession } from "../../models/user"
 import { UserTaskEntries } from "../../models/task"
 
-import EntryHeading from "../EntryHeading.vue"
 import EditTask from "./EditTask.vue"
 import EditTaskHeadings from "./EditTaskHeadings.vue"
 import EditSubTaskHeading from "./EditSubTaskHeading.vue"
 import EditSubTaskEntry from "./EditSubTaskEntry.vue"
-import EntryProgress from "./EntryProgress.vue"
+import ProgressableEntryHeading from "../ProgressableEntryHeading.vue"
 
 defineProps<{ tasks: UserTaskEntries }>()
 
@@ -23,13 +22,10 @@ const toggleVisibility = (key: string) => {
 <template>
   <div id="entries-container">
     <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in sessionContext.entries">
-      <div class="progressable-entry-container">
-        <EntryHeading :is-active="visibility[entry.title]" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
-        <EntryProgress />
-      </div>
+      <ProgressableEntryHeading :isActive="visibility[entry.title] || false" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
       <ul v-show="visibility[entry.title]">
         <li v-for="(subTask, subIndex) in entry.tasks">
-          <EntryHeading :is-active="visibility[entry.title + subTask.title]" :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
+          <ProgressableEntryHeading :is-active="visibility[entry.title + subTask.title] || false" :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
           <ul v-show="visibility[entry.title + subTask.title]">
             <li
               v-for="(task, taskIndex) in subTask.tasks"
@@ -59,10 +55,6 @@ div#entries-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-div.progressable-entry-container {
-  position: relative;
 }
 
 .entry {

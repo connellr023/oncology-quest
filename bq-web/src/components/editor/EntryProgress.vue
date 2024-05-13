@@ -4,7 +4,7 @@
 
 <template>
   <div class="container">
-    <span class="percentage">50%</span>
+    <div class="percentage">50%</div>
     <div class="progress-container">
       <div class="progress-bar" />
     </div>
@@ -14,29 +14,29 @@
 <style scoped lang="scss">
 @import "../../main.scss";
 
-span.percentage {
-  position: absolute;
-  left: -50px;
-  top: -6px;
-  text-align: right;
+div.container {
+  flex-grow: 1;
+  margin-left: 30px;
+  margin-right: 15px;
+  margin-left: auto;
+  margin-top: 9px;
+  max-width: 300px;
 }
 
-div.container {
+div.percentage {
+  user-select: none;
+  font-size: 16px;
   font-style: italic;
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40%;
-  max-width: 600px;
-  min-width: 110px;
+  color: $main-txt-color;
+  text-align: center;
 }
 
 div.progress-container {
-  height: 7px;
+  height: 8px;
   background-color: rgba(255, 255, 255, 0.04);
   border-radius: 5px;
   overflow: hidden;
+  margin-top: 7px;
   filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.03));
 
   div.progress-bar {
