@@ -35,7 +35,7 @@ const toggleOptions = () => {
 </script>
 
 <template>
-  <EntryHeading @click="toggleOptions" :index="index" :title="value"/>
+  <EntryHeading :is-active="optionsVisible" @click="toggleOptions" :index="index" :title="value"/>
   <div class="options" v-show="optionsVisible">
     <label>Completed</label>
     <input type="checkbox" v-model="completed" :disabled="user.isAdmin" />

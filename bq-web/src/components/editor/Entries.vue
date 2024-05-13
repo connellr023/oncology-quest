@@ -24,12 +24,12 @@ const toggleVisibility = (key: string) => {
   <div id="entries-container">
     <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in sessionContext.entries">
       <div class="progressable-entry-container">
-        <EntryHeading :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
+        <EntryHeading :is-active="visibility[entry.title]" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
         <EntryProgress />
       </div>
       <ul v-show="visibility[entry.title]">
         <li v-for="(subTask, subIndex) in entry.tasks">
-          <EntryHeading :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
+          <EntryHeading :is-active="visibility[entry.title + subTask.title]" :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
           <ul v-show="visibility[entry.title + subTask.title]">
             <li
               v-for="(task, taskIndex) in subTask.tasks"
@@ -79,5 +79,6 @@ div.progressable-entry-container {
 
 ul {
   list-style-type: none;
+  padding-top: 10px;
 }
 </style>

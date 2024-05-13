@@ -6,6 +6,7 @@ import useSaveEntries from "../hooks/useSaveEntries";
 defineEmits(["click"])
 const props = defineProps<{
   title: string,
+  isActive: boolean,
   index: number[]
 }>()
 
@@ -43,30 +44,54 @@ const saveEdit = async () => {
 </script>
 
 <template>
-  <h3 v-if="!inEditMode" @click="$emit('click')" class="dropdown">{{ title }}</h3>
-  <input v-else v-model="title" />
-  <template v-if="sessionContext.user.isAdmin">
-    <template v-if="inEditMode">
-      <button @click="cancelEdit">Cancel</button>
-      <button @click="saveEdit">Save</button>
-      <span v-if="titleError">{{ titleError }}</span>
-      <span v-if="message">{{ message }}</span>
+  <div :class="`entry-heading-container ${isActive ? 'active' : ''}`">
+    <div class="header" v-if="!inEditMode">
+      <img src="/arrow.svg" alt="arrow" class="arrow" />
+      <h3 @click="$emit('click')" class="dropdown">{{ title }}</h3>
+    </div>
+    <input v-else v-model="title" />
+    <template v-if="sessionContext.user.isAdmin">
+      <template v-if="inEditMode">
+        <button @click="cancelEdit">Cancel</button>
+        <button @click="saveEdit">Save</button>
+        <span v-if="titleError">{{ titleError }}</span>
+        <span v-if="message">{{ message }}</span>
+      </template>
+      <button v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
     </template>
-    <button v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
-  </template>
+  </div>
 </template>
 
 <style scoped lang="scss">
 @import "../main.scss";
 
-h3 {
-  font-size: clamp(24px, 1.5lvw, 27px);
-  font-weight: normal;
-  color: $main-txt-color;
+div.header {
+  display: flex;
+  align-items: center;
 }
 
-.dropdown {
+img.arrow {
+  opacity: 0.6;
+  width: 16px;
+  margin-right: 10px;
+  display: inline-block;
+  transform: rotate(90deg);
+  transition: all 0.2s ease;
+}
+
+div.active {
+  img.arrow {
+    opacity: 1;
+    transform: rotate(180deg);
+  }
+}
+
+h3.dropdown {
   cursor: pointer;
+  font-size: clamp(17px, 1.5lvw, 22px);
+  font-weight: normal;
+  color: $main-txt-color;
+  display: inline-block;
 }
 
 button {
