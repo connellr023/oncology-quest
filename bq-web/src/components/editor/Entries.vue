@@ -8,6 +8,7 @@ import EditTaskHeadings from "./EditTaskHeadings.vue"
 import EditSubTaskHeading from "./EditSubTaskHeading.vue"
 import EditSubTaskEntry from "./EditSubTaskEntry.vue"
 import ProgressableEntryHeading from "../ProgressableEntryHeading.vue"
+import useTaskProgress from "../../hooks/useTaskProgress"
 
 defineProps<{ tasks: UserTaskEntries }>()
 
@@ -17,21 +18,19 @@ let visibility = reactive<Record<string, boolean>>({})
 const toggleVisibility = (key: string) => {
   visibility[key] = !visibility[key]
 }
+
+const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress()
 </script>
 
 <template>
   <div id="entries-container">
     <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in session.entries">
-      <ProgressableEntryHeading :isActive="visibility[entry.title] || false" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
+      <ProgressableEntryHeading :progress="calculateTaskProgress(index)" :isActive="visibility[entry.title] || false" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
       <ul v-show="visibility[entry.title]">
         <li v-for="(subTask, subIndex) in entry.tasks">
-          <ProgressableEntryHeading :is-active="visibility[entry.title + subTask.title] || false" :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
+          <ProgressableEntryHeading :progress="calculateSubtaskProgress([index, subIndex])" :is-active="visibility[entry.title + subTask.title] || false" :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
           <ul v-show="visibility[entry.title + subTask.title]">
-            <li
-              v-for="(task, taskIndex) in subTask.tasks"
-              :key="taskIndex"
-              :data-index="`${index},${subIndex},${taskIndex}`"
-            >
+            <li v-for="(task, taskIndex) in subTask.tasks">
               <EditTask
                 :task="tasks[index]?.[subIndex]?.[taskIndex] ?? null"
                 :value="task"

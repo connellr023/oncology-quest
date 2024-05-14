@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
+import { nextTick, onMounted, ref, watch } from "vue"
 
 const props = defineProps<{
   progress: number;
@@ -11,7 +11,8 @@ enum ColorClasses {
   RED = "red",
 }
 
-const barColorClass = ref(ColorClasses.GREEN);
+const barColorClass = ref(ColorClasses.GREEN)
+const rounded = Math.round(props.progress) > 100 ? 100 : Math.round(props.progress)
 
 onMounted(() => {
   if (props.progress < 50) {
@@ -26,15 +27,15 @@ onMounted(() => {
 
 <template>
   <div class="container">
-    <div class="percentage">{{ Math.round(progress) }}%</div>
+    <div class="percentage">{{ Math.round(props.progress) }}%</div>
     <div class="progress-container">
-      <div :class="`progress-bar ${barColorClass}`" :style="`width: ${progress}%`" />
+      <div :class="barColorClass" class="progress-bar" :style="{ width: `${rounded}%` }" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@import "../../main.scss";
+@import "../main.scss";
 
 div.container {
   flex-grow: 1;
@@ -63,7 +64,10 @@ div.progress-container {
 
   div.progress-bar {
     height: 100%;
+    width: 0%;
     border-radius: 5px;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
 
     &.green {
       background-color: $theme-color-green;
