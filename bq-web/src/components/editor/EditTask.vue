@@ -39,6 +39,10 @@ const toggleOptions = () => {
 const toggleCompleted = () => {
   completed.value = !completed.value
 }
+
+const saveAndUpdateProgress = () => {
+  save(props.index)
+}
 </script>
 
 <template>
@@ -54,7 +58,7 @@ const toggleCompleted = () => {
       <textarea spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
       <br />
       <div class="save-container" v-if="!user.isAdmin">
-        <LoadingButton :loading="loading" @click="save(index)" text="Save" />
+        <LoadingButton :loading="loading" @click="saveAndUpdateProgress" text="Save" />
         <span v-if="message">{{ message }}</span>
       </div>
     </div>

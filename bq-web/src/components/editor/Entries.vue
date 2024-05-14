@@ -11,7 +11,7 @@ import ProgressableEntryHeading from "../ProgressableEntryHeading.vue"
 
 defineProps<{ tasks: UserTaskEntries }>()
 
-const sessionContext = inject<Ref<UserSession>>("session")!
+const session = inject<Ref<UserSession>>("session")!
 let visibility = reactive<Record<string, boolean>>({})
 
 const toggleVisibility = (key: string) => {
@@ -21,7 +21,7 @@ const toggleVisibility = (key: string) => {
 
 <template>
   <div id="entries-container">
-    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in sessionContext.entries">
+    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in session.entries">
       <ProgressableEntryHeading :isActive="visibility[entry.title] || false" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
       <ul v-show="visibility[entry.title]">
         <li v-for="(subTask, subIndex) in entry.tasks">
@@ -38,13 +38,13 @@ const toggleVisibility = (key: string) => {
                 :index="[index, subIndex, taskIndex]"
               />
             </li>
-            <EditSubTaskEntry v-if="sessionContext.user.isAdmin" :index="[index, subIndex]" />
+            <EditSubTaskEntry v-if="session.user.isAdmin" :index="[index, subIndex]" />
           </ul>
         </li>
-        <EditSubTaskHeading v-if="sessionContext.user.isAdmin" :index="index" />
+        <EditSubTaskHeading v-if="session.user.isAdmin" :index="index" />
       </ul>
     </div>
-    <EditTaskHeadings v-if="sessionContext.user.isAdmin" />
+    <EditTaskHeadings v-if="session.user.isAdmin" />
   </div>
 </template>
 

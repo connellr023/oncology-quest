@@ -1,12 +1,34 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue"
 
+const props = defineProps<{
+  progress: number;
+}>();
+
+enum ColorClasses {
+  GREEN = "green",
+  YELLOW = "yellow",
+  RED = "red",
+}
+
+const barColorClass = ref(ColorClasses.GREEN);
+
+onMounted(() => {
+  if (props.progress < 50) {
+    barColorClass.value = ColorClasses.RED;
+  } else if (props.progress < 80) {
+    barColorClass.value = ColorClasses.YELLOW;
+  } else {
+    barColorClass.value = ColorClasses.GREEN;
+  }
+})
 </script>
 
 <template>
   <div class="container">
-    <div class="percentage">50%</div>
+    <div class="percentage">{{ Math.round(progress) }}%</div>
     <div class="progress-container">
-      <div class="progress-bar" />
+      <div :class="`progress-bar ${barColorClass}`" :style="`width: ${progress}%`" />
     </div>
   </div>
 </template>
@@ -40,10 +62,20 @@ div.progress-container {
   filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.03));
 
   div.progress-bar {
-    width: 50%;
     height: 100%;
-    background-color: $theme-color-green;
     border-radius: 5px;
+
+    &.green {
+      background-color: $theme-color-green;
+    }
+
+    &.yellow {
+      background-color: $theme-color-yellow;
+    }
+
+    &.red {
+      background-color: $theme-color-red;
+    }
   }
 }
 </style>

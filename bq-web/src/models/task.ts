@@ -1,4 +1,8 @@
 export type UserTaskEntries = Record<number, Record<number, Record<number, UserTask>>>
+// export type TaskProgress = Record<number, {
+//     progress: number,
+//     subtasks: Record<number, number>
+// }>
 
 export interface SubTask {
     title: string,
