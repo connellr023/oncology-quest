@@ -14,7 +14,7 @@ defineProps<{
 <template>
   <div class="progressable-entry-container">
     <EntryHeading :is-active="isActive" :index="index" :title="title" @click="$emit('click')" />
-    <EntryProgress :key="progress" :progress="progress" />
+    <EntryProgress :progress="progress" />
   </div>
 </template>
 
