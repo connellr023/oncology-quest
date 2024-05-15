@@ -45,20 +45,20 @@ const saveEdit = async () => {
 </script>
 
 <template>
-  <div :class="`entry-heading-container ${isActive ? 'active' : ''}`">
+  <div :class="`entry-heading-container ${isActive ? 'active' : ''}`" @click="$emit('click')">
     <div class="header">
       <img draggable="false" src="/arrow.svg" alt="arrow" class="arrow" />
-      <h3 v-if="!inEditMode" @click="$emit('click')" class="dropdown">{{ title }}</h3>
-      <input class="minimal" v-else v-model="title" />
+      <h3 v-if="!inEditMode" class="dropdown">{{ title }}</h3>
+      <input @click.stop class="minimal" v-else v-model="title" />
     </div>
     <div class="edit-buttons-container" v-if="sessionContext.user.isAdmin">
       <template v-if="inEditMode">
-        <button class="minimal" @click="cancelEdit">Cancel</button>
-        <button class="minimal" @click="saveEdit">Save</button>
+        <button class="minimal" @click.stop="cancelEdit">Cancel</button>
+        <button class="minimal" @click.stop="saveEdit">Save</button>
         <span v-if="titleError">{{ titleError }}</span>
         <span v-if="message">{{ message }}</span>
       </template>
-      <button class="edit minimal" v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
+      <button class="edit minimal" v-else :disabled="isEditing" @click.stop="toggleEditMode">Edit</button>
     </div>
   </div>
 </template>
@@ -69,11 +69,12 @@ const saveEdit = async () => {
 div.header {
   display: flex;
   align-items: center;
+  padding: 8px;
+  padding-left: 0;
 }
 
 div.entry-heading-container {
   display: flex;
-  width: 100%;
   align-items: center;
 }
 
@@ -96,14 +97,19 @@ div.active {
 }
 
 h3.dropdown {
-  font-size: clamp(17px, 1.5lvw, 22px);
+  font-size: clamp(16px, 1.5lvw, 19px);
   font-weight: normal;
   color: $main-txt-color;
   display: inline-block;
   padding-right: 15px;
+  margin: auto;
 }
 
 div.edit-buttons-container {
+  span {
+    margin-left: 15px;
+  }
+
   button {
     margin: auto;
     margin-left: 10px;

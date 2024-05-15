@@ -46,9 +46,9 @@ const toggleCompleted = async () => {
 </script>
 
 <template>
-  <div :class="`container ${optionsVisible ? 'focused' : ''}`">
+  <div :class="`container ${optionsVisible ? 'focused' : ''}`" @click="toggleOptions">
     <div class="task-heading-container">
-      <EntryHeading :is-active="optionsVisible" @click="toggleOptions" :index="index" :title="value"/>
+      <EntryHeading :is-active="optionsVisible" :index="index" :title="value"/>
       <div class="check-container" @click="toggleCompleted">
         <div :class="`completed ${completed ? 'active' : ''}`" />
         <div :class="`${!completed ? 'active' : ''}`" />
@@ -58,7 +58,7 @@ const toggleCompleted = async () => {
       <textarea spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
       <br />
       <div class="save-container" v-if="!user.isAdmin">
-        <LoadingButton :loading="loading" @click="save(index)" text="Save" />
+        <LoadingButton :loading="loading" @click.stop="save(index)" text="Save" />
         <span v-if="message">{{ message }}</span>
       </div>
     </div>
@@ -74,9 +74,8 @@ div.task-heading-container {
 
 div.container {
   cursor: pointer;
-  padding-right: 7px;
-  padding-left: 15px;
-  margin-right: 15px;
+  padding: 6px 0 6px 15px;
+  margin-right: 13px;
   margin-top: 10px;
   border-radius: 8px;
   transition: background-color 0.1s ease;
@@ -101,7 +100,7 @@ div.save-container {
 div.check-container {
   display: flex;
   justify-content: center;
-  margin-top: 25px;
+  margin-top: 13px;
   margin-left: auto;
   margin-right: 15px;
   opacity: 0.8;
