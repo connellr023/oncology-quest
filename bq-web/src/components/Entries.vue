@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { Ref, inject, reactive } from "vue"
-import { UserSession } from "../../models/user"
-import { UserTaskEntries } from "../../models/task"
+import { UserSession } from "../models/user"
+import { UserTaskEntries } from "../models/task"
 
 import EditTask from "./EditTask.vue"
 import EditTaskHeadings from "./EditTaskHeadings.vue"
 import EditSubTaskHeading from "./EditSubTaskHeading.vue"
 import EditSubTaskEntry from "./EditSubTaskEntry.vue"
-import ProgressableEntryHeading from "../ProgressableEntryHeading.vue"
-import useTaskProgress from "../../hooks/useTaskProgress"
+import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
+import useTaskProgress from "../hooks/useTaskProgress"
 
-defineProps<{ tasks: UserTaskEntries }>()
+const props = defineProps<{ tasks: UserTaskEntries }>()
 
 const session = inject<Ref<UserSession>>("session")!
 let visibility = reactive<Record<string, boolean>>({})
@@ -19,7 +19,7 @@ const toggleVisibility = (key: string) => {
   visibility[key] = !visibility[key]
 }
 
-const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress()
+const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(props.tasks)
 </script>
 
 <template>
@@ -48,7 +48,7 @@ const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress()
 </template>
 
 <style scoped lang="scss">
-@import "../../main.scss";
+@import "../main.scss";
 
 div#entries-container {
   display: flex;

@@ -15,6 +15,9 @@ provide("session", session)
 const isEditing = ref(false)
 provide("isEditing", isEditing)
 
+const isAdminViewingUsers = ref(false)
+provide("isAdminViewingUsers", isAdminViewingUsers)
+
 const { loading, connectionError } = useFetchSession(session)
 </script>
 

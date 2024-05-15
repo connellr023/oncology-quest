@@ -51,7 +51,7 @@ const saveEdit = async () => {
       <h3 @click="$emit('click')" class="dropdown">{{ title }}</h3>
     </div>
     <input v-else v-model="title" />
-    <template v-if="sessionContext.user.isAdmin">
+    <div class="edit-buttons-container" v-if="sessionContext.user.isAdmin">
       <template v-if="inEditMode">
         <button @click="cancelEdit">Cancel</button>
         <button @click="saveEdit">Save</button>
@@ -59,7 +59,7 @@ const saveEdit = async () => {
         <span v-if="message">{{ message }}</span>
       </template>
       <button v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -68,6 +68,12 @@ const saveEdit = async () => {
 
 div.header {
   display: flex;
+  align-items: center;
+}
+
+div.entry-heading-container {
+  display: flex;
+  width: 100%;
   align-items: center;
 }
 

@@ -3,7 +3,9 @@ import { Ref, inject, ref } from "vue"
 import { UserSession } from "../models/user"
 import useLogout from "../hooks/useLogout";
 
-const sessionContext = inject<Ref<UserSession | null>>("session")!
+const isAdminViewingUsers = inject<Ref<boolean>>("isAdminViewingUsers")!
+const session = inject<Ref<UserSession | null>>("session")!
+
 const isCollapsed = ref(false)
 
 const { logout } = useLogout()
@@ -11,21 +13,33 @@ const { logout } = useLogout()
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
 }
+
+const manageUsers = () => {
+  isAdminViewingUsers.value = true
+}
+
+const manageTasks = () => {
+  isAdminViewingUsers.value = false
+}
 </script>
 
 <template>
 
-  <div v-if="sessionContext" id="account-bar-container">
+  <div v-if="session" id="account-bar-container">
     <div class="content-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
       <img draggable="false" src="/logo.svg" />
       <div>
-        <h1>{{ sessionContext.user.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
+        <h1>{{ session.user.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
         <div>
           <div>Logged in as</div>
           <div class="userinfo">
-            <b><i>{{ sessionContext.user.username }} ({{ sessionContext.user.name }})</i></b>
+            <b><i>{{ session.user.username }} ({{ session.user.name }})</i></b>
           </div>
-          <button class="glow gradient-button-2" @click="logout">Log Out</button>
+          <div class="admin-buttons" v-if="session.user.isAdmin">
+            <button class="glow gradient-button-0" @click="manageTasks">Manage Tasks</button>
+            <button class="glow gradient-button-0" @click="manageUsers">Manage Users</button>
+          </div>
+          <button class="logout glow gradient-button-2" @click="logout">Log Out</button>
         </div>
       </div>
     </div>
@@ -39,6 +53,7 @@ const toggleCollapse = () => {
 <style scoped lang="scss">
 div#account-bar-container {
   position: relative;
+  max-height: 100lvh;
 }
 
 div.collapse-indicator-container {
@@ -78,6 +93,14 @@ div.collapse-indicator-container {
   }
 }
 
+div.admin-buttons {
+  margin-top: 30px;
+
+  button {
+    margin-top: 20px;
+  }
+}
+
 div.content-container {
   $anim-speed: 0.3s ease;
 
@@ -113,10 +136,13 @@ div.content-container {
     $horizontal-pad: 13px;
 
     left: $horizontal-pad;
-    bottom: 45px;
     width: 100%;
-    position: absolute;
     width: calc(100% - ($horizontal-pad * 2));
+
+    &.logout {
+      bottom: -20px;
+      position: absolute;
+    }
   }
 
   &.collapsed {
