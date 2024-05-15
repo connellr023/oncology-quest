@@ -55,7 +55,6 @@ div#entries-container {
   flex-direction: column;
   overflow: scroll;
   height: 100lvh;
-  padding-right: 25px;
   margin: auto;
 }
 

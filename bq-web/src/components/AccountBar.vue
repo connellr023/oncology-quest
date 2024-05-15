@@ -53,7 +53,7 @@ const manageTasks = () => {
 <style scoped lang="scss">
 div#account-bar-container {
   position: relative;
-  max-height: 100lvh;
+  height: 100lvh;
 }
 
 div.collapse-indicator-container {

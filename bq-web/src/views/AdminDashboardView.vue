@@ -40,7 +40,7 @@ const setSelectedUser = (user: User) => {
       <div>Email: {{ selectedUser.email }}</div>
     </div>
   </div> -->
-  <div v-show="isAdminViewingUsers">
+  <div class="user-search-container" v-show="isAdminViewingUsers">
     <input v-model="username" placeholder="Search Username" />
     <button @click="searchUser">Search</button>
     <div>
@@ -69,12 +69,16 @@ const setSelectedUser = (user: User) => {
 </template>
 
 <style scoped lang="scss">
-input {
-  margin-top: 25px;
-}
 
 div.user-option {
   cursor: pointer;
   margin: 5px;
+}
+
+div.user-search-container {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  height: 100lvh;
 }
 </style>

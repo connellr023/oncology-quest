@@ -46,19 +46,19 @@ const saveEdit = async () => {
 
 <template>
   <div :class="`entry-heading-container ${isActive ? 'active' : ''}`">
-    <div class="header" v-if="!inEditMode">
+    <div class="header">
       <img draggable="false" src="/arrow.svg" alt="arrow" class="arrow" />
-      <h3 @click="$emit('click')" class="dropdown">{{ title }}</h3>
+      <h3 v-if="!inEditMode" @click="$emit('click')" class="dropdown">{{ title }}</h3>
+      <input class="minimal" v-else v-model="title" />
     </div>
-    <input v-else v-model="title" />
     <div class="edit-buttons-container" v-if="sessionContext.user.isAdmin">
       <template v-if="inEditMode">
-        <button @click="cancelEdit">Cancel</button>
-        <button @click="saveEdit">Save</button>
+        <button class="minimal" @click="cancelEdit">Cancel</button>
+        <button class="minimal" @click="saveEdit">Save</button>
         <span v-if="titleError">{{ titleError }}</span>
         <span v-if="message">{{ message }}</span>
       </template>
-      <button v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
+      <button class="edit minimal" v-else :disabled="isEditing" @click="toggleEditMode">Edit</button>
     </div>
   </div>
 </template>
@@ -103,7 +103,15 @@ h3.dropdown {
   padding-right: 15px;
 }
 
-button {
-  margin-left: 10px;
+div.edit-buttons-container {
+  button {
+    margin: auto;
+    margin-left: 10px;
+
+    &.edit {
+      margin-right: 15px;
+      margin-left: auto;
+    }
+  }
 }
 </style>
