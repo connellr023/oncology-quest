@@ -11,7 +11,7 @@ const useSaveTask = () => {
     const message = ref("")
     const loading = ref(false)
 
-    const save = async (index: [number, number, number]) => {
+    const save = async (index: [number, number, number]): Promise<boolean> => {
         loading.value = true
 
         try {
@@ -28,23 +28,34 @@ const useSaveTask = () => {
                 },
                 body: JSON.stringify({
                     task,
-                    index: index
+                    index
                 })
             })
 
             if (response.ok) {
                 message.value = "Saved!"
+                loading.value = false
+
+                if (!session.value.user.tasks[index[0]]) {
+                    session.value.user.tasks[index[0]] = []
+                }
+                else if (!session.value.user.tasks[index[0]][index[1]]) {
+                    session.value.user.tasks[index[0]][index[1]] = []
+                }
+
                 session.value.user.tasks[index[0]][index[1]][index[2]] = task
+                return true
             }
-            else {
-                message.value = `Server responded with ${response.status}.`
-            }
+            
+            message.value = `Server responded with ${response.status}.`
         }
         catch (error) {
+            console.error(error)
             message.value = "Failed to save task."
         }
 
         loading.value = false
+        return false
     }
 
     return {

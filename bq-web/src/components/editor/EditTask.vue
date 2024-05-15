@@ -36,8 +36,12 @@ const toggleOptions = () => {
   optionsVisible.value = !optionsVisible.value
 }
 
-const toggleCompleted = () => {
+const toggleCompleted = async () => {
   completed.value = !completed.value
+
+  if (!await save(props.index)) {
+    completed.value = !completed.value
+  }
 }
 </script>
 
@@ -69,6 +73,7 @@ div.task-heading-container {
 }
 
 div.container {
+  cursor: pointer;
   padding-right: 7px;
   padding-left: 15px;
   margin-right: 15px;

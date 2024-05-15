@@ -90,7 +90,6 @@ div.active {
 }
 
 h3.dropdown {
-  cursor: pointer;
   font-size: clamp(17px, 1.5lvw, 22px);
   font-weight: normal;
   color: $main-txt-color;

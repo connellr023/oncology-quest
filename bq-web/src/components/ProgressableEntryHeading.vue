@@ -12,14 +12,15 @@ defineProps<{
 </script>
 
 <template>
-  <div class="progressable-entry-container">
-    <EntryHeading :is-active="isActive" :index="index" :title="title" @click="$emit('click')" />
+  <div class="progressable-entry-container" @click="$emit('click')">
+    <EntryHeading :is-active="isActive" :index="index" :title="title" />
     <EntryProgress :progress="progress" />
   </div>
 </template>
 
 <style scoped lang="scss">
 div.progressable-entry-container {
+  cursor: pointer;
   position: relative;
   display: flex;
 }
