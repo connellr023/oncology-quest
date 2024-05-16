@@ -1,4 +1,4 @@
-use crate::models::{client_user::ClientUser, model::Model, task_structure::TaskStructure, tasks::Task, user::User};
+use crate::models::{client_user::ClientUser, model::Model, task_structure::TaskStructure, user::User};
 use actix_web::{web::Data, HttpResponse, Responder};
 use actix_session::Session;
 use redis::{Client, Connection};
@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct UserSession {
     pub user: ClientUser,
-    pub entries: Vec<Task>
+    pub structure: TaskStructure
 }
 
 /// Generates an HTTP response containing the user session data with the task structure.
@@ -21,14 +21,14 @@ struct UserSession {
 /// 
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
 pub(super) fn handle_session_response(connection: &mut Connection, user: User) -> HttpResponse {
-    let entries = match TaskStructure::fetch(connection, "") {
-        Some(task_structure) => task_structure.structure_as_owned(),
+    let structure = match TaskStructure::fetch(connection, "") {
+        Some(task_structure) => task_structure,
         None => return HttpResponse::InternalServerError().finish()
     };
 
     let user_client = UserSession {
         user: user.into(),
-        entries
+        structure
     };
 
     HttpResponse::Ok().json(user_client)

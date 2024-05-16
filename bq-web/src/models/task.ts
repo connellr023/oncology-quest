@@ -1,8 +1,9 @@
 export type UserTaskEntries = Record<number, Record<number, Record<number, UserTask>>>
-// export type TaskProgress = Record<number, {
-//     progress: number,
-//     subtasks: Record<number, number>
-// }>
+
+export interface EntryStructureResponse {
+    lastUpdated: string,
+    entries: Task[]
+}
 
 export interface SubTask {
     title: string,

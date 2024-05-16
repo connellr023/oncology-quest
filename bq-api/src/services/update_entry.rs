@@ -1,7 +1,7 @@
 use crate::models::{model::Model, task_structure::TaskStructure, user::User};
 use crate::utilities::parsables::EntryTitle;
-use actix_session::Session;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
+use actix_session::Session;
 use redis::Client;
 use serde::Deserialize;
 

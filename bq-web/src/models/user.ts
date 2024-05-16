@@ -1,4 +1,4 @@
-import { Task, UserTaskEntries } from "./task";
+import { EntryStructureResponse, UserTaskEntries } from "./task";
 
 export interface User {
     username: string,
@@ -10,5 +10,5 @@ export interface User {
 
 export interface UserSessionResponse {
     user: User,
-    entries: Task[]
+    structure: EntryStructureResponse
 }

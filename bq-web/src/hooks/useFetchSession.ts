@@ -23,7 +23,7 @@ const useFetchSession = () => {
                 const sessionData: UserSessionResponse = await response.json()
 
                 session.value = sessionData.user
-                entries.value = sessionData.entries
+                entries.value = sessionData.structure.entries
             }
         }
         catch (_) {

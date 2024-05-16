@@ -18,7 +18,7 @@ const useTaskProgress = (userTasks: UserTaskEntries) => {
         const toComplete = entries[index[0]].tasks[index[1]].tasks.length
 
         for (const taskKey in completedTasks) {
-            if (completedTasks[taskKey].completed) {
+            if (completedTasks[taskKey].completed && entries[index[0]].tasks[index[1]].tasks[taskKey]) {
                 total++
             }
         }
@@ -35,7 +35,9 @@ const useTaskProgress = (userTasks: UserTaskEntries) => {
         const toComplete = entries[index].tasks.length
 
         for (let i = 0; i < toComplete; i++) {
-            progress += calculateSubtaskProgress([index, i])
+            if (entries[index].tasks[i]) {
+                progress += calculateSubtaskProgress([index, i])
+            }
         }
 
         return progress / toComplete

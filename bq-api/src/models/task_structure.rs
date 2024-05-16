@@ -1,18 +1,29 @@
 use super::{model::Model, tasks::{SubTask, Task}};
 use crate::utilities::parsables::EntryTitle;
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
 use redis::Connection;
 
 const TASKS_KEY: &str = "tasks";
 
 #[derive(Serialize, Deserialize)]
-pub struct TaskStructure(Vec<Task>);
+#[serde(rename_all = "camelCase")]
+pub struct TaskStructure {
+    entries: Vec<Task>,
+    last_updated: DateTime<Utc>
+}
 
 impl TaskStructure {
     /// Returns the owned structure of tasks and consumes self.
-    pub fn structure_as_owned(self) -> Vec<Task> {
-        self.0
-    }
+    // pub fn structure_as_owned(self) -> Vec<Task> {
+    //     self.entries
+    // }
+
+    /// Returns the a timestamp of the last update to the structure.
+    /// Used for caching purposes.
+    // pub fn last_updated(&self) -> &DateTime<Utc> {
+    //     &self.last_updated
+    // }
 
     /// Updates a single task entry in the structure.
     /// 
@@ -26,12 +37,10 @@ impl TaskStructure {
     /// 
     /// A boolean indicating whether the update operation was successful.
     pub fn update_existing(&mut self, connection: &mut Connection, index: &[u16], title: EntryTitle) -> bool {
-        let entries = &mut self.0;
-        
         match index.len() {
-            1 => entries[index[0] as usize].title = title,
-            2 => entries[index[0] as usize].tasks[index[1] as usize].title = title,
-            3 => entries[index[0] as usize].tasks[index[1] as usize].tasks[index[2] as usize] = title,
+            1 => self.entries[index[0] as usize].title = title,
+            2 => self.entries[index[0] as usize].tasks[index[1] as usize].title = title,
+            3 => self.entries[index[0] as usize].tasks[index[1] as usize].tasks[index[2] as usize] = title,
             _ => return false
         };
 
@@ -49,12 +58,10 @@ impl TaskStructure {
     /// 
     /// A boolean indicating whether the addition operation was successful.
     pub fn push_entry(&mut self, connection: &mut Connection, index: &[u16], title: EntryTitle) -> bool {
-        let entries = &mut self.0;
-
         match index.len() {
-            0 => entries.push(Task::new(title)),
-            1 => entries[index[0] as usize].tasks.push(SubTask::new(title)),
-            2 => entries[index[0] as usize].tasks[index[1] as usize].tasks.push(title),
+            0 => self.entries.push(Task::new(title)),
+            1 => self.entries[index[0] as usize].tasks.push(SubTask::new(title)),
+            2 => self.entries[index[0] as usize].tasks[index[1] as usize].tasks.push(title),
             _ => return false
         };
 
@@ -72,17 +79,15 @@ impl TaskStructure {
     /// 
     /// A boolean indicating whether the removal operation was successful.
     pub fn pop_entry(&mut self, connection: &mut Connection, index: &[u16]) -> bool {
-        let entries = &mut self.0;
-
         match index.len() {
             0 => {
-                entries.pop();
+                self.entries.pop();
             },
             1 => {
-                entries[index[0] as usize].tasks.pop();
+                self.entries[index[0] as usize].tasks.pop();
             },
             2 => {
-                entries[index[0] as usize].tasks[index[1] as usize].tasks.pop();
+                self.entries[index[0] as usize].tasks[index[1] as usize].tasks.pop();
             },
             _ => return false
         };
