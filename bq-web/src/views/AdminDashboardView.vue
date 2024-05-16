@@ -5,7 +5,7 @@ import { User } from "../models/user";
 import Entries from "../components/Entries.vue"
 
 import useUserSearch from "../hooks/useUserSearch"
-import useValidateUsername from "../hooks/useValidateUsername";
+import useValidateUsername from "../hooks/validation/useValidateUsername";
 
 const isAdminViewingUsers = inject<Ref<boolean>>("isAdminViewingUsers")!
 

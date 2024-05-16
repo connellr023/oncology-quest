@@ -1,9 +1,10 @@
 import { ref } from "vue"
 import { API_ENDPOINT, isPasswordBanned } from "../utilities"
-import useValidateUsername from "./useValidateUsername"
-import useValidateName from "./useValidateName"
-import useValidateEmail from "./useValidateEmail"
-import useValidateConfirmedPassword from "./useValidateConfirmedPassword"
+
+import useValidateUsername from "./validation/useValidateUsername"
+import useValidateName from "./validation/useValidateName"
+import useValidateEmail from "./validation/useValidateEmail"
+import useValidateConfirmedPassword from "./validation/useValidateConfirmedPassword"
 
 const useRegister = () => {
     const { username, usernameError } = useValidateUsername()

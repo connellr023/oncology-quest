@@ -1,7 +1,8 @@
 import { Ref, inject, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
-import useValidateTitle from "./useValidateTitle"
 import { Task } from "../models/task"
+
+import useValidateTitle from "./validation/useValidateTitle"
 import useStructureCache from "./useStructureCache"
 
 const useSaveEntryTitle = () => {

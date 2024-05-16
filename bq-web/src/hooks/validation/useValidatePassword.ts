@@ -1,5 +1,5 @@
-import { PASSWORD_REGEX } from "../utilities";
-import useValidateField from "./useValidateField";
+import { PASSWORD_REGEX } from "../../utilities"
+import useValidateField from "./useValidateField"
 
 const useValidatePassword = () => {
     const { field, error } = useValidateField(

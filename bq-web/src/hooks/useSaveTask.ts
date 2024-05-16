@@ -2,7 +2,8 @@ import { Ref, inject, ref } from "vue"
 import { UserTask } from "../models/task"
 import { API_ENDPOINT } from "../utilities"
 import { User } from "../models/user"
-import useValidateComment from "./useValidateComment"
+
+import useValidateComment from "./validation/useValidateComment"
 
 const useSaveTask = () => {
     const session = inject<Ref<User>>("session")!

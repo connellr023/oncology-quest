@@ -1,5 +1,5 @@
-import { COMMENT_REGEX } from "../utilities";
-import useValidateField from "./useValidateField";
+import { COMMENT_REGEX } from "../../utilities"
+import useValidateField from "./useValidateField"
 
 const useValidateComment = () => {
     const { field, error } = useValidateField(

@@ -1,4 +1,4 @@
-import { ENTRY_TITLE_REGEX } from "../utilities"
+import { ENTRY_TITLE_REGEX } from "../../utilities"
 import useValidateField from "./useValidateField"
 
 const useValidateTitle = () => {

@@ -1,5 +1,5 @@
-import { NAME_REGEX } from "../utilities";
-import useValidateField from "./useValidateField";
+import { NAME_REGEX } from "../../utilities"
+import useValidateField from "./useValidateField"
 
 const useValidateName = () => {
     const { field, error } = useValidateField(

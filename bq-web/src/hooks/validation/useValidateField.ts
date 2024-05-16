@@ -1,5 +1,11 @@
 import { ref, watch } from "vue"
 
+/**
+ * Custom hook for validating a field.
+ * @param check - A function that checks if the field is valid.
+ * @param errorMessage - The error message to display if the field is invalid.
+ * @returns An object containing the field and error properties.
+ */
 const useValidateField = (check: (field: string) => boolean, errorMessage: string) => {
     const field = ref("")
     const error = ref("")
@@ -19,4 +25,4 @@ const useValidateField = (check: (field: string) => boolean, errorMessage: strin
     }
 }
 
-export default useValidateField;
+export default useValidateField

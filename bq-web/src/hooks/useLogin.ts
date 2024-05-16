@@ -3,8 +3,8 @@ import { User, UserSessionResponse } from "../models/user"
 import { Task } from "../models/task"
 import { API_ENDPOINT } from "../utilities"
 
-import useValidateUsername from "./useValidateUsername"
-import useValidatePassword from "./useValidatePassword"
+import useValidateUsername from "./validation/useValidateUsername"
+import useValidatePassword from "./validation/useValidatePassword"
 import useStructureCache from "./useStructureCache"
 
 const useLogin = () => {
