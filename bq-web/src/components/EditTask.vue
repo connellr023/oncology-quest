@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, inject, onMounted, ref } from "vue"
 import { UserTask } from "../models/task";
-import { UserSession } from "../models/user";
+import { User } from "../models/user";
 
 import useSaveTask from "../hooks/useSaveTask";
 
@@ -9,7 +9,7 @@ import EntryHeading from "./EntryHeading.vue";
 import LoadingButton from "./LoadingButton.vue";
 
 const optionsVisible = ref(false)
-const user = inject<Ref<UserSession>>("session")!.value.user
+const user = inject<Ref<User>>("session")!.value
 
 const {
   completed,
@@ -49,16 +49,16 @@ const toggleCompleted = async () => {
   <div :class="`container ${optionsVisible ? 'focused' : ''}`" @click="toggleOptions">
     <div class="task-heading-container">
       <EntryHeading :is-active="optionsVisible" :index="index" :title="value"/>
-      <div class="check-container" @click="toggleCompleted">
+      <div class="check-container" @click.stop="toggleCompleted">
         <div :class="`completed ${completed ? 'active' : ''}`" />
         <div :class="`${!completed ? 'active' : ''}`" />
       </div>
     </div>
-    <div class="options" v-show="optionsVisible">
+    <div @click.stop class="options" v-show="optionsVisible">
       <textarea spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
       <br />
       <div class="save-container" v-if="!user.isAdmin">
-        <LoadingButton :loading="loading" @click.stop="save(index)" text="Save" />
+        <LoadingButton :loading="loading" @click="save(index)" text="Save" />
         <span v-if="message">{{ message }}</span>
       </div>
     </div>

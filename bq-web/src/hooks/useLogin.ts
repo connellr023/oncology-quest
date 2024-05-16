@@ -1,6 +1,8 @@
 import { Ref, inject, ref } from "vue"
-import { UserSession } from "../models/user"
+import { User, UserSessionResponse } from "../models/user"
+import { Task } from "../models/task"
 import { API_ENDPOINT } from "../utilities"
+
 import useValidateUsername from "./useValidateUsername"
 import useValidatePassword from "./useValidatePassword"
 
@@ -11,7 +13,8 @@ const useLogin = () => {
     const loading = ref(false)
     const loginError = ref("")
 
-    const sessionContext = inject<Ref<UserSession | null>>("session")
+    const session = inject<Ref<User | null>>("session")!
+    const entries = inject<Ref<Task[]>>("entries")!
 
     const login = async () => {
         loading.value = true
@@ -31,14 +34,10 @@ const useLogin = () => {
 
             if (response.ok) {
                 try {
-                    const session: UserSession = await response.json()
+                    const sessionData: UserSessionResponse = await response.json()
 
-                    if (!sessionContext) {
-                        loginError.value = "Session context not found."
-                    }
-                    else {
-                        sessionContext.value = session
-                    }
+                    session.value = sessionData.user
+                    entries.value = sessionData.entries
                 }
                 catch (error) {
                     loginError.value = "Failed to parse response."

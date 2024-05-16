@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { provide, ref } from "vue";
-import { UserSession } from "./models/user"
+import { provide, ref } from "vue"
 
 import useFetchSession from "./hooks/useFetchSession"
 
@@ -9,16 +8,15 @@ import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
 import AccountBar from "./components/AccountBar.vue"
 
-let session = ref<UserSession | null>(null)
+const { session, entries, loading, connectionError } = useFetchSession()
 provide("session", session)
+provide("entries", entries)
 
 const isEditing = ref(false)
 provide("isEditing", isEditing)
 
 const isAdminViewingUsers = ref(false)
 provide("isAdminViewingUsers", isAdminViewingUsers)
-
-const { loading, connectionError } = useFetchSession(session)
 </script>
 
 <template>
@@ -32,7 +30,7 @@ const { loading, connectionError } = useFetchSession(session)
         <div id="dash-container" v-else>
           <AccountBar />
           <div id="dash-content-container">
-            <AdminDashboardView v-if="session.user.isAdmin" />
+            <AdminDashboardView v-if="session.isAdmin" />
             <DashboardView v-else />
           </div>
         </div>

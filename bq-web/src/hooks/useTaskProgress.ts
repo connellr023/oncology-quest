@@ -1,9 +1,8 @@
 import { Ref, inject } from "vue"
-import { UserSession } from "../models/user"
-import { UserTaskEntries } from "../models/task"
+import { Task, UserTaskEntries } from "../models/task"
 
 const useTaskProgress = (userTasks: UserTaskEntries) => {
-    const entries = inject<Ref<UserSession>>("session")!.value.entries
+    const entries = inject<Ref<Task[]>>("entries")!.value
 
     const calculateSubtaskProgress = (index: [number, number]): number => {
         if (index.length !== 2) {

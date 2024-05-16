@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
-import { UserSession } from "../models/user"
+import { User } from "../models/user"
 import useLogout from "../hooks/useLogout";
 
 const isAdminViewingUsers = inject<Ref<boolean>>("isAdminViewingUsers")!
-const session = inject<Ref<UserSession | null>>("session")!
+const session = inject<Ref<User | null>>("session")!
 
 const isCollapsed = ref(false)
 
@@ -29,13 +29,13 @@ const manageTasks = () => {
     <div class="content-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
       <img draggable="false" src="/logo.svg" />
       <div>
-        <h1>{{ session.user.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
+        <h1>{{ session.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
         <div>
           <div>Logged in as</div>
           <div class="userinfo">
-            <b><i>{{ session.user.username }} ({{ session.user.name }})</i></b>
+            <b><i>{{ session.username }} ({{ session.name }})</i></b>
           </div>
-          <div class="admin-buttons" v-if="session.user.isAdmin">
+          <div class="admin-buttons" v-if="session.isAdmin">
             <button class="glow gradient-button-0" @click="manageTasks">Manage Tasks</button>
             <button class="glow gradient-button-0" @click="manageUsers">Manage Users</button>
           </div>

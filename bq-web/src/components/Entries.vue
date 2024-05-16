@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { Ref, inject, reactive } from "vue"
-import { UserSession } from "../models/user"
-import { UserTaskEntries } from "../models/task"
+import { User } from "../models/user"
+import { Task, UserTaskEntries } from "../models/task"
+
+import useTaskProgress from "../hooks/useTaskProgress"
 
 import EditTask from "./EditTask.vue"
 import EditTaskHeadings from "./EditTaskHeadings.vue"
 import EditSubTaskHeading from "./EditSubTaskHeading.vue"
 import EditSubTaskEntry from "./EditSubTaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
-import useTaskProgress from "../hooks/useTaskProgress"
 
 const props = defineProps<{ tasks: UserTaskEntries }>()
 
-const session = inject<Ref<UserSession>>("session")!
+const session = inject<Ref<User>>("session")!
+const entries = inject<Ref<Task[]>>("entries")!
+
 let visibility = reactive<Record<string, boolean>>({})
 
 const toggleVisibility = (key: string) => {
@@ -24,7 +27,7 @@ const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(prop
 
 <template>
   <div id="entries-container">
-    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in session.entries">
+    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in entries">
       <ProgressableEntryHeading :progress="calculateTaskProgress(index)" :isActive="visibility[entry.title] || false" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
       <ul v-show="visibility[entry.title]" :key="index">
         <li v-for="(subTask, subIndex) in entry.tasks">
@@ -37,13 +40,13 @@ const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(prop
                 :index="[index, subIndex, taskIndex]"
               />
             </li>
-            <EditSubTaskEntry v-if="session.user.isAdmin" :index="[index, subIndex]" />
+            <EditSubTaskEntry v-if="session.isAdmin" :index="[index, subIndex]" />
           </ul>
         </li>
-        <EditSubTaskHeading v-if="session.user.isAdmin" :index="index" />
+        <EditSubTaskHeading v-if="session.isAdmin" :index="index" />
       </ul>
     </div>
-    <EditTaskHeadings v-if="session.user.isAdmin" />
+    <EditTaskHeadings v-if="session.isAdmin" />
   </div>
 </template>
 

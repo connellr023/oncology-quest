@@ -1,8 +1,12 @@
-import { ref, onMounted, Ref } from "vue";
+import { ref, onMounted } from "vue";
 import { API_ENDPOINT } from "../utilities";
-import { UserSession } from "../models/user";
+import { User, UserSessionResponse } from "../models/user";
+import { Task } from "../models/task";
 
-const useFetchSession = (session: Ref<UserSession | null>) => {
+const useFetchSession = () => {
+    const session = ref<User | null>(null)
+    const entries = ref<Task[]>([])
+
     const loading = ref(true)
     const connectionError = ref(false)
 
@@ -16,8 +20,10 @@ const useFetchSession = (session: Ref<UserSession | null>) => {
             });
     
             if (response.ok) {
-                const sessionData = await response.json()
-                session.value = sessionData
+                const sessionData: UserSessionResponse = await response.json()
+
+                session.value = sessionData.user
+                entries.value = sessionData.entries
             }
         }
         catch (_) {
@@ -30,6 +36,8 @@ const useFetchSession = (session: Ref<UserSession | null>) => {
     onMounted(checkSession);
 
     return {
+        session,
+        entries,
         loading,
         connectionError
     }

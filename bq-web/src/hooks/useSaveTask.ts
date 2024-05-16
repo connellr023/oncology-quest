@@ -1,17 +1,24 @@
 import { Ref, inject, ref } from "vue"
 import { UserTask } from "../models/task"
 import { API_ENDPOINT } from "../utilities"
-import { UserSession } from "../models/user"
+import { User } from "../models/user"
+import useValidateComment from "./useValidateComment"
 
 const useSaveTask = () => {
-    const session = inject<Ref<UserSession>>("session")!
+    const session = inject<Ref<User>>("session")!
+
+    const { comment, commentError } = useValidateComment()
 
     const completed = ref(false)
-    const comment = ref("")
     const message = ref("")
     const loading = ref(false)
 
     const save = async (index: [number, number, number]): Promise<boolean> => {
+        if (commentError.value) {
+            message.value = commentError.value
+            return false
+        }
+
         loading.value = true
 
         try {
@@ -33,17 +40,25 @@ const useSaveTask = () => {
             })
 
             if (response.ok) {
+                if (!session.value.tasks[index[0]]) {
+                    session.value.tasks[index[0]] = {}
+                }
+                
+                if (!session.value.tasks[index[0]][index[1]]) {
+                    session.value.tasks[index[0]][index[1]] = {}
+                }
+                
+                if (!session.value.tasks[index[0]][index[1]][index[2]]) {
+                    session.value.tasks[index[0]][index[1]][index[2]] = {
+                        completed: false,
+                        comment: ""
+                    }
+                }
+
+                session.value.tasks[index[0]][index[1]][index[2]] = task
+
                 message.value = "Saved!"
                 loading.value = false
-
-                if (!session.value.user.tasks[index[0]]) {
-                    session.value.user.tasks[index[0]] = []
-                }
-                else if (!session.value.user.tasks[index[0]][index[1]]) {
-                    session.value.user.tasks[index[0]][index[1]] = []
-                }
-
-                session.value.user.tasks[index[0]][index[1]][index[2]] = task
                 return true
             }
             

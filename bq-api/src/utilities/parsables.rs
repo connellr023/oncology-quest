@@ -19,113 +19,34 @@ pub trait Parsable: for<'de> Deserialize<'de> + Sized {
     fn as_str(&self) -> &str;
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct Username(String);
+macro_rules! parsable {
+    ($t:ident, $regex:expr) => {
+        #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+        pub struct $t(String);
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct Name(String);
+        impl Parsable for $t {
+            fn parse(value: String) -> anyhow::Result<Self> {
+                let pattern = Regex::new($regex)?;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct Email(String);
+                match pattern.is_match(&value) {
+                    true => Ok(Self(value)),
+                    false => Err(anyhow!("Invalid value"))
+                }
+            }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct PlainTextPassword(String);
-
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct Comment(String);
-
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct EntryTitle(String);
-
-impl Parsable for Username {
-    fn parse(value: String) -> anyhow::Result<Self> {
-        let pattern = Regex::new(USERNAME_REGEX)?;
-
-        match pattern.is_match(&value) {
-            true => Ok(Username(value)),
-            false => Err(anyhow!("Invalid username"))
+            fn as_str(&self) -> &str {
+                &self.0
+            }
         }
-    }
-
-    fn as_str(&self) -> &str {
-        &self.0
-    }
+    };
 }
 
-impl Parsable for Name {
-    fn parse(value: String) -> anyhow::Result<Self> {
-        let pattern = Regex::new(NAME_REGEX)?;
-
-        match pattern.is_match(&value) {
-            true => Ok(Name(value)),
-            false => Err(anyhow!("Invalid name"))
-        }
-    }
-
-    fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl Parsable for Email {
-    fn parse(value: String) -> anyhow::Result<Self> {
-        let pattern = Regex::new(EMAIL_REGEX)?;
-
-        match pattern.is_match(&value) {
-            true => Ok(Email(value)),
-            false => Err(anyhow!("Invalid email"))
-        }
-    }
-
-    fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl Parsable for PlainTextPassword {
-    fn parse(value: String) -> anyhow::Result<Self> {
-        let pattern = Regex::new(PASSWORD_REGEX)?;
-
-        match pattern.is_match(&value) {
-            true => Ok(PlainTextPassword(value)),
-            false => Err(anyhow!("Invalid password"))
-        }
-    }
-
-    fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl Parsable for Comment {
-    fn parse(value: String) -> anyhow::Result<Self> {
-        let pattern = Regex::new(COMMENT_REGEX)?;
-
-        match pattern.is_match(&value) {
-            true => Ok(Comment(value)),
-            false => Err(anyhow!("Invalid comment"))
-        }
-    }
-
-    fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl Parsable for EntryTitle {
-    fn parse(value: String) -> anyhow::Result<Self> {
-        let pattern = Regex::new(ENTRY_TITLE_REGEX)?;
-
-        match pattern.is_match(&value) {
-            true => Ok(EntryTitle(value)),
-            false => Err(anyhow!("Invalid entry title"))
-        }
-    }
-
-    fn as_str(&self) -> &str {
-        &self.0
-    }
-}
+parsable!(Username, USERNAME_REGEX);
+parsable!(Name, NAME_REGEX);
+parsable!(Email, EMAIL_REGEX);
+parsable!(PlainTextPassword, PASSWORD_REGEX);
+parsable!(Comment, COMMENT_REGEX);
+parsable!(EntryTitle, ENTRY_TITLE_REGEX);
 
 #[cfg(test)]
 mod tests {
@@ -141,7 +62,6 @@ mod tests {
     fn test_parse_username_invalid() {
         let result = Username::parse("john doe".to_string());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Invalid username");
     }
 
     #[test]
@@ -154,7 +74,6 @@ mod tests {
     fn test_parse_name_invalid() {
         let result = Name::parse("John123".to_string());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Invalid name");
     }
 
     #[test]
@@ -167,7 +86,6 @@ mod tests {
     fn test_parse_email_invalid() {
         let result = Email::parse("john@example".to_string());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Invalid email");
     }
 
     #[test]
@@ -180,7 +98,6 @@ mod tests {
     fn test_parse_password_invalid() {
         let result = PlainTextPassword::parse("123".to_string());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Invalid password");
     }
 
     #[test]
@@ -193,7 +110,6 @@ mod tests {
     fn test_parse_comment_invalid() {
         let result = Comment::parse("<script></script>".to_string());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Invalid comment");
     }
 
     #[test]
@@ -206,6 +122,5 @@ mod tests {
     fn test_parse_entry_title_invalid() {
         let result = EntryTitle::parse("".to_string());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Invalid entry title");
     }
 }

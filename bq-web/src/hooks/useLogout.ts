@@ -1,9 +1,9 @@
 import { Ref, inject, ref } from "vue"
-import { UserSession } from "../models/user"
+import { User } from "../models/user"
 import { API_ENDPOINT } from "../utilities"
 
 const useLogout = () => {
-    const sessionContext = inject<Ref<UserSession | null>>("session")!
+    const session = inject<Ref<User | null>>("session")!
     const message = ref("")
 
     const logout = async () => {
@@ -19,7 +19,7 @@ const useLogout = () => {
             return
         }
 
-        sessionContext.value = null
+        session.value = null
         message.value = "Logged out"
     }
 

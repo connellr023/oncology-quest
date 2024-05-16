@@ -8,7 +8,7 @@ export interface User {
     tasks: UserTaskEntries
 }
 
-export interface UserSession {
+export interface UserSessionResponse {
     user: User,
     entries: Task[]
 }

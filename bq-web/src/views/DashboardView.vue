@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Ref, inject } from "vue";
-import { UserSession } from "../models/user";
+import { Ref, inject } from "vue"
+import { User } from "../models/user"
 
 import Entries from "../components/Entries.vue"
 
-const tasks = inject<Ref<UserSession>>("session")!.value.user.tasks
+const tasks = inject<Ref<User>>("session")!.value.tasks
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
-import { UserSession } from "../models/user";
+import { User } from "../models/user"
 
 import useSaveEntries from "../hooks/useSaveEntries";
 
@@ -11,7 +11,7 @@ const props = defineProps<{
   index: number[]
 }>()
 
-const sessionContext = inject<Ref<UserSession>>("session")!
+const session = inject<Ref<User>>("session")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
 const { title, titleError, message, save } = useSaveEntries()
@@ -51,7 +51,7 @@ const saveEdit = async () => {
       <h3 v-if="!inEditMode" class="dropdown">{{ title }}</h3>
       <input @click.stop class="minimal" v-else v-model="title" />
     </div>
-    <div class="edit-buttons-container" v-if="sessionContext.user.isAdmin">
+    <div class="edit-buttons-container" v-if="session.isAdmin">
       <template v-if="inEditMode">
         <button class="minimal" @click.stop="cancelEdit">Cancel</button>
         <button class="minimal" @click.stop="saveEdit">Save</button>
