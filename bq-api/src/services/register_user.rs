@@ -5,7 +5,7 @@ use serde::Deserialize;
 use redis::Client;
 
 #[derive(Deserialize)]
-struct RegisterUser {
+struct RegisterUserQuery {
     pub username: Username,
     pub name: Name,
     pub email: Email,
@@ -13,7 +13,7 @@ struct RegisterUser {
 }
 
 #[actix_web::post("/api/user/register")]
-pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUser>) -> impl Responder {
+pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUserQuery>) -> impl Responder {
     let create_user = create_user.into_inner();
     let user = match User::new(
         create_user.username,

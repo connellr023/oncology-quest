@@ -1,13 +1,14 @@
 use crate::models::{client_user::ClientUser, model::Model, task_structure::TaskStructure, user::User};
-use actix_web::{web::Data, HttpResponse, Responder};
+use actix_web::{web::{Data, Query}, HttpResponse, Responder};
 use actix_session::Session;
+use chrono::{DateTime, Utc};
 use redis::{Client, Connection};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
 struct UserSession {
     pub user: ClientUser,
-    pub structure: TaskStructure
+    pub structure: Option<TaskStructure>
 }
 
 /// Generates an HTTP response containing the user session data with the task structure.
@@ -15,14 +16,31 @@ struct UserSession {
 /// # Arguments
 /// 
 /// * `connection` - A mutable reference to a Redis connection.
+/// * `structure_cache_timestamp` - The timestamp of the last update to the client's task structure cache.
 /// * `user` - The user to generate the session response for.
 /// 
 /// # Returns
 /// 
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
-pub(super) fn handle_session_response(connection: &mut Connection, user: User) -> HttpResponse {
+pub(super) fn handle_session_response(connection: &mut Connection, structure_cache_timestamp: Option<DateTime<Utc>>, user: User) -> HttpResponse {
     let structure = match TaskStructure::fetch(connection, "") {
-        Some(task_structure) => task_structure,
+        Some(structure) => {
+            match structure_cache_timestamp {
+                Some(cache_timestamp) => {
+                    if structure.last_updated().gt(&cache_timestamp) {
+                        // The structure has been updated since last cache timestamp
+                        Some(structure)
+                    } else {
+                        // The structure has not been updated since last cache timestamp
+                        None
+                    }
+                },
+                None => {
+                    // The client does not have the structure, send it
+                    Some(structure)
+                }
+            }
+        },
         None => return HttpResponse::InternalServerError().finish()
     };
 
@@ -34,8 +52,14 @@ pub(super) fn handle_session_response(connection: &mut Connection, user: User) -
     HttpResponse::Ok().json(user_client)
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct FetchSessionQuery {
+    pub structure_cache_timestamp: Option<DateTime<Utc>>
+}
+
 #[actix_web::get("/api/user/session")]
-pub(super) async fn session(session: Session, redis: Data<Client>) -> impl Responder {
+pub(super) async fn session(session: Session, redis: Data<Client>, fetch_session: Query<FetchSessionQuery>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
@@ -51,5 +75,5 @@ pub(super) async fn session(session: Session, redis: Data<Client>) -> impl Respo
         None => return HttpResponse::NotFound().finish()
     };
 
-    handle_session_response(&mut connection, user)
+    handle_session_response(&mut connection, fetch_session.structure_cache_timestamp, user)
 }

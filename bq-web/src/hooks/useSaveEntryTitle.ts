@@ -1,9 +1,14 @@
-import { ref } from "vue"
+import { Ref, inject, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
 import useValidateTitle from "./useValidateTitle"
+import { Task } from "../models/task"
+import useStructureCache from "./useStructureCache"
 
-const useSaveEntries = () => {
+const useSaveEntryTitle = () => {
     const { title, titleError } = useValidateTitle()
+    const { updateCache } = useStructureCache()
+
+    const entries = inject<Ref<Task[]>>("entries")!
     const message = ref("")
 
     const save = async (index: number[]): Promise<boolean> => {
@@ -31,6 +36,22 @@ const useSaveEntries = () => {
                 return false
             }
 
+            switch (index.length) {
+                case 1:
+                    entries.value[index[0]].title = title.value
+                    break
+                case 2:
+                    entries.value[index[0]].tasks[index[1]].title = title.value
+                    break
+                case 3:
+                    entries.value[index[0]].tasks[index[1]].tasks[index[2]] = title.value
+                    break
+                default:
+                    message.value = "Invalid index."
+                    return false
+            }
+
+            updateCache(entries.value)
             message.value = "Saved!"
             return true
         } catch (_) {
@@ -47,4 +68,4 @@ const useSaveEntries = () => {
     }
 }
 
-export default useSaveEntries
+export default useSaveEntryTitle

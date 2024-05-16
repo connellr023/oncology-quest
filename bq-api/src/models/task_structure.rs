@@ -14,16 +14,16 @@ pub struct TaskStructure {
 }
 
 impl TaskStructure {
-    /// Returns the owned structure of tasks and consumes self.
-    // pub fn structure_as_owned(self) -> Vec<Task> {
-    //     self.entries
-    // }
+    /// Updates the current timestamp of when the structure was last updated.
+    fn update_timestamp(&mut self) {
+        self.last_updated = Utc::now();
+    }
 
     /// Returns the a timestamp of the last update to the structure.
     /// Used for caching purposes.
-    // pub fn last_updated(&self) -> &DateTime<Utc> {
-    //     &self.last_updated
-    // }
+    pub fn last_updated(&self) -> &DateTime<Utc> {
+        &self.last_updated
+    }
 
     /// Updates a single task entry in the structure.
     /// 
@@ -44,6 +44,7 @@ impl TaskStructure {
             _ => return false
         };
 
+        self.update_timestamp();
         self.update(connection)
     }
 
@@ -65,6 +66,7 @@ impl TaskStructure {
             _ => return false
         };
 
+        self.update_timestamp();
         self.update(connection)
     }
 
@@ -92,6 +94,7 @@ impl TaskStructure {
             _ => return false
         };
 
+        self.update_timestamp();
         self.update(connection)
     }
 }

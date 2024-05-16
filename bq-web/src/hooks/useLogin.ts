@@ -5,10 +5,12 @@ import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./useValidateUsername"
 import useValidatePassword from "./useValidatePassword"
+import useStructureCache from "./useStructureCache"
 
 const useLogin = () => {
     const { username, usernameError } = useValidateUsername()
     const { password, passwordError } = useValidatePassword()
+    const { cache, retrieve } = useStructureCache()
 
     const loading = ref(false)
     const loginError = ref("")
@@ -20,6 +22,7 @@ const useLogin = () => {
         loading.value = true
 
         try {
+            const cachedStructure = retrieve()
             const response = await fetch(`${API_ENDPOINT}/api/user/login`, {
                 credentials: "include",
                 method: "POST",
@@ -28,19 +31,21 @@ const useLogin = () => {
                 },
                 body: JSON.stringify({
                     username: username.value,
-                    password: password.value
+                    password: password.value,
+                    structureCacheTimestamp: cachedStructure ? cachedStructure.lastUpdated : null
                 })
             })
 
             if (response.ok) {
-                try {
-                    const sessionData: UserSessionResponse = await response.json()
+                const sessionData: UserSessionResponse = await response.json()
+                session.value = sessionData.user
 
-                    session.value = sessionData.user
+                if (sessionData.structure) {
                     entries.value = sessionData.structure.entries
+                    cache(sessionData.structure)
                 }
-                catch (error) {
-                    loginError.value = "Failed to parse response."
+                else if (cachedStructure) {
+                    entries.value = cachedStructure.entries
                 }
             }
             else if (response.status === 401) {

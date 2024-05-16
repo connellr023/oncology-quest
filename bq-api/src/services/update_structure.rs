@@ -8,13 +8,13 @@ use serde::Deserialize;
 const MAX_ENTRY_DEPTH: usize = 2;
 
 #[derive(Deserialize)]
-struct PushEntry {
+struct PushEntryQuery {
     pub title: EntryTitle,
     pub index: Vec<u16>
 }
 
 #[derive(Deserialize)]
-struct PopEntry {
+struct PopEntryQuery {
     pub index: Vec<u16>
 }
 
@@ -63,7 +63,7 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
 }
 
 #[actix_web::patch("/api/entries/update/push")]
-pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json<PushEntry>) -> impl Responder {
+pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json<PushEntryQuery>) -> impl Responder {
     if !push_entry.index.len() <= MAX_ENTRY_DEPTH {
         return HttpResponse::BadRequest().finish();
     }
@@ -72,7 +72,7 @@ pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json
 }
 
 #[actix_web::delete("/api/entries/update/pop")]
-pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<PopEntry>) -> impl Responder {
+pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<PopEntryQuery>) -> impl Responder {
     if !pop_entry.index.len() <= MAX_ENTRY_DEPTH {
         return HttpResponse::BadRequest().finish();
     }

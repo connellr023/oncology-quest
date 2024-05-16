@@ -5,15 +5,17 @@ use actix_session::Session;
 use redis::Client;
 use serde::Deserialize;
 
+const MAX_INDEX_DEPTH: usize = 3;
+
 #[derive(Deserialize)]
-struct UpdateEntry {
+struct UpdateEntryQuery {
     pub title: EntryTitle,
     pub index: Vec<u16>
 }
 
 #[actix_web::patch("/api/entries/update")]
-pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: Json<UpdateEntry>) -> impl Responder {
-    if !(entry_update.index.is_empty() && entry_update.index.len() <= 3) {
+pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: Json<UpdateEntryQuery>) -> impl Responder {
+    if entry_update.index.is_empty() || entry_update.index.len() > MAX_INDEX_DEPTH {
         return HttpResponse::BadRequest().finish();
     }
     
@@ -42,4 +44,4 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: 
     }
 
     HttpResponse::Ok().finish()
-}   
+}

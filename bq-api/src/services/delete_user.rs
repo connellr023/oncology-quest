@@ -5,17 +5,17 @@ use redis::Client;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct AdminDeleteUser {
+struct AdminDeleteUserQuery {
     username: String
 }
 
 #[derive(Deserialize)]
-struct DeleteSelf {
+struct DeleteSelfQuery {
     password: String
 }
 
 #[actix_web::delete("/api/user/delete-user")]
-pub(super) async fn delete_user(session: Session, redis: Data<Client>, delete_user: Json<AdminDeleteUser>) -> impl Responder {
+pub(super) async fn delete_user(session: Session, redis: Data<Client>, delete_user: Json<AdminDeleteUserQuery>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()
@@ -39,7 +39,7 @@ pub(super) async fn delete_user(session: Session, redis: Data<Client>, delete_us
 }
 
 #[actix_web::delete("/api/user/delete-self")]
-pub(super) async fn delete_self(session: Session, redis: Data<Client>, delete_self: Json<DeleteSelf>) -> impl Responder {
+pub(super) async fn delete_self(session: Session, redis: Data<Client>, delete_self: Json<DeleteSelfQuery>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()

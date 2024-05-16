@@ -5,12 +5,12 @@ use serde::Deserialize;
 use redis::Client;
 
 #[derive(Deserialize)]
-pub struct UserSearch {
+pub struct UserSearchQuery {
     pub query: String
 }
 
 #[actix_web::get("/api/user/search/{query}")]
-pub(super) async fn search(session: Session, search: Path<UserSearch>, redis: Data<Client>) -> impl Responder {
+pub(super) async fn search(session: Session, search: Path<UserSearchQuery>, redis: Data<Client>) -> impl Responder {
     let mut connection = match redis.get_connection() {
         Ok(connection) => connection,
         Err(_) => return HttpResponse::InternalServerError().finish()

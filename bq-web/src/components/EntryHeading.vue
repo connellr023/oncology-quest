@@ -2,7 +2,7 @@
 import { Ref, inject, ref } from "vue"
 import { User } from "../models/user"
 
-import useSaveEntries from "../hooks/useSaveEntries";
+import useSaveEntryTitle from "../hooks/useSaveEntryTitle";
 
 defineEmits(["click"])
 const props = defineProps<{
@@ -14,7 +14,7 @@ const props = defineProps<{
 const session = inject<Ref<User>>("session")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
-const { title, titleError, message, save } = useSaveEntries()
+const { title, titleError, message, save } = useSaveEntryTitle()
 
 title.value = props.title
 

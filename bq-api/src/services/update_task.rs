@@ -6,7 +6,7 @@ use redis::Client;
 use std::collections::HashMap;
 
 #[derive(Deserialize)]
-struct UpdateTask {
+struct UpdateTaskQuery {
     pub index: (u16, u16, u16),
     pub task: UserTask
 }
@@ -46,7 +46,7 @@ fn update_task(entries: &mut UserTaskEntries, index: (u16, u16, u16), task: User
 }
 
 #[actix_web::patch("/api/tasks/update")]
-pub(super) async fn update(session: Session, redis: Data<Client>, task_update: Json<UpdateTask>) -> impl Responder {
+pub(super) async fn update(session: Session, redis: Data<Client>, task_update: Json<UpdateTaskQuery>) -> impl Responder {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()
