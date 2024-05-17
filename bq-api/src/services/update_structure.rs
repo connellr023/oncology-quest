@@ -10,12 +10,12 @@ const MAX_ENTRY_DEPTH: usize = 2;
 #[derive(Deserialize)]
 struct PushEntryQuery {
     pub title: EntryTitle,
-    pub index: Vec<u16>
+    pub index: Box<[usize]>
 }
 
 #[derive(Deserialize)]
 struct PopEntryQuery {
-    pub index: Vec<u16>
+    pub index: Box<[usize]>
 }
 
 enum EntryAction {
@@ -23,7 +23,7 @@ enum EntryAction {
     Pop
 }
 
-fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &[u16], title: Option<EntryTitle>) -> HttpResponse {
+fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &[usize], title: Option<EntryTitle>) -> HttpResponse {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()
@@ -68,7 +68,7 @@ pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json
         return HttpResponse::BadRequest().finish();
     }
     
-    handle_update_structure(session, redis, EntryAction::Push, push_entry.index.as_slice(), Some(push_entry.title.clone()))
+    handle_update_structure(session, redis, EntryAction::Push, &push_entry.index, Some(push_entry.title.clone()))
 }
 
 #[actix_web::delete("/api/entries/update/pop")]
@@ -77,5 +77,5 @@ pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<P
         return HttpResponse::BadRequest().finish();
     }
     
-    handle_update_structure(session, redis, EntryAction::Pop, pop_entry.index.as_slice(), None)
+    handle_update_structure(session, redis, EntryAction::Pop, &pop_entry.index, None)
 }

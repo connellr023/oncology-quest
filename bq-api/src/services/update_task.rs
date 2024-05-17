@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 #[derive(Deserialize)]
 struct UpdateTaskQuery {
-    pub index: (u16, u16, u16),
+    pub index: (usize, usize, usize),
     pub task: UserTask
 }
 
@@ -23,7 +23,7 @@ struct UpdateTaskQuery {
 /// 
 /// * If the task at the given index does not exist, it will be created.
 /// * If the subtask at the given index does not exist, it will be created.
-fn update_task(entries: &mut UserTaskEntries, index: (u16, u16, u16), task: UserTask) {
+fn update_task(entries: &mut UserTaskEntries, index: (usize, usize, usize), task: UserTask) {
     if let Some(subtasks) = entries.get_mut(&index.0) {
         if let Some(tasks) = subtasks.get_mut(&index.1) {
             tasks.insert(index.2, task);

@@ -4,10 +4,10 @@ import useEditEntryStructure from "../hooks/useEditEntryStructure";
 
 defineProps<{ index: number[] }>()
 
-const { message, pushSubTaskEntry, popSubTaskEntry } = useEditEntryStructure()
+const { message, pushSubtaskEntry, popSubtaskEntry } = useEditEntryStructure()
 </script>
 
 <template>
-    <EditEntryStructure :push="() => pushSubTaskEntry('New Sub Task Entry', index)" :pop="() => popSubTaskEntry(index)" entryType="Sub Task Entry" />
+    <EditEntryStructure :push="() => pushSubtaskEntry('New Sub Task Entry', index)" :pop="() => popSubtaskEntry(index)" entryType="Sub Task Entry" />
     <div v-if="message">{{ message }}</div>
 </template>

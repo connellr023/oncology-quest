@@ -1,24 +1,18 @@
 use crate::models::{model::Model, task_structure::TaskStructure, user::User};
-use crate::utilities::parsables::EntryTitle;
+use crate::utilities::parsables::{EntryTitle, EntryIndex};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use redis::Client;
 use serde::Deserialize;
 
-const MAX_INDEX_DEPTH: usize = 3;
-
 #[derive(Deserialize)]
 struct UpdateEntryQuery {
     pub title: EntryTitle,
-    pub index: Vec<u16>
+    pub index: EntryIndex
 }
 
 #[actix_web::patch("/api/entries/update")]
 pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: Json<UpdateEntryQuery>) -> impl Responder {
-    if entry_update.index.is_empty() || entry_update.index.len() > MAX_INDEX_DEPTH {
-        return HttpResponse::BadRequest().finish();
-    }
-    
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()
@@ -39,7 +33,9 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: 
         None => return HttpResponse::InternalServerError().finish()
     };
 
-    if !task_structure.update_existing(&mut connection, entry_update.index.as_slice(), entry_update.title.clone()) {
+    let entry_update = entry_update.into_inner();
+
+    if !task_structure.update_existing(&mut connection, &entry_update.index, entry_update.title) {
         return HttpResponse::InternalServerError().finish();
     }
 

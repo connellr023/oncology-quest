@@ -6,9 +6,9 @@ import { Task, UserTaskEntries } from "../models/task"
 import useTaskProgress from "../hooks/useTaskProgress"
 
 import EditTask from "./EditTask.vue"
-import EditTaskHeadings from "./EditTaskHeadings.vue"
-import EditSubTaskHeading from "./EditSubTaskHeading.vue"
-import EditSubTaskEntry from "./EditSubTaskEntry.vue"
+import EditSupertaskHeading from "./EditSupertaskHeading.vue"
+import EditTaskHeading from "./EditTaskHeading.vue"
+import EditSubtaskEntry from "./EditSubtaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
 
 const props = defineProps<{ tasks: UserTaskEntries }>()
@@ -40,13 +40,13 @@ const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(prop
                 :index="[index, subIndex, taskIndex]"
               />
             </li>
-            <EditSubTaskEntry v-if="session.isAdmin" :index="[index, subIndex]" />
+            <EditSubtaskEntry v-if="session.isAdmin" :index="[index, subIndex]" />
           </ul>
         </li>
-        <EditSubTaskHeading v-if="session.isAdmin" :index="index" />
+        <EditTaskHeading v-if="session.isAdmin" :index="index" />
       </ul>
     </div>
-    <EditTaskHeadings v-if="session.isAdmin" />
+    <EditSupertaskHeading v-if="session.isAdmin" />
   </div>
 </template>
 

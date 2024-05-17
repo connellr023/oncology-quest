@@ -2,7 +2,7 @@
 import { Ref, inject, ref } from "vue"
 import { User } from "../models/user"
 
-import useSaveEntryTitle from "../hooks/useSaveEntryTitle";
+import useSaveEntryTitle from "../hooks/useSaveEntryTitle"
 
 defineEmits(["click"])
 const props = defineProps<{

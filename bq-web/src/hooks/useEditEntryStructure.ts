@@ -66,7 +66,7 @@ const useEditEntryStructure = () => {
         }
     }
 
-    const pushTaskHeading = async (title: string) => {
+    const pushSupertaskHeading = async (title: string) => {
         if (await requestPush(title, [])) {
             entries.value.push({
                 title,
@@ -76,14 +76,14 @@ const useEditEntryStructure = () => {
         }
     }
 
-    const popTaskHeading = async () => {
+    const popSupertaskHeading = async () => {
         if (await requestPop([])) {
             entries.value.pop()
             updateCache(entries.value)
         }
     }
 
-    const pushSubTaskHeading = async (title: string, index: number) => {
+    const pushTaskHeading = async (title: string, index: number) => {
         if (await requestPush(title, [index])) {
             entries.value[index].tasks.push({
                 title,
@@ -93,21 +93,21 @@ const useEditEntryStructure = () => {
         }
     }
 
-    const popSubTaskHeading = async (index: number) => {
+    const popTaskHeading = async (index: number) => {
         if (await requestPop([index])) {
             entries.value[index].tasks.pop()
             updateCache(entries.value)
         }
     }
 
-    const pushSubTaskEntry = async (title: string, index: number[]) => {
+    const pushSubtaskEntry = async (title: string, index: number[]) => {
         if (await requestPush(title, index)) {
             entries.value[index[0]].tasks[index[1]].tasks.push(title)
             updateCache(entries.value)
         }
     }
 
-    const popSubTaskEntry = async (index: number[]) => {
+    const popSubtaskEntry = async (index: number[]) => {
         if (await requestPop(index)) {
             entries.value[index[0]].tasks[index[1]].tasks.pop()
             updateCache(entries.value)
@@ -116,12 +116,12 @@ const useEditEntryStructure = () => {
 
     return {
         message,
+        pushSupertaskHeading,
+        popSupertaskHeading,
         pushTaskHeading,
         popTaskHeading,
-        pushSubTaskHeading,
-        popSubTaskHeading,
-        pushSubTaskEntry,
-        popSubTaskEntry
+        pushSubtaskEntry,
+        popSubtaskEntry
     }
 }
 

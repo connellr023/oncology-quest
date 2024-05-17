@@ -1,7 +1,12 @@
 use super::regex::*;
 use anyhow::anyhow;
 use regex::Regex;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Deserializer, Serialize};
+
+trait Deserializable: for<'de> Deserialize<'de> + Sized {
+    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+    where D: Deserializer<'de>;
+}
 
 pub trait Parsable: for<'de> Deserialize<'de> + Sized {
     /// Parses a string into a value of this type.
@@ -24,6 +29,17 @@ macro_rules! parsable {
         #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
         pub struct $t(String);
 
+        impl Deserializable for $t {
+            fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+            where D: Deserializer<'de> {
+                let value = String::deserialize(deserializer)?;
+                match Self::parse(value) {
+                    Ok(parsed) => Ok(parsed),
+                    Err(err) => Err(serde::de::Error::custom(err.to_string()))
+                }
+            }
+        }
+
         impl Parsable for $t {
             fn parse(value: String) -> anyhow::Result<Self> {
                 let pattern = Regex::new($regex)?;
@@ -39,6 +55,46 @@ macro_rules! parsable {
             }
         }
     };
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct EntryIndex(Box<[usize]>);
+
+impl Deserializable for EntryIndex {
+    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+    where D: Deserializer<'de> {
+        let slice = Box::<[usize]>::deserialize(deserializer)?;
+        match Self::from_boxed_slice(slice) {
+            Ok(entry_index) => Ok(entry_index),
+            Err(err) => Err(serde::de::Error::custom(err.to_string()))
+        }
+    }
+}
+
+impl EntryIndex {
+    pub fn from_boxed_slice(slice: Box<[usize]>) -> anyhow::Result<Self> {
+        if !(slice.len() <= 3) {
+            return Err(anyhow!("Invalid index tuple length"));
+        }
+
+        Ok(Self(slice))
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn supertask_entry_index(&self) -> usize {
+        self.0[0]
+    }
+
+    pub fn task_entry_index(&self) -> usize {
+        self.0[1]
+    }
+
+    pub fn subtask_entry_index(&self) -> usize {
+        self.0[2]
+    }
 }
 
 parsable!(Username, USERNAME_REGEX);
