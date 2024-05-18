@@ -1,6 +1,7 @@
 pub mod environment;
 pub mod model;
-pub mod user;
+pub mod user_model;
 pub mod client_user;
 pub mod tasks;
-pub mod task_structure;
+pub mod tasks_model;
+pub mod entries;

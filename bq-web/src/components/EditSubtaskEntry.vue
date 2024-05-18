@@ -2,7 +2,7 @@
 import EditEntryStructure from "./EditEntryStructure.vue"
 import useEditEntryStructure from "../hooks/useEditEntryStructure";
 
-defineProps<{ index: [0, number, number] }>()
+defineProps<{ index: [number, number] }>()
 
 const { message, pushSubtaskEntry, popSubtaskEntry } = useEditEntryStructure()
 </script>

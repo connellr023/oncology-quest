@@ -1,5 +1,5 @@
-use crate::models::{model::Model, task_structure::TaskStructure, user::User};
-use crate::utilities::parsables::{EntryTitle, EntryIndex};
+use crate::models::{model::Model, tasks_model::TasksModel, user_model::UserModel, entries::EntryIndex};
+use crate::utilities::parsables::SubtaskTitle;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use redis::Client;
@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct UpdateEntryQuery {
-    pub title: EntryTitle,
+    pub title: SubtaskTitle,
     pub index: EntryIndex
 }
 
@@ -24,11 +24,11 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: 
     };
 
     // Only admins can update entries.
-    if !User::validate_is_admin(&mut connection, username.as_str()) {
+    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
     };
 
-    let mut task_structure = match TaskStructure::fetch(&mut connection, "") {
+    let mut task_structure = match TasksModel::fetch(&mut connection, "") {
         Ok(task_structure) => task_structure,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };

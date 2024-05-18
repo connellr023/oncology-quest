@@ -1,5 +1,5 @@
 use crate::utilities::parsables::{Username, Name, Email, PlainTextPassword};
-use crate::models::{model::Model, user::User};
+use crate::models::{model::Model, user_model::UserModel};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use serde::Deserialize;
 use redis::Client;
@@ -15,7 +15,7 @@ struct RegisterUserQuery {
 #[actix_web::post("/api/user/register")]
 pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUserQuery>) -> impl Responder {
     let create_user = create_user.into_inner();
-    let user = match User::new(
+    let user = match UserModel::new(
         create_user.username,
         create_user.name,
         create_user.email,

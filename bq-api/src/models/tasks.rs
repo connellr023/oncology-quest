@@ -1,31 +1,31 @@
-use crate::utilities::parsables::{EntryTitle, Comment};
+use crate::utilities::parsables::{SubtaskTitle, Comment};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Represents the structure of user tasks corresponding to their JSON representation.
-pub type UserTaskEntries = HashMap<usize, HashMap<usize, HashMap<usize, SubTask>>>;
+pub type UserTaskEntries = HashMap<usize, HashMap<usize, HashMap<usize, Subtask>>>;
 
 #[derive(Serialize, Deserialize)]
-pub struct SuperTask {
-    pub title: EntryTitle,
+pub struct Supertask {
+    pub title: SubtaskTitle,
     pub tasks: Vec<Task>
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Task {
-    pub title: EntryTitle,
-    pub tasks: Vec<EntryTitle>
+    pub title: SubtaskTitle,
+    pub tasks: Vec<SubtaskTitle>
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct SubTask {
+pub struct Subtask {
     pub completed: bool,
     pub comment: Comment
 }
 
-impl SuperTask {
-    pub fn new(title: EntryTitle) -> Self {
-        SuperTask {
+impl Supertask {
+    pub fn new(title: SubtaskTitle) -> Self {
+        Supertask {
             title,
             tasks: vec![]
         }
@@ -33,7 +33,7 @@ impl SuperTask {
 }
 
 impl Task {
-    pub fn new(title: EntryTitle) -> Self {
+    pub fn new(title: SubtaskTitle) -> Self {
         Task {
             title,
             tasks: vec![]

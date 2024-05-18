@@ -40,10 +40,10 @@ const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(prop
                 :index="[superIndex, index, subIndex]"
               />
             </li>
-            <EditSubtaskEntry v-if="session.isAdmin" :index="[0, superIndex, index]" />
+            <EditSubtaskEntry v-if="session.isAdmin" :index="[superIndex, index]" />
           </ul>
         </li>
-        <EditTaskHeading v-if="session.isAdmin" :index="[0, superIndex]" />
+        <EditTaskHeading v-if="session.isAdmin" :index="superIndex" />
       </ul>
     </div>
     <EditSupertaskHeading v-if="session.isAdmin" />

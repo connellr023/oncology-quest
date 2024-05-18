@@ -1,15 +1,13 @@
-use crate::models::{model::Model, task_structure::TaskStructure, user::User};
-use crate::utilities::parsables::{EntryIndex, EntryTitle};
+use crate::models::{model::Model, tasks_model::TasksModel, user_model::UserModel, entries::EntryIndex};
+use crate::utilities::parsables::SubtaskTitle;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use redis::Client;
 use serde::Deserialize;
 
-const MAX_ENTRY_DEPTH: usize = 2;
-
 #[derive(Deserialize)]
 struct PushEntryQuery {
-    pub title: EntryTitle,
+    pub title: SubtaskTitle,
     pub index: EntryIndex
 }
 
@@ -23,7 +21,7 @@ enum EntryAction {
     Pop
 }
 
-fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &EntryIndex, title: Option<EntryTitle>) -> HttpResponse {
+fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &EntryIndex, title: Option<SubtaskTitle>) -> HttpResponse {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()
@@ -35,11 +33,11 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
     };
 
     // Only admins can push/pop entries.
-    if !User::validate_is_admin(&mut connection, username.as_str()) {
+    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
     };
 
-    let mut task_structure = match TaskStructure::fetch(&mut connection, "") {
+    let mut task_structure = match TasksModel::fetch(&mut connection, "") {
         Ok(task_structure) => task_structure,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
@@ -64,18 +62,11 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
 
 #[actix_web::patch("/api/entries/update/push")]
 pub(super) async fn push(session: Session, redis: Data<Client>, push_entry: Json<PushEntryQuery>) -> impl Responder {
-    if !push_entry.index.len() <= MAX_ENTRY_DEPTH {
-        return HttpResponse::BadRequest().finish();
-    }
-    
-    handle_update_structure(session, redis, EntryAction::Push, &push_entry.index, Some(push_entry.title.clone()))
+    let push_entry = push_entry.into_inner();
+    handle_update_structure(session, redis, EntryAction::Push, &push_entry.index, Some(push_entry.title))
 }
 
 #[actix_web::delete("/api/entries/update/pop")]
 pub(super) async fn pop(session: Session, redis: Data<Client>, pop_entry: Json<PopEntryQuery>) -> impl Responder {
-    if !pop_entry.index.len() <= MAX_ENTRY_DEPTH {
-        return HttpResponse::BadRequest().finish();
-    }
-    
     handle_update_structure(session, redis, EntryAction::Pop, &pop_entry.index, None)
 }

@@ -1,4 +1,4 @@
-use crate::models::{model::Model, user::User};
+use crate::models::{model::Model, user_model::UserModel};
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use redis::Client;
@@ -27,11 +27,11 @@ pub(super) async fn delete_user(session: Session, redis: Data<Client>, delete_us
     };
 
     // Only admins can delete other users.
-    if !User::validate_is_admin(&mut connection, username.as_str()) {
+    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
     }
 
-    if User::delete(&mut connection, delete_user.username.as_str()).is_err() {
+    if UserModel::delete(&mut connection, delete_user.username.as_str()).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 
@@ -50,7 +50,7 @@ pub(super) async fn delete_self(session: Session, redis: Data<Client>, delete_se
         _ => return HttpResponse::Unauthorized().finish()
     };
 
-    let user = match User::fetch(&mut connection, username.as_str()) {
+    let user = match UserModel::fetch(&mut connection, username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
@@ -59,7 +59,7 @@ pub(super) async fn delete_self(session: Session, redis: Data<Client>, delete_se
         return HttpResponse::Unauthorized().finish();
     }
 
-    if User::delete(&mut connection, username.as_str()).is_err() {
+    if UserModel::delete(&mut connection, username.as_str()).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 

@@ -9,7 +9,7 @@ use anyhow::anyhow;
 pub const USER_KEY_SET: &str = "user_keys";
 
 #[derive(Serialize, Deserialize)]
-pub struct User {
+pub struct UserModel {
     pub username: Username,
     pub name: Name,
     pub email: Email,
@@ -20,7 +20,7 @@ pub struct User {
     pub password: String
 }
 
-impl Model for User {
+impl Model for UserModel {
     /// Overridden method to store a user in Redis.
     fn store(&self, connection: &mut Connection) -> anyhow::Result<()> {
         let serialized = serde_json::to_string(self)?;
@@ -48,7 +48,7 @@ impl Model for User {
     }
 }
 
-impl User {
+impl UserModel {
     /// Generates a password hash using the provided salt and password.
     /// 
     /// # Arguments
@@ -151,7 +151,7 @@ mod tests {
         let password = PlainTextPassword::parse("password".to_string()).unwrap();
         let is_admin = false;
 
-        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), is_admin).unwrap();
+        let user = UserModel::new(username.clone(), name.clone(), email.clone(), password.clone(), is_admin).unwrap();
 
         assert_eq!(user.username, username);
         assert_eq!(user.name, name);
@@ -166,7 +166,7 @@ mod tests {
         let email = Email::parse("lol@test.com".to_string()).unwrap();
         let plain_text_password = PlainTextPassword::parse("password".to_string()).unwrap();
 
-        let user = User::new(username, name, email, plain_text_password.clone(), false).unwrap();
+        let user = UserModel::new(username, name, email, plain_text_password.clone(), false).unwrap();
 
         assert_eq!(user.validate_password(plain_text_password.as_str()), true);
     }
@@ -178,7 +178,7 @@ mod tests {
         let email = Email::parse("lol@test.com".to_string()).unwrap();
         let password = PlainTextPassword::parse("password".to_string()).unwrap();
 
-        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
+        let user = UserModel::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
         let client_user: ClientUser = user.into();
 
         assert_eq!(client_user.username, username);

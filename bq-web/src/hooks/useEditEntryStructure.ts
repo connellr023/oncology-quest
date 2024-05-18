@@ -65,7 +65,7 @@ const useEditEntryStructure = () => {
     }
 
     const pushSupertaskHeading = async (title: string) => {
-        if (await requestPush(title, [0])) {
+        if (await requestPush(title, [])) {
             entries.value.push({
                 title,
                 tasks: []
@@ -75,15 +75,15 @@ const useEditEntryStructure = () => {
     }
 
     const popSupertaskHeading = async () => {
-        if (await requestPop([0])) {
+        if (await requestPop([])) {
             entries.value.pop()
             updateCache(entries.value)
         }
     }
 
-    const pushTaskHeading = async (title: string, index: [0, number]) => {
-        if (await requestPush(title, index)) {
-            entries.value[index[1]].tasks.push({
+    const pushTaskHeading = async (title: string, supertaskIndex: number) => {
+        if (await requestPush(title, [supertaskIndex])) {
+            entries.value[supertaskIndex].tasks.push({
                 title,
                 tasks: []
             })
@@ -91,23 +91,23 @@ const useEditEntryStructure = () => {
         }
     }
 
-    const popTaskHeading = async (index: [0, number]) => {
-        if (await requestPop(index)) {
-            entries.value[index[1]].tasks.pop()
+    const popTaskHeading = async (supertaskIndex: number) => {
+        if (await requestPop([supertaskIndex])) {
+            entries.value[supertaskIndex].tasks.pop()
             updateCache(entries.value)
         }
     }
 
-    const pushSubtaskEntry = async (title: string, index: [0, number, number]) => {
-        if (await requestPush(title, index)) {
-            entries.value[index[1]].tasks[index[2]].tasks.push(title)
+    const pushSubtaskEntry = async (title: string, taskIndex: [number, number]) => {
+        if (await requestPush(title, taskIndex)) {
+            entries.value[taskIndex[0]].tasks[taskIndex[1]].tasks.push(title)
             updateCache(entries.value)
         }
     }
 
-    const popSubtaskEntry = async (index: [0, number, number]) => {
-        if (await requestPop(index)) {
-            entries.value[index[1]].tasks[index[2]].tasks.pop()
+    const popSubtaskEntry = async (taskIndex: [number, number]) => {
+        if (await requestPop(taskIndex)) {
+            entries.value[taskIndex[0]].tasks[taskIndex[1]].tasks.pop()
             updateCache(entries.value)
         }
     }

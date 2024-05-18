@@ -1,5 +1,5 @@
 use super::user_session::handle_session_response;
-use crate::models::{model::Model, user::User};
+use crate::models::{model::Model, user_model::UserModel};
 use crate::utilities::parsables::{Parsable, Username, PlainTextPassword};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
@@ -23,7 +23,7 @@ pub(super) async fn login(session: Session, redis: Data<Client>, login_user: Jso
     };
 
     let login_user = login_user.into_inner();
-    let user = match User::fetch(&mut connection, login_user.username.as_str()) {
+    let user = match UserModel::fetch(&mut connection, login_user.username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };

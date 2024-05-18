@@ -1,5 +1,5 @@
-use super::{model::Model, tasks::{Task, SuperTask}};
-use crate::utilities::parsables::{EntryIndex, EntryTitle};
+use super::{entries::{Entries, EntryIndex}, model::Model, tasks::{Supertask, Task}};
+use crate::utilities::parsables::SubtaskTitle;
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use redis::Connection;
@@ -9,12 +9,12 @@ const TASKS_KEY: &str = "tasks";
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TaskStructure {
-    entries: Vec<SuperTask>,
+pub struct TasksModel {
+    entries: Entries,
     last_updated: DateTime<Utc>
 }
 
-impl TaskStructure {
+impl TasksModel {
     /// Updates the current timestamp of when the structure was last updated.
     fn update_timestamp(&mut self) {
         self.last_updated = Utc::now();
@@ -37,12 +37,18 @@ impl TaskStructure {
     /// # Returns
     /// 
     /// A result indicating whether the update operation was successful.
-    pub fn update_existing(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> anyhow::Result<()> {
-        match index.len() {
-            1 => self.entries[index.supertask_entry_index()].title = title,
-            2 => self.entries[index.supertask_entry_index()].tasks[index.task_entry_index()?].title = title,
-            3 => self.entries[index.supertask_entry_index()].tasks[index.task_entry_index()?].tasks[index.subtask_entry_index()?] = title,
-            _ => return Err(anyhow!("Invalid index tuple length"))
+    pub fn update_existing(&mut self, connection: &mut Connection, index: &EntryIndex, title: SubtaskTitle) -> anyhow::Result<()> {
+        match index {
+            EntryIndex::SupertaskIndex(supertask_index) => {
+                self.entries.supertask(*supertask_index)?.title = title;
+            },
+            EntryIndex::TaskIndex(supertask_index, task_index) => {
+                self.entries.task((*supertask_index, *task_index))?.title = title;
+            },
+            EntryIndex::SubtaskIndex(supertask_index, task_index, subtask_index) => {
+                *(self.entries.subtask_title((*supertask_index, *task_index, *subtask_index))?) = title;
+            },
+            _ => return Err(anyhow!("Invalid index"))
         };
 
         self.update_timestamp();
@@ -61,12 +67,18 @@ impl TaskStructure {
     /// # Returns
     /// 
     /// A result indicating whether the push operation was successful.
-    pub fn push_entry(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> anyhow::Result<()> {
-        match index.len() {
-            1 => self.entries.push(SuperTask::new(title)),
-            2 => self.entries[index.task_entry_index()?].tasks.push(Task::new(title)),
-            3 => self.entries[index.task_entry_index()?].tasks[index.subtask_entry_index()?].tasks.push(title),
-            _ => return Err(anyhow!("Invalid index tuple length"))
+    pub fn push_entry(&mut self, connection: &mut Connection, index: &EntryIndex, title: SubtaskTitle) -> anyhow::Result<()> {
+        match index {
+            EntryIndex::Empty => {
+                self.entries.push_supertask(Supertask::new(title))
+            },
+            EntryIndex::SupertaskIndex(supertask_index) => {
+                self.entries.push_task(*supertask_index, Task::new(title))?
+            },
+            EntryIndex::TaskIndex(supertask_index, task_index) => {
+                self.entries.push_subtask_title((*supertask_index, *task_index), title)?
+            },
+            _ => return Err(anyhow!("Invalid index"))
         };
 
         self.update_timestamp();
@@ -86,15 +98,15 @@ impl TaskStructure {
     /// 
     /// A result indicating whether the pop operation was successful.
     pub fn pop_entry(&mut self, connection: &mut Connection, index: &EntryIndex) -> anyhow::Result<()> {
-        match index.len() {
-            1 => {
-                self.entries.pop();
+        match index {
+            EntryIndex::Empty => {
+                self.entries.pop_supertask()?;
             },
-            2 => {
-                self.entries[index.task_entry_index()?].tasks.pop();
+            EntryIndex::SupertaskIndex(supertask_index) => {
+                self.entries.pop_task(*supertask_index)?;
             },
-            3 => {
-                self.entries[index.task_entry_index()?].tasks[index.subtask_entry_index()?].tasks.pop();
+            EntryIndex::TaskIndex(supertask_index, task_index) => {
+                self.entries.pop_subtask_title((*supertask_index, *task_index))?;
             },
             _ => return Err(anyhow!("Invalid index tuple length"))
         };
@@ -106,7 +118,7 @@ impl TaskStructure {
     }
 }
 
-impl Model for TaskStructure {
+impl Model for TasksModel {
     fn fmt_key(_: &str) -> String {
         TASKS_KEY.to_string()
     }
