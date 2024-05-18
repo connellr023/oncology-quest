@@ -1,4 +1,5 @@
 export type UserTaskEntries = Record<number, Record<number, Record<number, UserTask>>>
+export type EntryIndex = [number] | [number, number] | [number, number, number]
 
 /**
  * Represents a response from the server containing the structure

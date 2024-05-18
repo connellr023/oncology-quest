@@ -27,23 +27,23 @@ const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(prop
 
 <template>
   <div id="entries-container">
-    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, index) in entries">
-      <ProgressableEntryHeading :progress="calculateTaskProgress(index)" :isActive="visibility[entry.title] || false" :index="[index]" :title="entry.title" @click="toggleVisibility(entry.title)" />
-      <ul v-show="visibility[entry.title]" :key="index">
-        <li v-for="(subTask, subIndex) in entry.tasks">
-          <ProgressableEntryHeading :progress="calculateSubtaskProgress([index, subIndex])" :is-active="visibility[entry.title + subTask.title] || false" :index="[index, subIndex]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
-          <ul v-show="visibility[entry.title + subTask.title]" :key="`${index},${subIndex}`">
-            <li v-for="(task, taskIndex) in subTask.tasks">
+    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, superIndex) in entries">
+      <ProgressableEntryHeading :progress="calculateTaskProgress(superIndex)" :isActive="visibility[entry.title] || false" :index="[superIndex]" :title="entry.title" @click="toggleVisibility(entry.title)" />
+      <ul v-show="visibility[entry.title]" :key="superIndex">
+        <li v-for="(subTask, index) in entry.tasks">
+          <ProgressableEntryHeading :progress="calculateSubtaskProgress([superIndex, index])" :is-active="visibility[entry.title + subTask.title] || false" :index="[superIndex, index]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
+          <ul v-show="visibility[entry.title + subTask.title]" :key="`${superIndex},${index}`">
+            <li v-for="(task, subIndex) in subTask.tasks">
               <EditTask
-                :task="tasks[index]?.[subIndex]?.[taskIndex] ?? null"
+                :task="tasks[superIndex]?.[index]?.[subIndex] ?? null"
                 :value="task"
-                :index="[index, subIndex, taskIndex]"
+                :index="[superIndex, index, subIndex]"
               />
             </li>
-            <EditSubtaskEntry v-if="session.isAdmin" :index="[index, subIndex]" />
+            <EditSubtaskEntry v-if="session.isAdmin" :index="[0, superIndex, index]" />
           </ul>
         </li>
-        <EditTaskHeading v-if="session.isAdmin" :index="index" />
+        <EditTaskHeading v-if="session.isAdmin" :index="[0, superIndex]" />
       </ul>
     </div>
     <EditSupertaskHeading v-if="session.isAdmin" />

@@ -57,7 +57,7 @@ macro_rules! parsable {
     };
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct EntryIndex(Box<[usize]>);
 
 impl Deserializable for EntryIndex {

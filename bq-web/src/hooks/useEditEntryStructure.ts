@@ -1,6 +1,6 @@
 import { Ref, inject, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
-import { Task } from "../models/task"
+import { EntryIndex, Task } from "../models/task"
 import useStructureCache from "./useStructureCache"
 
 const useEditEntryStructure = () => {
@@ -9,7 +9,7 @@ const useEditEntryStructure = () => {
     const message = ref("")
     const entries = inject<Ref<Task[]>>("entries")!
 
-    const requestPush = async (title: string, index: number[]): Promise<boolean> => {
+    const requestPush = async (title: string, index: EntryIndex): Promise<boolean> => {
         message.value = "Loading..."
 
         try {
@@ -39,7 +39,7 @@ const useEditEntryStructure = () => {
         }
     }
 
-    const requestPop = async (index: number[]): Promise<boolean> => {
+    const requestPop = async (index: EntryIndex): Promise<boolean> => {
         try {
             const response = await fetch(`${API_ENDPOINT}/api/entries/update/pop`, {
                 method: "DELETE",
@@ -47,9 +47,7 @@ const useEditEntryStructure = () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    index
-                })
+                body: JSON.stringify({ index })
             })
 
             if (!response.ok) {
@@ -67,7 +65,7 @@ const useEditEntryStructure = () => {
     }
 
     const pushSupertaskHeading = async (title: string) => {
-        if (await requestPush(title, [])) {
+        if (await requestPush(title, [0])) {
             entries.value.push({
                 title,
                 tasks: []
@@ -77,15 +75,15 @@ const useEditEntryStructure = () => {
     }
 
     const popSupertaskHeading = async () => {
-        if (await requestPop([])) {
+        if (await requestPop([0])) {
             entries.value.pop()
             updateCache(entries.value)
         }
     }
 
-    const pushTaskHeading = async (title: string, index: number) => {
-        if (await requestPush(title, [index])) {
-            entries.value[index].tasks.push({
+    const pushTaskHeading = async (title: string, index: [0, number]) => {
+        if (await requestPush(title, index)) {
+            entries.value[index[1]].tasks.push({
                 title,
                 tasks: []
             })
@@ -93,23 +91,23 @@ const useEditEntryStructure = () => {
         }
     }
 
-    const popTaskHeading = async (index: number) => {
-        if (await requestPop([index])) {
-            entries.value[index].tasks.pop()
-            updateCache(entries.value)
-        }
-    }
-
-    const pushSubtaskEntry = async (title: string, index: number[]) => {
-        if (await requestPush(title, index)) {
-            entries.value[index[0]].tasks[index[1]].tasks.push(title)
-            updateCache(entries.value)
-        }
-    }
-
-    const popSubtaskEntry = async (index: number[]) => {
+    const popTaskHeading = async (index: [0, number]) => {
         if (await requestPop(index)) {
-            entries.value[index[0]].tasks[index[1]].tasks.pop()
+            entries.value[index[1]].tasks.pop()
+            updateCache(entries.value)
+        }
+    }
+
+    const pushSubtaskEntry = async (title: string, index: [0, number, number]) => {
+        if (await requestPush(title, index)) {
+            entries.value[index[1]].tasks[index[2]].tasks.push(title)
+            updateCache(entries.value)
+        }
+    }
+
+    const popSubtaskEntry = async (index: [0, number, number]) => {
+        if (await requestPop(index)) {
+            entries.value[index[1]].tasks[index[2]].tasks.pop()
             updateCache(entries.value)
         }
     }

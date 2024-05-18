@@ -3,38 +3,38 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Represents the structure of user tasks corresponding to their JSON representation.
-pub type UserTaskEntries = HashMap<usize, HashMap<usize, HashMap<usize, UserTask>>>;
+pub type UserTaskEntries = HashMap<usize, HashMap<usize, HashMap<usize, SubTask>>>;
 
 #[derive(Serialize, Deserialize)]
-pub struct SubTask {
+pub struct SuperTask {
     pub title: EntryTitle,
-    pub tasks: Vec<EntryTitle>
+    pub tasks: Vec<Task>
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Task {
     pub title: EntryTitle,
-    pub tasks: Vec<SubTask>
+    pub tasks: Vec<EntryTitle>
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-pub struct UserTask {
+pub struct SubTask {
     pub completed: bool,
     pub comment: Comment
 }
 
-impl Task {
+impl SuperTask {
     pub fn new(title: EntryTitle) -> Self {
-        Task {
+        SuperTask {
             title,
             tasks: vec![]
         }
     }
 }
 
-impl SubTask {
+impl Task {
     pub fn new(title: EntryTitle) -> Self {
-        SubTask {
+        Task {
             title,
             tasks: vec![]
         }

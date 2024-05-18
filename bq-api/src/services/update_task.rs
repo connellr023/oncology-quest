@@ -1,4 +1,4 @@
-use crate::models::{model::Model, user::User, tasks::{UserTask, UserTaskEntries}};
+use crate::models::{model::Model, user::User, tasks::{SubTask, UserTaskEntries}};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use serde::Deserialize;
@@ -8,7 +8,7 @@ use std::collections::HashMap;
 #[derive(Deserialize)]
 struct UpdateTaskQuery {
     pub index: (usize, usize, usize),
-    pub task: UserTask
+    pub task: SubTask
 }
 
 /// Updates the task at the given index.
@@ -23,7 +23,7 @@ struct UpdateTaskQuery {
 /// 
 /// * If the task at the given index does not exist, it will be created.
 /// * If the subtask at the given index does not exist, it will be created.
-fn update_task(entries: &mut UserTaskEntries, index: (usize, usize, usize), task: UserTask) {
+fn update_task(entries: &mut UserTaskEntries, index: (usize, usize, usize), task: SubTask) {
     if let Some(subtasks) = entries.get_mut(&index.0) {
         if let Some(tasks) = subtasks.get_mut(&index.1) {
             tasks.insert(index.2, task);
@@ -85,7 +85,7 @@ mod tests {
     fn test_update_task_new() {
         let mut entries = HashMap::new();
         let comment = Comment::parse(String::from("test comment")).unwrap();
-        let task = UserTask {
+        let task = SubTask {
             completed: false,
             comment: comment
         };
@@ -101,7 +101,7 @@ mod tests {
     fn test_update_task_existing_subtask() {
         let mut entries = HashMap::new();
         let comment = Comment::parse(String::from("test comment")).unwrap();
-        let task = UserTask {
+        let task = SubTask {
             completed: false,
             comment: comment
         };

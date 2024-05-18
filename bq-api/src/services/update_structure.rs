@@ -1,5 +1,5 @@
 use crate::models::{model::Model, task_structure::TaskStructure, user::User};
-use crate::utilities::parsables::EntryTitle;
+use crate::utilities::parsables::{EntryIndex, EntryTitle};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use redis::Client;
@@ -10,12 +10,12 @@ const MAX_ENTRY_DEPTH: usize = 2;
 #[derive(Deserialize)]
 struct PushEntryQuery {
     pub title: EntryTitle,
-    pub index: Box<[usize]>
+    pub index: EntryIndex
 }
 
 #[derive(Deserialize)]
 struct PopEntryQuery {
-    pub index: Box<[usize]>
+    pub index: EntryIndex
 }
 
 enum EntryAction {
@@ -23,7 +23,7 @@ enum EntryAction {
     Pop
 }
 
-fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &[usize], title: Option<EntryTitle>) -> HttpResponse {
+fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryAction, index: &EntryIndex, title: Option<EntryTitle>) -> HttpResponse {
     let username = match session.get::<String>("username") {
         Ok(Some(username)) => username,
         _ => return HttpResponse::Unauthorized().finish()

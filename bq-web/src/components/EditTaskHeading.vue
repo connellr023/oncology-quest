@@ -2,7 +2,7 @@
 import EditEntryStructure from "./EditEntryStructure.vue"
 import useEditEntryStructure from "../hooks/useEditEntryStructure";
 
-defineProps<{ index: number }>()
+defineProps<{ index: [0, number] }>()
 
 const { message, pushTaskHeading, popTaskHeading } = useEditEntryStructure()
 </script>

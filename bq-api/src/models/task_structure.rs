@@ -1,4 +1,4 @@
-use super::{model::Model, tasks::{SubTask, Task}};
+use super::{model::Model, tasks::{Task, SuperTask}};
 use crate::utilities::parsables::{EntryIndex, EntryTitle};
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
@@ -9,7 +9,7 @@ const TASKS_KEY: &str = "tasks";
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskStructure {
-    entries: Vec<Task>,
+    entries: Vec<SuperTask>,
     last_updated: DateTime<Utc>
 }
 
@@ -53,16 +53,16 @@ impl TaskStructure {
     /// # Arguments
     /// 
     /// * `connection` - The Redis connection to use for the update operation.
-    /// * `index` - The index of the task to add. Slice that can only range in length from 0 to 2.
+    /// * `index` - The index of the task to add. Expecting the first index to be 0 since supertasks are pushed to the root level.
     /// 
     /// # Returns
     /// 
     /// A boolean indicating whether the addition operation was successful.
-    pub fn push_entry(&mut self, connection: &mut Connection, index: &[usize], title: EntryTitle) -> bool {
+    pub fn push_entry(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> bool {
         match index.len() {
-            0 => self.entries.push(Task::new(title)),
-            1 => self.entries[index[0]].tasks.push(SubTask::new(title)),
-            2 => self.entries[index[0]].tasks[index[1]].tasks.push(title),
+            1 => self.entries.push(SuperTask::new(title)),
+            2 => self.entries[index.task_entry_index()].tasks.push(Task::new(title)),
+            3 => self.entries[index.task_entry_index()].tasks[index.subtask_entry_index()].tasks.push(title),
             _ => return false
         };
 
@@ -75,21 +75,21 @@ impl TaskStructure {
     /// # Arguments
     /// 
     /// * `connection` - The Redis connection to use for the update operation.
-    /// * `index` - The index of the task to remove. Slice that can only range in length from 0 to 2.
+    /// * `index` - The index of the task to remove. Expecting the first index to be 0 since supertasks are popped from the root level.
     /// 
     /// # Returns
     /// 
     /// A boolean indicating whether the removal operation was successful.
-    pub fn pop_entry(&mut self, connection: &mut Connection, index: &[usize]) -> bool {
+    pub fn pop_entry(&mut self, connection: &mut Connection, index: &EntryIndex) -> bool {
         match index.len() {
-            0 => {
+            1 => {
                 self.entries.pop();
             },
-            1 => {
-                self.entries[index[0]].tasks.pop();
-            },
             2 => {
-                self.entries[index[0]].tasks[index[1]].tasks.pop();
+                self.entries[index.task_entry_index()].tasks.pop();
+            },
+            3 => {
+                self.entries[index.task_entry_index()].tasks[index.subtask_entry_index()].tasks.pop();
             },
             _ => return false
         };
