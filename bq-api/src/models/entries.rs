@@ -158,10 +158,18 @@ impl Serialize for EntryIndex {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where S: Serializer {
         match self {
-            Self::Empty => <[usize]>::serialize(&[], serializer),
-            Self::SupertaskIndex(index) => <[usize]>::serialize(&[*index], serializer),
-            Self::TaskIndex(supertask_index, task_index) => <[usize]>::serialize(&[*supertask_index, *task_index], serializer),
-            Self::SubtaskIndex(supertask_index, task_index, subtask_index) => <[usize]>::serialize(&[*supertask_index, *task_index, *subtask_index], serializer)
+            Self::Empty => {
+                <[usize]>::serialize(&[], serializer)
+            },
+            Self::SupertaskIndex(index) => {
+                <[usize]>::serialize(&[*index], serializer)
+            },
+            Self::TaskIndex(supertask_index, task_index) => {
+                <[usize]>::serialize(&[*supertask_index, *task_index], serializer)
+            },
+            Self::SubtaskIndex(supertask_index, task_index, subtask_index) => {
+                <[usize]>::serialize(&[*supertask_index, *task_index, *subtask_index], serializer)
+            }
         }
     }
 }

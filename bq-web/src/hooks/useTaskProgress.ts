@@ -4,7 +4,7 @@ import { Task, UserTaskEntries } from "../models/task"
 const useTaskProgress = (userTasks: UserTaskEntries) => {
     const entries = inject<Ref<Task[]>>("entries")!.value
 
-    const calculateSubtaskProgress = (index: [number, number]): number => {
+    const calculateTaskProgress = (index: [number, number]): number => {
         if (index.length !== 2) {
             return 0
         }
@@ -17,6 +17,10 @@ const useTaskProgress = (userTasks: UserTaskEntries) => {
         const completedTasks = userTasks[index[0]][index[1]]
         const toComplete = entries[index[0]].tasks[index[1]].tasks.length
 
+        if (toComplete === 0) {
+            return 100
+        }
+
         for (const taskKey in completedTasks) {
             if (completedTasks[taskKey].completed && entries[index[0]].tasks[index[1]].tasks[taskKey]) {
                 total++
@@ -26,7 +30,7 @@ const useTaskProgress = (userTasks: UserTaskEntries) => {
         return (total / toComplete) * 100
     }
 
-    const calculateTaskProgress = (index: number): number => {
+    const calculateSupertaskProgress = (index: number): number => {
         if (!userTasks[index]) {
             return 0
         }
@@ -34,9 +38,13 @@ const useTaskProgress = (userTasks: UserTaskEntries) => {
         let progress = 0
         const toComplete = entries[index].tasks.length
 
+        if (toComplete === 0) {
+            return 100
+        }
+
         for (let i = 0; i < toComplete; i++) {
             if (entries[index].tasks[i]) {
-                progress += calculateSubtaskProgress([index, i])
+                progress += calculateTaskProgress([index, i])
             }
         }
 
@@ -44,8 +52,8 @@ const useTaskProgress = (userTasks: UserTaskEntries) => {
     }
 
     return {
-        calculateSubtaskProgress,
-        calculateTaskProgress
+        calculateTaskProgress,
+        calculateSupertaskProgress
     }
 }
 

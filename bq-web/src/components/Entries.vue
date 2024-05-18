@@ -22,18 +22,20 @@ const toggleVisibility = (key: string) => {
   visibility[key] = !visibility[key]
 }
 
-const { calculateTaskProgress, calculateSubtaskProgress } = useTaskProgress(props.tasks)
+const computeKey = (...indicies: number[]) => indicies.join("-")
+
+const { calculateTaskProgress, calculateSupertaskProgress } = useTaskProgress(props.tasks)
 </script>
 
 <template>
   <div id="entries-container">
-    <div :class="`entry ${visibility[entry.title] ? 'focused': ''}`" v-for="(entry, superIndex) in entries">
-      <ProgressableEntryHeading :progress="calculateTaskProgress(superIndex)" :isActive="visibility[entry.title] || false" :index="[superIndex]" :title="entry.title" @click="toggleVisibility(entry.title)" />
-      <ul v-show="visibility[entry.title]" :key="superIndex">
-        <li v-for="(subTask, index) in entry.tasks">
-          <ProgressableEntryHeading :progress="calculateSubtaskProgress([superIndex, index])" :is-active="visibility[entry.title + subTask.title] || false" :index="[superIndex, index]" :title="subTask.title" @click="toggleVisibility(entry.title + subTask.title)" />
-          <ul v-show="visibility[entry.title + subTask.title]" :key="`${superIndex},${index}`">
-            <li v-for="(task, subIndex) in subTask.tasks">
+    <div :class="`entry ${visibility[computeKey(superIndex)] ? 'focused': ''}`" v-for="(entry, superIndex) in entries" :key="computeKey(superIndex)">
+      <ProgressableEntryHeading :progress="calculateSupertaskProgress(superIndex)" :isActive="visibility[computeKey(superIndex)] || false" :index="[superIndex]" :title="entry.title" @click="toggleVisibility(computeKey(superIndex))" />
+      <ul v-show="visibility[computeKey(superIndex)]" :key="computeKey(superIndex, 0)">
+        <li v-for="(subTask, index) in entry.tasks" :key="computeKey(superIndex, index)">
+          <ProgressableEntryHeading :progress="calculateTaskProgress([superIndex, index])" :isActive="visibility[computeKey(superIndex, index)] || false" :index="[superIndex, index]" :title="subTask.title" @click="toggleVisibility(computeKey(superIndex, index))" />
+          <ul v-show="visibility[computeKey(superIndex, index)]" :key="computeKey(superIndex, index, 0)">
+            <li v-for="(task, subIndex) in subTask.tasks" :key="computeKey(superIndex, index, subIndex)">
               <EditTask
                 :task="tasks[superIndex]?.[index]?.[subIndex] ?? null"
                 :value="task"
