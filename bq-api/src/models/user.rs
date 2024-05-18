@@ -4,6 +4,7 @@ use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
 use redis::Connection;
 use std::collections::HashMap;
+use anyhow::anyhow;
 
 pub const USER_KEY_SET: &str = "user_keys";
 
@@ -21,24 +22,21 @@ pub struct User {
 
 impl Model for User {
     /// Overridden method to store a user in Redis.
-    fn store(&self, connection: &mut Connection) -> bool {
-        let serialized = match serde_json::to_string(self) {
-            Ok(serialized) => serialized,
-            Err(_) => return false
-        };
+    fn store(&self, connection: &mut Connection) -> anyhow::Result<()> {
+        let serialized = serde_json::to_string(self)?;
 
         if self.exists(connection) {
-            return false;
+            return Err(anyhow!("User already exists"));
         }
 
         let key = self.key();
 
-        let result_pipe = redis::pipe()
+        redis::pipe()
             .cmd("SET").arg(&key).arg(serialized).ignore()
             .cmd("SADD").arg(USER_KEY_SET).arg(&key).ignore()
-            .query::<()>(connection);
+            .query::<()>(connection)?;
 
-        result_pipe.is_ok()
+        Ok(())
     }
 
     fn fmt_key(identifier: &str) -> String {
@@ -134,8 +132,8 @@ impl User {
     /// Returns `true` if the user is an admin, `false` otherwise.
     pub fn validate_is_admin(connection: &mut Connection, username: &str) -> bool {
         match Self::fetch(connection, username) {
-            Some(user) => user.is_admin,
-            None => false
+            Ok(user) => user.is_admin,
+            Err(_) => false
         }
     }
 }

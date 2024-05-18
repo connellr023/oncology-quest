@@ -31,7 +31,7 @@ pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUser
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    if user.store(&mut connection) {
+    if user.store(&mut connection).is_err() {
         return HttpResponse::Created().finish();
     }
     

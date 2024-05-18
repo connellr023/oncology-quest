@@ -19,8 +19,8 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<ResetPasswor
     };
 
     let mut user = match User::fetch(&mut connection, reset_password.username.as_str()) {
-        Some(user) => user,
-        None => return HttpResponse::Unauthorized().finish()
+        Ok(user) => user,
+        Err(_) => return HttpResponse::Unauthorized().finish()
     };
 
     // Only users that can reset their password can reset their password.
@@ -35,7 +35,7 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<ResetPasswor
 
     user.password = new_password;
 
-    if !user.store(&mut connection) {
+    if user.store(&mut connection).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 
@@ -66,8 +66,8 @@ pub(super) async fn allow_reset(session: Session, redis: Data<Client>, allow_res
     }
 
     let mut target_user = match User::fetch(&mut connection, allow_reset_password.username.as_str()) {
-        Some(target_user) => target_user,
-        None => return HttpResponse::NotFound().finish()
+        Ok(target_user) => target_user,
+        Err(_) => return HttpResponse::NotFound().finish()
     };
 
     // Admins cannot allow themselves to reset their password.
@@ -77,7 +77,7 @@ pub(super) async fn allow_reset(session: Session, redis: Data<Client>, allow_res
 
     target_user.can_reset_password = allow_reset_password.allow_reset;
 
-    if !target_user.store(&mut connection) {
+    if target_user.store(&mut connection).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
     

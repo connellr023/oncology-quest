@@ -29,13 +29,13 @@ pub(super) async fn update(session: Session, redis: Data<Client>, entry_update: 
     };
 
     let mut task_structure = match TaskStructure::fetch(&mut connection, "") {
-        Some(task_structure) => task_structure,
-        None => return HttpResponse::InternalServerError().finish()
+        Ok(task_structure) => task_structure,
+        Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
     let entry_update = entry_update.into_inner();
 
-    if !task_structure.update_existing(&mut connection, &entry_update.index, entry_update.title) {
+    if task_structure.update_existing(&mut connection, &entry_update.index, entry_update.title).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 

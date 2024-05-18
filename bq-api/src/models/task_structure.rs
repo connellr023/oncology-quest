@@ -3,6 +3,7 @@ use crate::utilities::parsables::{EntryIndex, EntryTitle};
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use redis::Connection;
+use anyhow::anyhow;
 
 const TASKS_KEY: &str = "tasks";
 
@@ -35,17 +36,19 @@ impl TaskStructure {
     /// 
     /// # Returns
     /// 
-    /// A boolean indicating whether the update operation was successful.
-    pub fn update_existing(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> bool {
+    /// A result indicating whether the update operation was successful.
+    pub fn update_existing(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> anyhow::Result<()> {
         match index.len() {
             1 => self.entries[index.supertask_entry_index()].title = title,
-            2 => self.entries[index.supertask_entry_index()].tasks[index.task_entry_index()].title = title,
-            3 => self.entries[index.supertask_entry_index()].tasks[index.task_entry_index()].tasks[index.subtask_entry_index()] = title,
-            _ => return false
+            2 => self.entries[index.supertask_entry_index()].tasks[index.task_entry_index()?].title = title,
+            3 => self.entries[index.supertask_entry_index()].tasks[index.task_entry_index()?].tasks[index.subtask_entry_index()?] = title,
+            _ => return Err(anyhow!("Invalid index tuple length"))
         };
 
         self.update_timestamp();
-        self.update(connection)
+        self.update(connection)?;
+
+        Ok(())
     }
 
     /// Adds a new entry to the structure based on a slice of indicies.
@@ -57,17 +60,19 @@ impl TaskStructure {
     /// 
     /// # Returns
     /// 
-    /// A boolean indicating whether the addition operation was successful.
-    pub fn push_entry(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> bool {
+    /// A result indicating whether the push operation was successful.
+    pub fn push_entry(&mut self, connection: &mut Connection, index: &EntryIndex, title: EntryTitle) -> anyhow::Result<()> {
         match index.len() {
             1 => self.entries.push(SuperTask::new(title)),
-            2 => self.entries[index.task_entry_index()].tasks.push(Task::new(title)),
-            3 => self.entries[index.task_entry_index()].tasks[index.subtask_entry_index()].tasks.push(title),
-            _ => return false
+            2 => self.entries[index.task_entry_index()?].tasks.push(Task::new(title)),
+            3 => self.entries[index.task_entry_index()?].tasks[index.subtask_entry_index()?].tasks.push(title),
+            _ => return Err(anyhow!("Invalid index tuple length"))
         };
 
         self.update_timestamp();
-        self.update(connection)
+        self.update(connection)?;
+
+        Ok(())
     }
 
     /// Removes the last entry from the structure based on a slice of indicies.
@@ -79,23 +84,25 @@ impl TaskStructure {
     /// 
     /// # Returns
     /// 
-    /// A boolean indicating whether the removal operation was successful.
-    pub fn pop_entry(&mut self, connection: &mut Connection, index: &EntryIndex) -> bool {
+    /// A result indicating whether the pop operation was successful.
+    pub fn pop_entry(&mut self, connection: &mut Connection, index: &EntryIndex) -> anyhow::Result<()> {
         match index.len() {
             1 => {
                 self.entries.pop();
             },
             2 => {
-                self.entries[index.task_entry_index()].tasks.pop();
+                self.entries[index.task_entry_index()?].tasks.pop();
             },
             3 => {
-                self.entries[index.task_entry_index()].tasks[index.subtask_entry_index()].tasks.pop();
+                self.entries[index.task_entry_index()?].tasks[index.subtask_entry_index()?].tasks.pop();
             },
-            _ => return false
+            _ => return Err(anyhow!("Invalid index tuple length"))
         };
 
         self.update_timestamp();
-        self.update(connection)
+        self.update(connection)?;
+
+        Ok(())
     }
 }
 

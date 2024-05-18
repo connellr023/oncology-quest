@@ -31,7 +31,7 @@ pub(super) async fn delete_user(session: Session, redis: Data<Client>, delete_us
         return HttpResponse::Forbidden().finish();
     }
 
-    if !User::delete(&mut connection, delete_user.username.as_str()) {
+    if User::delete(&mut connection, delete_user.username.as_str()).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 
@@ -51,15 +51,15 @@ pub(super) async fn delete_self(session: Session, redis: Data<Client>, delete_se
     };
 
     let user = match User::fetch(&mut connection, username.as_str()) {
-        Some(user) => user,
-        None => return HttpResponse::Unauthorized().finish()
+        Ok(user) => user,
+        Err(_) => return HttpResponse::Unauthorized().finish()
     };
 
     if !user.validate_password(delete_self.password.as_str()) {
         return HttpResponse::Unauthorized().finish();
     }
 
-    if !User::delete(&mut connection, username.as_str()) {
+    if User::delete(&mut connection, username.as_str()).is_err() {
         return HttpResponse::InternalServerError().finish();
     }
 

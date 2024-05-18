@@ -73,7 +73,7 @@ impl Deserializable for EntryIndex {
 
 impl EntryIndex {
     pub fn from_boxed_slice(slice: Box<[usize]>) -> anyhow::Result<Self> {
-        if !(slice.len() <= 3) {
+        if slice.is_empty() || slice.len() > 3 {
             return Err(anyhow!("Invalid index tuple length"));
         }
 
@@ -88,12 +88,20 @@ impl EntryIndex {
         self.0[0]
     }
 
-    pub fn task_entry_index(&self) -> usize {
-        self.0[1]
+    pub fn task_entry_index(&self) -> anyhow::Result<usize> {
+        if self.len() < 2 {
+            return Err(anyhow!("Task entry index not found"));
+        }
+
+        Ok(self.0[1])
     }
 
-    pub fn subtask_entry_index(&self) -> usize {
-        self.0[2]
+    pub fn subtask_entry_index(&self) -> anyhow::Result<usize> {
+        if self.len() < 3 {
+            return Err(anyhow!("Subtask entry index not found"));
+        }
+
+        Ok(self.0[2])
     }
 }
 

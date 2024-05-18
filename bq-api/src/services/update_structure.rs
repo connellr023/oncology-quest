@@ -40,20 +40,20 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
     };
 
     let mut task_structure = match TaskStructure::fetch(&mut connection, "") {
-        Some(task_structure) => task_structure,
-        None => return HttpResponse::InternalServerError().finish()
+        Ok(task_structure) => task_structure,
+        Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
     match action {
         EntryAction::Push => {
-            if !task_structure.push_entry(&mut connection, index, title.unwrap()) {
+            if task_structure.push_entry(&mut connection, index, title.unwrap()).is_err() {
                 return HttpResponse::InternalServerError().finish();
             }
 
             HttpResponse::Created().finish()
         },
         EntryAction::Pop => {
-            if !task_structure.pop_entry(&mut connection, index) {
+            if task_structure.pop_entry(&mut connection, index).is_err() {
                 return HttpResponse::InternalServerError().finish();
             }
 

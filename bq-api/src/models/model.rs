@@ -1,5 +1,6 @@
 use redis::Connection;
 use serde::{Deserialize, Serialize};
+use anyhow::{anyhow, Ok};
 
 /// Trait representing a Redis model.
 pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
@@ -11,22 +12,14 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
     /// * `identifier` - The identifier of the model to fetch.
     ///
     /// # Returns
-    ///
-    /// An `Option<Self>` containing the fetched model, or `None` if the key does not exist.
-    fn fetch(connection: &mut Connection, identifier: &str) -> Option<Self> {
+    /// 
+    /// A result containing the fetched model or an error if the fetch operation failed or the model does not exist.
+    fn fetch(connection: &mut Connection, identifier: &str) -> anyhow::Result<Self> {
         let result = redis::cmd("GET")
             .arg(Self::fmt_key(identifier))
-            .query::<String>(connection);
+            .query::<String>(connection)?;
 
-        match result {
-            Ok(value) => {
-                match serde_json::from_str::<Self>(&value) {
-                    Ok(value) => Some(value),
-                    Err(_) => None
-                }
-            },
-            Err(_) => None
-        }
+        Ok(serde_json::from_str::<Self>(&result)?)
     }
 
     /// Stores the model in Redis.
@@ -36,26 +29,23 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
     /// * `connection` - The Redis connection to use for the store operation.
     /// 
     /// # Returns
-    ///
-    /// A boolean indicating whether the store operation was successful.
-    fn store(&self, connection: &mut Connection) -> bool {
-        let serialized = match serde_json::to_string(self) {
-            Ok(serialized) => serialized,
-            Err(_) => return false
-        };
+    /// 
+    /// A result indicating whether the store operation was successful.
+    fn store(&self, connection: &mut Connection) -> anyhow::Result<()> {
+        let serialized = serde_json::to_string(self)?;
 
         if self.exists(connection) {
-            return false;
+            return Err(anyhow!("Model already exists"));
         }
 
         let key = self.key();
 
-        let set_result = redis::cmd("SET")
+        redis::cmd("SET")
             .arg(&key)
             .arg(serialized)
-            .query::<()>(connection);
+            .query::<()>(connection)?;
 
-        set_result.is_ok()
+        Ok(())
     }
 
     /// Updates the model in Redis.
@@ -65,24 +55,21 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
     /// * `connection` - The Redis connection to use for the update operation.
     /// 
     /// # Returns
-    /// 
-    /// A boolean indicating whether the update operation was successful.
-    fn update(&self, connection: &mut Connection) -> bool {
-        let serialized = match serde_json::to_string(self) {
-            Ok(serialized) => serialized,
-            Err(_) => return false
-        };
+    ///
+    /// A result indicating whether the update operation was successful.
+    fn update(&self, connection: &mut Connection) -> anyhow::Result<()> {
+        let serialized = serde_json::to_string(self)?;
 
         if !self.exists(connection) {
-            return false;
+            return Err(anyhow!("Model does not exist"));
         }
 
-        let set_result = redis::cmd("SET")
+        redis::cmd("SET")
             .arg(self.key())
             .arg(serialized)
-            .query::<()>(connection);
+            .query::<()>(connection)?;
 
-        set_result.is_ok()
+        Ok(())
     }
 
     /// Checks if a model exists in Redis.
@@ -112,12 +99,12 @@ pub trait Model: Serialize + for<'de> Deserialize<'de> + Sized {
     /// # Returns
     /// 
     /// A boolean indicating whether the delete operation was successful.
-    fn delete(connection: &mut Connection, identifier: &str) -> bool {
-        let delete = redis::cmd("DEL")
+    fn delete(connection: &mut Connection, identifier: &str) -> anyhow::Result<()> {
+        redis::cmd("DEL")
             .arg(Self::fmt_key(identifier))
-            .query::<bool>(connection);
+            .query::<bool>(connection)?;
 
-        delete.unwrap_or(false)
+        Ok(())
     }
 
     /// Formats the key for this model.

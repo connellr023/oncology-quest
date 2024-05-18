@@ -58,8 +58,8 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
     };
 
     let mut user = match User::fetch(&mut connection, username.as_str()) {
-        Some(user) => user,
-        None => return HttpResponse::NotFound().finish()
+        Ok(user) => user,
+        Err(_) => return HttpResponse::NotFound().finish()
     };
 
     // Admins do not have tasks.
@@ -69,7 +69,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
 
     update_task(user.tasks_mut(), task_update.index, task_update.task.clone());
 
-    if !user.update(&mut connection) {
+    if user.update(&mut connection).is_err() {
         return HttpResponse::InternalServerError().finish();
     };
     

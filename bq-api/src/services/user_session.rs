@@ -24,7 +24,7 @@ struct UserSession {
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
 pub(super) fn handle_session_response(connection: &mut Connection, structure_cache_timestamp: Option<DateTime<Utc>>, user: User) -> HttpResponse {
     let structure = match TaskStructure::fetch(connection, "") {
-        Some(structure) => {
+        Ok(structure) => {
             match structure_cache_timestamp {
                 Some(cache_timestamp) => {
                     if structure.last_updated().gt(&cache_timestamp) {
@@ -41,7 +41,7 @@ pub(super) fn handle_session_response(connection: &mut Connection, structure_cac
                 }
             }
         },
-        None => return HttpResponse::InternalServerError().finish()
+        Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
     let user_client = UserSession {
@@ -71,8 +71,8 @@ pub(super) async fn session(session: Session, redis: Data<Client>, fetch_session
     };
 
     let user = match User::fetch(&mut connection, username.as_str()) {
-        Some(user) => user,
-        None => return HttpResponse::NotFound().finish()
+        Ok(user) => user,
+        Err(_) => return HttpResponse::NotFound().finish()
     };
 
     handle_session_response(&mut connection, fetch_session.structure_cache_timestamp, user)
