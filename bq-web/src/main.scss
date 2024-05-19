@@ -239,7 +239,7 @@ button {
     &:hover {
       color: $main-txt-color;
       opacity: 1;
-      background-color: $main-bg-color;
+      background-color: rgba(0, 0, 0, 0.35);
     }
 
     img {
