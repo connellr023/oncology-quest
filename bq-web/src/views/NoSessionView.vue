@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue"
 
-import LoginForm from "../components/LoginForm.vue"
-import RegisterForm from "../components/RegisterForm.vue"
+import LoginForm from "../components/form/LoginForm.vue"
+import RegisterForm from "../components/form/RegisterForm.vue"
 import CreditLabel from "../components/CreditLabel.vue"
 
 enum Views {

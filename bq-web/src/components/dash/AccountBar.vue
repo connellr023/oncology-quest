@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
-import { User } from "../models/user"
-import useLogout from "../hooks/useLogout";
+import { User } from "../../models/user"
+import useLogout from "../../hooks/useLogout";
 
 const isAdminViewingUsers = inject<Ref<boolean>>("isAdminViewingUsers")!
 const session = inject<Ref<User | null>>("session")!
@@ -27,7 +27,7 @@ const manageTasks = () => {
 
   <div v-if="session" id="account-bar-container">
     <div class="content-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
-      <img draggable="false" src="/logo.svg" />
+      <img draggable="false" src="/bq-logo-1.svg" />
       <div>
         <h1>{{ session.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
         <div>

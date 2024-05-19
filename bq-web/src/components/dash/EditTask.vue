@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Ref, inject, onMounted, ref } from "vue"
-import { UserTask } from "../models/task";
-import { User } from "../models/user";
+import { UserTask } from "../../models/task";
+import { User } from "../../models/user";
 
-import useSaveTask from "../hooks/useSaveTask";
+import useSaveTask from "../../hooks/useSaveTask";
 
 import EntryHeading from "./EntryHeading.vue";
-import LoadingButton from "./LoadingButton.vue";
+import LoadingButton from "../LoadingButton.vue";
 
 const optionsVisible = ref(false)
 const user = inject<Ref<User>>("session")!.value
@@ -66,7 +66,7 @@ const toggleCompleted = async () => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../../main.scss";
 
 div.task-heading-container {
   display: flex;

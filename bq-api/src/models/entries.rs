@@ -98,7 +98,6 @@ impl Entries {
         Ok(())
     }
 
-
     /// Pops the last task from a supertask.
     /// 
     /// # Arguments

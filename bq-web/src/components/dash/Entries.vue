@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Ref, inject, reactive } from "vue"
-import { User } from "../models/user"
-import { Task, UserTaskEntries } from "../models/task"
+import { User } from "../../models/user"
+import { Task, UserTaskEntries } from "../../models/task"
 
-import useTaskProgress from "../hooks/useTaskProgress"
+import useTaskProgress from "../../hooks/useTaskProgress"
 
 import EditTask from "./EditTask.vue"
 import EditSupertaskHeading from "./EditSupertaskHeading.vue"
@@ -53,7 +53,7 @@ const { calculateTaskProgress, calculateSupertaskProgress } = useTaskProgress(pr
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../../main.scss";
 
 div#entries-container {
   display: flex;

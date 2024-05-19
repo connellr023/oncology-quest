@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import useLogin from "../hooks/useLogin";
+import useLogin from "../../hooks/useLogin";
 
-import LabeledFormInput from "./LabeledFormInput.vue";
-import LoadingButton from "./LoadingButton.vue";
+import LabeledFormInput from "./LabeledFormInput.vue"
+import LoadingButton from "../LoadingButton.vue"
 
 const {
   loading,

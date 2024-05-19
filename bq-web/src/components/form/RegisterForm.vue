@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import useRegister from "../hooks/useRegister"
+import useRegister from "../../hooks/useRegister"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
-import LoadingButton from "./LoadingButton.vue";
+import LoadingButton from "../LoadingButton.vue"
 
 const {
   username,

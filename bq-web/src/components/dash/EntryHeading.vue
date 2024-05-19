@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
-import { User } from "../models/user"
+import { User } from "../../models/user"
 
-import useSaveEntryTitle from "../hooks/useSaveEntryTitle"
+import useSaveEntryTitle from "../../hooks/useSaveEntryTitle"
 
 defineEmits(["click"])
 const props = defineProps<{
@@ -64,7 +64,7 @@ const saveEdit = async () => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../../main.scss";
 
 div.header {
   display: flex;

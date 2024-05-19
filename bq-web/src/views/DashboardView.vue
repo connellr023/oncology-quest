@@ -2,7 +2,7 @@
 import { Ref, inject } from "vue"
 import { User } from "../models/user"
 
-import Entries from "../components/Entries.vue"
+import Entries from "../components/dash/Entries.vue"
 
 const tasks = inject<Ref<User>>("session")!.value.tasks
 </script>

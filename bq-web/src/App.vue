@@ -6,7 +6,7 @@ import useFetchSession from "./hooks/useFetchSession"
 import NoSessionView from "./views/NoSessionView.vue"
 import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
-import AccountBar from "./components/AccountBar.vue"
+import AccountBar from "./components/dash/AccountBar.vue"
 
 const { session, entries, loading, connectionError } = useFetchSession()
 provide("session", session)
@@ -22,7 +22,7 @@ provide("isAdminViewingUsers", isAdminViewingUsers)
 <template>
   <main>
     <div class="flex-wrapper">
-      <img :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" draggable="false" src="/logo.svg" />
+      <img :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" draggable="false" src="/bq-logo-1.svg" />
       <div v-if="connectionError" id="connect-error"><b><i>bq</i></b> is currently under maintenance.
       </div>
       <div v-if="!connectionError && !loading">
@@ -65,18 +65,18 @@ div#connect-error {
   animation: fade-in 1s;
 }
 
-$logo-vert-offset: 100px;
+$logo-vert-offset: 170px;
 
 img {
-  width: 15lvw;
-  min-width: 125px;
-  max-width: 150px;
+  width: 10lvw;
+  min-width: 30px;
+  max-width: 60px;
   margin: 0 auto;
   display: block;
   animation: pulse 4s infinite ease-out;
-  transform: translateY($logo-vert-offset);
-
+  
   &.fade-up {
+    transform: translateY($logo-vert-offset);
     animation: move-up 0.8s;
   }
 
@@ -100,15 +100,12 @@ $min-opacity: 0.45;
 
 @keyframes pulse {
   0% {
-    transform: scale(1);
     opacity: $min-opacity;
   }
   50% {
-    transform: scale(1.07);
     opacity: $max-opacity;
   }
   100% {
-    transform: scale(1);
     opacity: $min-opacity;
   }
 }
