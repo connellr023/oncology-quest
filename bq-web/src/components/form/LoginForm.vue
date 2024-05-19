@@ -40,10 +40,7 @@ const handleSubmit = (_: Event) => {
       :error="passwordError"
       v-model="password"
     />
-    <div>
-      <div class="form-error error-label" v-if="loginError">{{ loginError }}</div>
-      <p v-else-if="loading">Loading...</p>
-    </div>
+    <div class="form-error error-label" v-if="loginError">{{ loginError }}</div>
     <LoadingButton :loading="loading" text="Login" />
   </form>
 </template>

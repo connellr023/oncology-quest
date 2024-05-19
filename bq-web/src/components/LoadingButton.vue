@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <button :disabled="loading" class="form-button glow gradient-button-0" type="submit" @click="$emit('click')">
+  <button :disabled="loading" class="form-button std" type="submit" @click="$emit('click')">
     {{ text }}<img v-if="loading" src="/spinner.svg" alt="loading" />
   </button>
 </template>
@@ -19,7 +19,7 @@ img {
   position: absolute;
   right: 12px;
   opacity: 0;
-  top: 10px;
+  top: 11px;
   animation: fade-in 0.4s forwards, spin 0.6s ease-in-out infinite;
 
   @keyframes spin {

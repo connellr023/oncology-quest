@@ -68,9 +68,9 @@ div#connect-error {
 $logo-vert-offset: 170px;
 
 img {
-  width: 10lvw;
-  min-width: 30px;
-  max-width: 60px;
+  width: 15lvw;
+  min-width: 50px;
+  max-width: 80px;
   margin: 0 auto;
   display: block;
   animation: pulse 4s infinite ease-out;

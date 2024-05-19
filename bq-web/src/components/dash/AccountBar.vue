@@ -64,14 +64,13 @@ div.collapse-indicator-container {
   transform: translateY(-50%);
   opacity: 0.5;
   transition: opacity 0.3s ease;
-  filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.06));
 
   &:hover {
     opacity: 1;
   }
 
   div {
-    $size: 11px;
+    $size: 9px;
 
     width: $size;
     height: $size;
@@ -89,7 +88,7 @@ div.collapse-indicator-container {
     margin-bottom: $margin;
     opacity: 1;
     border-radius: 8px;
-    height: 35px;
+    height: 40px;
   }
 }
 

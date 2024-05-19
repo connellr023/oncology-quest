@@ -14,5 +14,5 @@ defineProps<{
     {{ title }}
     <span class="error-label" v-if="error">{{ error }}</span>
   </label>
-  <input :class="`glow ${error ? 'error' : ''}`" :type="type" :id="name" :name="name" v-model="model" required>
+  <input :class="`${error ? 'error' : ''}`" :type="type" :id="name" :name="name" v-model="model" required>
 </template>

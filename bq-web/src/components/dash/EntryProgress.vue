@@ -68,7 +68,6 @@ div.progress-container {
   border-radius: 5px;
   overflow: hidden;
   margin-bottom: 10px;
-  filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.03));
 
   div.progress-bar {
     height: 100%;

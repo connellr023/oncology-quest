@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import useRegister from "../../hooks/useRegister"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
@@ -22,10 +22,20 @@ const {
   loading
 } = useRegister()
 
-const handleSubmit = (_: Event) => {
-  const isError = (usernameError.value || nameError.value || emailError.value || passwordError.value || confirmedPasswordError.value)
+const isStageOneErrors = computed(() => {
+  return usernameError.value || nameError.value || emailError.value
+})
 
-  if (!isError) {
+const isStageTwoErrors = computed(() => {
+  return passwordError.value || confirmedPasswordError.value
+})
+
+const canGotoStageTwo = computed(() => {
+  return !isStageOneErrors.value && username.value && name.value && email.value
+})
+
+const handleSubmit = (_: Event) => {
+  if (!isStageTwoErrors) {
     register()
   }
 }
@@ -66,7 +76,7 @@ const switchStage = () => {
         :error="emailError"
         v-model="email"
       />
-      <button class="form-button glow gradient-button-0" @click="switchStage">Next Step</button>
+      <button :disabled="!canGotoStageTwo" class="form-button std" @click="switchStage">Next Step</button>
     </template>
     <template v-else>
       <LabeledFormInput
@@ -88,7 +98,7 @@ const switchStage = () => {
         <div class="success-label" v-else-if="message">{{ message }}</div>
       </div>
       <LoadingButton :loading="loading" text="Register" />
-      <button class="prev glow gradient-button-0" @click="switchStage">Previous Step</button>
+      <button class="prev std" @click="switchStage">Previous Step</button>
     </template>
   </form>
 </template>
@@ -99,10 +109,9 @@ div.stage-indicator-container {
   justify-content: center;
   margin-top: 5px;
   margin-bottom: 15px;
-  filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.06));
 
   div {
-    $size: 13px;
+    $size: 12px;
 
     width: $size;
     height: $size;
@@ -110,17 +119,17 @@ div.stage-indicator-container {
     background-color: #ffffff;
     opacity: 0.7;
     margin: 0 5px;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease;
   }
 
   div.active {
     opacity: 1;
     border-radius: 8px;
-    width: 30px;
+    width: 45px;
   }
 }
 
 button.prev {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 </style>

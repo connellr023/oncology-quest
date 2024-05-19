@@ -29,17 +29,17 @@ onMounted(() => {
   <div class="container flex-wrapper">
     <div v-if="view === Views.SELECT" :class="`button-container ${shouldAnimate ? 'animate' : ''}`">
       <h1>Get started with <b><i>bq</i></b> below.</h1>
-      <button @click="setView(Views.LOGIN)" class="glow gradient-button-0">Login</button>
-      <button @click="setView(Views.REGISTER)" class="glow gradient-button-0">Register</button>
-      <button disabled class="glow gradient-button-0">Reset Password</button>
+      <button @click="setView(Views.LOGIN)" class="std">Login</button>
+      <button @click="setView(Views.REGISTER)" class="std">Register</button>
+      <button disabled class="std-1">Reset Password</button>
     </div>
     <template v-else-if="view === Views.LOGIN">
       <LoginForm />
-      <button @click="setView(Views.SELECT)" class="back glow gradient-button-1">Back</button>
+      <button @click="setView(Views.SELECT)" class="back std">Back</button>
     </template>
     <template v-else-if="view === Views.REGISTER">
       <RegisterForm />
-      <button @click="setView(Views.SELECT)" class="back glow gradient-button-1">Back</button>
+      <button @click="setView(Views.SELECT)" class="back std">Back</button>
     </template>
     <CreditLabel />
   </div>
@@ -53,14 +53,18 @@ div.button-container {
     @include fade-up-children(0.4s, 0.15s, 4, 0.5s);
   }
 
+  width: 100lvw;
   display: flex;
   flex-direction: column;
   text-align: center;
 
   button {
-    width: 85%;
+    width: 35%;
+    min-width: 200px;
+    max-width: 290px;
     margin: auto;
     margin-bottom: 18px;
+    padding: 15px
   }
 
   h1 {
@@ -70,7 +74,7 @@ div.button-container {
 
 div.container {
   height: auto;
-  margin-top: max(25px, 2.6lvh);
+  margin-top: 5px;
   text-align: center;
 }
 </style>

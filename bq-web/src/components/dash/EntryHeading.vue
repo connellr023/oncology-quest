@@ -85,8 +85,7 @@ img.arrow {
   margin-right: 10px;
   display: inline-block;
   transform: rotate(90deg);
-  transition: all 0.2s ease;
-  filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.03));
+  transition: all 0.13s ease;
 }
 
 div.active {

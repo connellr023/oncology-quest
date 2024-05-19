@@ -6,13 +6,13 @@ $secondary-bg-color: #02020b;
 $tertiary-bg-color: #040413;
 $main-font: "Inter", "sans-serif";
 
-$theme-color-1: #6930c3;
-$theme-color-2: #5e60ce;
+$theme-color-1: #331bbf;
+$theme-color-2: #1b8ebf;
 $theme-color-red: #e60a1c;
 $theme-color-red-2: #86082c;
-$theme-color-yellow: #e6ab0a;
-$theme-color-green: #0aff89;
-$theme-color-disabled: #929292;
+$theme-color-yellow: #29261e;
+$theme-color-green: #069e69;
+$theme-color-disabled: #9494a0;
 
 @mixin gradient-button($c1, $c2) {
   $darken-amount: 12%;
@@ -139,8 +139,6 @@ button.gradient-button-2 {
 }
 
 input {
-  @include glow-input($theme-color-1);
-
   padding: 9px;
   border: 2px solid $theme-color-1;
   border-radius: 6px;
@@ -157,11 +155,19 @@ input {
 
   &:focus {
     color: $main-txt-color;
-    border-color: $theme-color-2;
+    border-color: darken($theme-color-1, 15%);
   }
 
   &:disabled {
     border-color: $theme-color-disabled;
+  }
+
+  &.error {
+    border-color: $theme-color-red;
+
+    &:focus {
+      border-color: darken($theme-color-red, 15%);
+    }
   }
 }
 
@@ -194,13 +200,25 @@ button {
   color: $main-txt-color;
   cursor: pointer;
   padding: 9px;
-  font-size: clamp(15px, 2vw, 18px);
+  font-size: clamp(17px, 2vw, 19px);
   font-family: $main-font;
-  transition: all 0.13s ease-in-out;
+  transition: all 0.07s ease-in-out;
 
   &:hover {
     background-color: $main-txt-color;
     color: invert($main-txt-color);
+  }
+
+  &.std {
+    position: relative;
+    color: $main-txt-color;
+    border: none;
+    background-color: $theme-color-1;
+
+    &:disabled,
+    &:hover {
+      background-color: darken($theme-color-1, 15%); 
+    }
   }
 
   &.minimal {
@@ -209,8 +227,29 @@ button {
     padding: 3px;
     padding-left: $side-padding;
     padding-right: $side-padding;
-    font-size: clamp(12px, 1.2lvw, 16px);
-    font-weight: bold;
+    font-size: clamp(9px, 1lvw, 12px);
+  }
+
+  &.bubble {
+    background-color: none;
+    border-color: transparent;
+    font-size: 16px;
+    opacity: 0.6;
+
+    &:hover {
+      color: $main-txt-color;
+      opacity: 1;
+      background-color: $main-bg-color;
+    }
+
+    img {
+      $size: 23px;
+
+      width: $size;
+      height: $size;
+      margin-right: 5px;
+      margin-bottom: -5px;
+    }
   }
 }
 
@@ -230,7 +269,7 @@ form {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
+  width: 70lvw;
   min-width: 300px;
 
   &,
