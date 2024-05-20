@@ -35,11 +35,11 @@ onMounted(() => {
     </div>
     <template v-else-if="view === Views.LOGIN">
       <LoginForm />
-      <button @click="setView(Views.SELECT)" class="back std">Back</button>
+      <button @click="setView(Views.SELECT)" class="back">Back</button>
     </template>
     <template v-else-if="view === Views.REGISTER">
       <RegisterForm />
-      <button @click="setView(Views.SELECT)" class="back std">Back</button>
+      <button @click="setView(Views.SELECT)" class="back">Back</button>
     </template>
     <CreditLabel />
   </div>

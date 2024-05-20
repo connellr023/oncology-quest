@@ -1,17 +1,17 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap");
 
 $main-txt-color: #e7e7e7;
-$main-bg-color: #010107;
-$secondary-bg-color: #02020b;
-$tertiary-bg-color: #040413;
+$main-bg-color: #030303;
+$secondary-bg-color: #050505;
+$tertiary-bg-color: #090909;
 $main-font: "Inter", "sans-serif";
 
 $theme-color-1: #331bbf;
 $theme-color-2: #1b8ebf;
 $theme-color-red: #e60a1c;
-$theme-color-red-2: #86082c;
-$theme-color-yellow: #29261e;
-$theme-color-green: #069e69;
+$theme-color-red-2: #86082c; // Remove later
+$theme-color-yellow: #d7a51b;
+$theme-color-green: #11b814;
 $theme-color-disabled: #9494a0;
 
 @mixin gradient-button($c1, $c2) {
@@ -239,9 +239,10 @@ button {
     &:hover {
       color: $main-txt-color;
       opacity: 1;
-      background-color: rgba(0, 0, 0, 0.35);
+      background-color: rgba(255, 255, 255, 0.015);
     }
 
+    svg,
     img {
       $size: 23px;
 

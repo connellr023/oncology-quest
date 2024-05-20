@@ -27,20 +27,17 @@ const manageTasks = () => {
 
   <div v-if="session" id="account-bar-container">
     <div class="content-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
-      <img draggable="false" src="/bq-logo-1.svg" />
+      <h1>{{ session.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
       <div>
-        <h1>{{ session.isAdmin ? "Admin Dashboard" : "Dashboard" }}</h1>
-        <div>
-          <div>Logged in as</div>
-          <div class="userinfo">
-            <b><i>{{ session.username }} ({{ session.name }})</i></b>
-          </div>
-          <div class="admin-buttons" v-if="session.isAdmin">
-            <button class="glow gradient-button-0" @click="manageTasks">Manage Tasks</button>
-            <button class="glow gradient-button-0" @click="manageUsers">Manage Users</button>
-          </div>
-          <button class="logout glow gradient-button-2" @click="logout">Log Out</button>
+        <div>Logged in as</div>
+        <div class="userinfo">
+          <b><i>{{ session.username }} ({{ session.name }})</i></b>
         </div>
+        <div class="admin-buttons" v-if="session.isAdmin">
+          <button class="glow gradient-button-0" @click="manageTasks">Manage Tasks</button>
+          <button class="glow gradient-button-0" @click="manageUsers">Manage Users</button>
+        </div>
+        <button class="logout glow gradient-button-2" @click="logout">Log Out</button>
       </div>
     </div>
     <div title="Toggle Panel" class="collapse-indicator-container" @click="toggleCollapse">
@@ -51,9 +48,12 @@ const manageTasks = () => {
 </template>
 
 <style scoped lang="scss">
+@import "../../main.scss";
+
 div#account-bar-container {
   position: relative;
   height: 100lvh;
+  background-color: $secondary-bg-color;
 }
 
 div.collapse-indicator-container {

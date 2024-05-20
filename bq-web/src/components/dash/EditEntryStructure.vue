@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import PushStackIcon from "../vector/PushStackIcon.vue"
+import PopStackIcon from "../vector/PopStackIcon.vue"
+
 defineProps<{
   entryType: string,
   push: () => void,
@@ -9,11 +12,11 @@ defineProps<{
 <template>
   <div class="container">
     <button class="push bubble" @click="push">
-      <img src="/push-stack.svg" alt="push" />
+      <PushStackIcon />
       Push {{ entryType }}
     </button>
     <button class="pop bubble" @click="pop">
-      <img src="/pop-stack.svg" alt="pop" />
+      <PopStackIcon />
       Pop {{ entryType }}
     </button>
   </div>

@@ -32,7 +32,7 @@ const { calculateTaskProgress, calculateSupertaskProgress } = useTaskProgress(pr
     <div :class="`supertask focusable ${visibility[computeKey(superIndex)] ? 'focused': ''}`" v-for="(entry, superIndex) in entries" :key="computeKey(superIndex)">
       <ProgressableEntryHeading :progress="calculateSupertaskProgress(superIndex)" :isActive="visibility[computeKey(superIndex)] || false" :index="[superIndex]" :title="entry.title" @click="toggleVisibility(computeKey(superIndex))" />
       <ul v-show="visibility[computeKey(superIndex)]" :key="computeKey(superIndex, 0)">
-        <li :class="`task focusable invert ${visibility[computeKey(superIndex, index)] ? 'focused': ''}`" v-for="(subTask, index) in entry.tasks" :key="computeKey(superIndex, index)">
+        <li :class="`task focusable layer-2 ${visibility[computeKey(superIndex, index)] ? 'focused': ''}`" v-for="(subTask, index) in entry.tasks" :key="computeKey(superIndex, index)">
           <ProgressableEntryHeading :progress="calculateTaskProgress([superIndex, index])" :isActive="visibility[computeKey(superIndex, index)] || false" :index="[superIndex, index]" :title="subTask.title" @click="toggleVisibility(computeKey(superIndex, index))" />
           <ul v-show="visibility[computeKey(superIndex, index)]" :key="computeKey(superIndex, index, 0)">
             <li v-for="(task, subIndex) in subTask.tasks" :key="computeKey(superIndex, index, subIndex)">
@@ -72,10 +72,10 @@ div#entries-container {
 
   &.focused,
   &:hover {
-    background-color: $tertiary-bg-color;
+    background-color: $secondary-bg-color;
 
-    &.invert {
-      background-color: $main-bg-color;
+    &.layer-2 {
+      background-color: $tertiary-bg-color;
     }
   }
 }

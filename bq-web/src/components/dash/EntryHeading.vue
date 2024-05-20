@@ -3,6 +3,7 @@ import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
 
 import useSaveEntryTitle from "../../hooks/useSaveEntryTitle"
+import Arrow from "../vector/Arrow.vue"
 
 defineEmits(["click"])
 const props = defineProps<{
@@ -47,7 +48,7 @@ const saveEdit = async () => {
 <template>
   <div :class="`entry-heading-container ${isActive ? 'active' : ''}`" @click="$emit('click')">
     <div class="header">
-      <img draggable="false" src="/arrow.svg" alt="arrow" class="arrow" />
+      <Arrow class="arrow" />
       <h3 v-if="!inEditMode" class="dropdown">{{ title }}</h3>
       <input @click.stop class="minimal" v-else v-model="title" />
     </div>
@@ -78,26 +79,27 @@ div.entry-heading-container {
   align-items: center;
 }
 
-img.arrow {
+svg.arrow {
   user-select: none;
   opacity: 0.6;
-  width: 16px;
+  width: 17px;
   margin-right: 10px;
   display: inline-block;
   transform: rotate(90deg);
-  transition: all 0.13s ease;
+  transition: all 0.2s ease;
 }
 
 div.active {
-  img.arrow {
+  svg.arrow {
+    fill: $theme-color-1;
     opacity: 1;
     transform: rotate(180deg);
   }
 }
 
 h3.dropdown {
-  font-size: clamp(16px, 1.5lvw, 19px);
-  font-weight: normal;
+  font-size: clamp(14px, 1.5lvw, 17px);
+  font-weight: bold;
   color: $main-txt-color;
   display: inline-block;
   padding-right: 15px;

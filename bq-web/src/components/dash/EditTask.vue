@@ -49,6 +49,7 @@ const toggleCompleted = async () => {
   <div :class="`container ${optionsVisible ? 'focused' : ''}`" @click="toggleOptions">
     <div class="task-heading-container">
       <EntryHeading :is-active="optionsVisible" :index="index" :title="value"/>
+      <!-- <h3>{{ value }}</h3> -->
       <div class="check-container" @click.stop="toggleCompleted">
         <div :class="`completed ${completed ? 'active' : ''}`" />
         <div :class="`${!completed ? 'active' : ''}`" />

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Spinner from "./vector/Spinner.vue"
+
 defineEmits(["click"])
 defineProps<{
   loading: boolean,
@@ -8,18 +10,19 @@ defineProps<{
 
 <template>
   <button :disabled="loading" class="form-button std" type="submit" @click="$emit('click')">
-    {{ text }}<img v-if="loading" src="/spinner.svg" alt="loading" />
+    {{ text }}
+    <Spinner v-if="loading" />
   </button>
 </template>
 
 <style scoped lang="scss">
-img {
+svg {
   height: 20px;
   margin: auto;
   position: absolute;
   right: 12px;
   opacity: 0;
-  top: 11px;
+  top: 10px;
   animation: fade-in 0.4s forwards, spin 0.6s ease-in-out infinite;
 
   @keyframes spin {

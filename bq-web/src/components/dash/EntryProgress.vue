@@ -46,7 +46,6 @@ onMounted(computeColorClass)
 div.container {
   flex-grow: 1;
   margin-left: 30px;
-  margin-right: 15px;
   margin-left: auto;
   margin-top: 9px;
   max-width: 300px;

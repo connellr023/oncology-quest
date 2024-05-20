@@ -7,6 +7,7 @@ import NoSessionView from "./views/NoSessionView.vue"
 import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
 import AccountBar from "./components/dash/AccountBar.vue"
+import MainLogo from "./components/vector/MainLogo.vue"
 
 const { session, entries, loading, connectionError } = useFetchSession()
 provide("session", session)
@@ -22,7 +23,7 @@ provide("isAdminViewingUsers", isAdminViewingUsers)
 <template>
   <main>
     <div class="flex-wrapper">
-      <img :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" draggable="false" src="/bq-logo-1.svg" />
+      <MainLogo :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
       <div v-if="connectionError" id="connect-error"><b><i>bq</i></b> is currently under maintenance.
       </div>
       <div v-if="!connectionError && !loading">
@@ -51,7 +52,7 @@ div#dash-container {
 
   div#dash-content-container {
     flex-grow: 1;
-    background-color: $secondary-bg-color;
+    background-color: $main-bg-color;
     padding: 20px 25px 20px 40px;
     margin-top: 30px;
   }
@@ -67,7 +68,7 @@ div#connect-error {
 
 $logo-vert-offset: 170px;
 
-img {
+svg {
   width: 15lvw;
   min-width: 50px;
   max-width: 80px;
@@ -91,7 +92,7 @@ img {
   &.fade-up,
   &.fade-out {
     animation-fill-mode: forwards;
-    animation-delay: 0.3s;
+    animation-delay: 0.13s;
   }
 }
 
