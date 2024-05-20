@@ -242,14 +242,24 @@ button {
       background-color: rgba(255, 255, 255, 0.015);
     }
 
-    svg,
-    img {
+    svg {
       $size: 23px;
 
       width: $size;
       height: $size;
       margin-right: 5px;
       margin-bottom: -5px;
+      transition: fill 0.1s ease;
+    }
+
+    &.highlight {
+      &:hover {
+        color: $theme-color-1;
+
+        svg {
+          fill: $theme-color-1;
+        }
+      }
     }
   }
 }

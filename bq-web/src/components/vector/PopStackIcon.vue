@@ -7,7 +7,7 @@
 </template>
 
 <style scoped lang="scss">
-.cls-1 {
+svg {
   fill: #ffffff;
   stroke-width: 0px;
 }

@@ -6,8 +6,9 @@ import useFetchSession from "./hooks/useFetchSession"
 import NoSessionView from "./views/NoSessionView.vue"
 import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
-import AccountBar from "./components/dash/AccountBar.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
+import AccountBar from "./components/dash/AccountBar.vue"
+import TopBar from "./components/TopBar.vue"
 
 const { session, entries, loading, connectionError } = useFetchSession()
 provide("session", session)
@@ -31,6 +32,7 @@ provide("isAdminViewingUsers", isAdminViewingUsers)
         <div id="dash-container" v-else>
           <AccountBar />
           <div id="dash-content-container">
+            <TopBar />
             <AdminDashboardView v-if="session.isAdmin" />
             <DashboardView v-else />
           </div>

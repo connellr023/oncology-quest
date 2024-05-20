@@ -11,11 +11,11 @@ defineProps<{
 
 <template>
   <div class="container">
-    <button class="push bubble" @click="push">
+    <button class="push bubble highlight" @click="push">
       <PushStackIcon />
       Push {{ entryType }}
     </button>
-    <button class="pop bubble" @click="pop">
+    <button class="pop bubble highlight" @click="pop">
       <PopStackIcon />
       Pop {{ entryType }}
     </button>

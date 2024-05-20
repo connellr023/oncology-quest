@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
-import useLogout from "../../hooks/useLogout";
 
 const isAdminViewingUsers = inject<Ref<boolean>>("isAdminViewingUsers")!
 const session = inject<Ref<User | null>>("session")!
 
 const isCollapsed = ref(false)
-
-const { logout } = useLogout()
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
@@ -37,7 +34,6 @@ const manageTasks = () => {
           <button class="glow gradient-button-0" @click="manageTasks">Manage Tasks</button>
           <button class="glow gradient-button-0" @click="manageUsers">Manage Users</button>
         </div>
-        <button class="logout glow gradient-button-2" @click="logout">Log Out</button>
       </div>
     </div>
     <div title="Toggle Panel" class="collapse-indicator-container" @click="toggleCollapse">
