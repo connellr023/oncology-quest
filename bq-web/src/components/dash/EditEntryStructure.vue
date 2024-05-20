@@ -30,6 +30,7 @@ div.container {
 
   button {
     margin: 4px;
+    margin-left: 0;
   }
 }
 

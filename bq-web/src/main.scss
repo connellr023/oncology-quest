@@ -195,7 +195,7 @@ body {
 
 button {
   border: 2px solid $main-txt-color;
-  border-radius: 6px;
+  border-radius: 8px;
   background: none;
   color: $main-txt-color;
   cursor: pointer;
@@ -254,9 +254,52 @@ button {
   }
 }
 
-input.minimal {
-  padding: 3px;
-  font-size: clamp(12px, 1.2lvw, 16px);
+textarea {
+  &.bubble {
+    color: $main-txt-color;
+    font-family: $main-font;
+    min-height: 30px;
+    width: calc(100% - 17px);
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+    resize: none;
+    font-size: clamp(15px, 1.5vw, 18px);
+    border: none;
+    outline: none;
+    background-color: transparent;
+    transition: background-color 0.1s ease;
+
+    &::placeholder {
+      font-style: italic;
+      color: $main-txt-color;
+      opacity: 0.7;
+    }
+
+    &:hover,
+    &:focus {
+      cursor: text;
+      background-color: $secondary-bg-color;
+    }
+  }
+}
+
+input {
+  &.bubble {
+    border-radius: 10px;
+    padding: 10px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.02);
+
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  &.minimal {
+    padding: 8px;
+    font-size: clamp(13px, 1.1lvw, 17px);
+  }
 }
 
 h1 {

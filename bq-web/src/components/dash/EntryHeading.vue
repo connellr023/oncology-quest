@@ -3,12 +3,10 @@ import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
 
 import useSaveEntryTitle from "../../hooks/useSaveEntryTitle"
-import Arrow from "../vector/Arrow.vue"
 
 defineEmits(["click"])
 const props = defineProps<{
   title: string,
-  isActive: boolean,
   index: number[]
 }>()
 
@@ -46,11 +44,10 @@ const saveEdit = async () => {
 </script>
 
 <template>
-  <div :class="`entry-heading-container ${isActive ? 'active' : ''}`" @click="$emit('click')">
+  <div class="entry-heading-container" @click="$emit('click')">
     <div class="header">
-      <Arrow class="arrow" />
-      <h3 v-if="!inEditMode" class="dropdown">{{ title }}</h3>
-      <input @click.stop class="minimal" v-else v-model="title" />
+      <h3 v-if="!inEditMode" class="entry-heading">{{ title }}</h3>
+      <input @click.stop class="bubble minimal" v-else v-model="title" />
     </div>
     <div class="edit-buttons-container" v-if="session.isAdmin">
       <template v-if="inEditMode">
@@ -67,6 +64,15 @@ const saveEdit = async () => {
 <style scoped lang="scss">
 @import "../../main.scss";
 
+h3.entry-heading {
+  font-size: clamp(14px, 1.5lvw, 17px);
+  font-weight: bold;
+  color: $main-txt-color;
+  display: inline-block;
+  padding-right: 15px;
+  margin: 0;
+}
+
 div.header {
   display: flex;
   align-items: center;
@@ -77,33 +83,6 @@ div.header {
 div.entry-heading-container {
   display: flex;
   align-items: center;
-}
-
-svg.arrow {
-  user-select: none;
-  opacity: 0.6;
-  width: 17px;
-  margin-right: 10px;
-  display: inline-block;
-  transform: rotate(90deg);
-  transition: all 0.2s ease;
-}
-
-div.active {
-  svg.arrow {
-    fill: $theme-color-1;
-    opacity: 1;
-    transform: rotate(180deg);
-  }
-}
-
-h3.dropdown {
-  font-size: clamp(14px, 1.5lvw, 17px);
-  font-weight: bold;
-  color: $main-txt-color;
-  display: inline-block;
-  padding-right: 15px;
-  margin: auto;
 }
 
 div.edit-buttons-container {

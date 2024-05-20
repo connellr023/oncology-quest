@@ -8,6 +8,6 @@ const { message, pushSubtaskEntry, popSubtaskEntry } = useEditEntryStructure()
 </script>
 
 <template>
-    <EditEntryStructure :push="() => pushSubtaskEntry('New Sub Task Entry', index)" :pop="() => popSubtaskEntry(index)" entryType="Sub Task Entry" />
+    <EditEntryStructure :push="() => pushSubtaskEntry('New Subtask Entry', index)" :pop="() => popSubtaskEntry(index)" entryType="Subtask Entry" />
     <div v-if="message">{{ message }}</div>
 </template>

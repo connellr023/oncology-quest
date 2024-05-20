@@ -6,7 +6,7 @@ const { message, pushSupertaskHeading, popSupertaskHeading } = useEditEntryStruc
 </script>
 
 <template>
-  <EditEntryStructure class="edit-task-heading-container" :push="() => pushSupertaskHeading('New Super Task Heading')" :pop="popSupertaskHeading" entryType="Super Task Heading" />
+  <EditEntryStructure class="edit-task-heading-container" :push="() => pushSupertaskHeading('New Supertask Heading')" :pop="popSupertaskHeading" entryType="Supertask Heading" />
   <div v-if="message">{{ message }}</div>
 </template>
 

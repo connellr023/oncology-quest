@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { Ref, inject, onMounted, ref } from "vue"
-import { UserTask } from "../../models/task";
-import { User } from "../../models/user";
+import { Ref, VNodeRef, inject, onMounted, ref } from "vue"
+import { UserTask } from "../../models/task"
+import { User } from "../../models/user"
 
-import useSaveTask from "../../hooks/useSaveTask";
+import useSaveTask from "../../hooks/useSaveTask"
+import EntryHeading from "./EntryHeading.vue"
 
-import EntryHeading from "./EntryHeading.vue";
-import LoadingButton from "../LoadingButton.vue";
-
-const optionsVisible = ref(false)
 const user = inject<Ref<User>>("session")!.value
 
 const {
   completed,
   comment,
   message,
-  loading,
+  //loading,
   save
 } = useSaveTask()
 
@@ -32,10 +29,6 @@ onMounted(() => {
   }
 })
 
-const toggleOptions = () => {
-  optionsVisible.value = !optionsVisible.value
-}
-
 const toggleCompleted = async () => {
   completed.value = !completed.value
 
@@ -43,48 +36,59 @@ const toggleCompleted = async () => {
     completed.value = !completed.value
   }
 }
+
+const textArea = ref<VNodeRef | null>(null)
+
+const adjustHeight = () => {
+  textArea.value.style.height = "auto"
+  textArea.value.style.height = textArea.value.scrollHeight + "px"
+}
+
+onMounted(adjustHeight)
 </script>
 
 <template>
-  <div :class="`container ${optionsVisible ? 'focused' : ''}`" @click="toggleOptions">
+  <div class="container">
     <div class="task-heading-container">
-      <EntryHeading :is-active="optionsVisible" :index="index" :title="value"/>
-      <!-- <h3>{{ value }}</h3> -->
+      <EntryHeading class="subtask-entry" :index="index" :title="value"/>
+      <button v-if="!user.isAdmin" class="minimal" @click="save(index)">Save</button>
       <div class="check-container" @click.stop="toggleCompleted">
         <div :class="`completed ${completed ? 'active' : ''}`" />
         <div :class="`${!completed ? 'active' : ''}`" />
       </div>
     </div>
-    <div @click.stop class="options" v-show="optionsVisible">
-      <textarea spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
-      <br />
-      <div class="save-container" v-if="!user.isAdmin">
-        <LoadingButton :loading="loading" @click="save(index)" text="Save" />
-        <span v-if="message">{{ message }}</span>
-      </div>
-    </div>
+    <textarea class="bubble" v-show="(user.isAdmin && comment) || !user.isAdmin" :disabled="user.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
+    <span v-if="message">{{ message }}</span>
   </div>
 </template>
 
 <style scoped lang="scss">
 @import "../../main.scss";
 
+div.subtask-entry {
+  &::before {
+    $size: 10px;
+
+    content: " ";
+    background-color: $theme-color-1;
+    width: $size;
+    height: $size;
+    border-radius: 100px;
+    display: inline-block;
+    margin-right: 10px;
+  }
+}
+
 div.task-heading-container {
   display: flex;
 }
 
 div.container {
-  cursor: pointer;
   padding: 6px 0 6px 15px;
   margin-right: 13px;
   margin-top: 10px;
   border-radius: 8px;
   transition: background-color 0.1s ease;
-  
-  &.focused,
-  &:hover {
-    background-color: $secondary-bg-color;
-  }
 }
 
 div.save-container {
@@ -101,9 +105,8 @@ div.save-container {
 div.check-container {
   display: flex;
   justify-content: center;
-  margin-top: 13px;
+  margin-top: 3px;
   margin-left: auto;
-  margin-right: 15px;
   opacity: 0.8;
   transition: opacity 0.3s ease;
   cursor: pointer;
@@ -132,44 +135,6 @@ div.check-container {
 
   div.completed {
     background-color: $theme-color-green;
-  }
-}
-
-div.options {
-  margin-top: 10px;
-
-  label {
-    display: block;
-  }
-
-  textarea {
-    $top-border-radius: 10px;
-
-    border: none;
-    border-top-left-radius: $top-border-radius;
-    border-top-right-radius: $top-border-radius;
-    border-bottom: 2px solid $main-txt-color;
-    color: $main-txt-color;
-    font-family: $main-font;
-    font-size: clamp(17px, 1.5vw, 22px);
-    height: 80px;
-    width: calc(100% - 30px);
-    resize: none;
-    background-color: transparent;
-    outline: none;
-    padding: 12px;
-    transition: background-color 0.1s ease;
-
-    &:focus {
-      background-color: $main-bg-color;
-    }
-  }
-
-  button {
-    font-size: clamp(15px, 1.5vw, 19px);
-    margin-top: 10px;
-    margin-bottom: 13px;
-    width: 110px;
   }
 }
 </style>
