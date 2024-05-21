@@ -7,7 +7,7 @@ import NoSessionView from "./views/NoSessionView.vue"
 import DashboardView from "./views/DashboardView.vue"
 import AdminDashboardView from "./views/AdminDashboardView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
-import AccountBar from "./components/dash/AccountBar.vue"
+import ManageUsersBar from "./components/ManageUsersBar.vue"
 import TopBar from "./components/TopBar.vue"
 
 const { session, entries, loading, connectionError } = useFetchSession()
@@ -16,9 +16,6 @@ provide("entries", entries)
 
 const isEditing = ref(false)
 provide("isEditing", isEditing)
-
-const isAdminViewingUsers = ref(false)
-provide("isAdminViewingUsers", isAdminViewingUsers)
 </script>
 
 <template>
@@ -30,7 +27,7 @@ provide("isAdminViewingUsers", isAdminViewingUsers)
       <div v-if="!connectionError && !loading">
         <NoSessionView v-if="!session" />
         <div id="dash-container" v-else>
-          <AccountBar />
+          <ManageUsersBar v-if="session.isAdmin" />
           <div id="dash-content-container">
             <TopBar />
             <AdminDashboardView v-if="session.isAdmin" />
@@ -51,12 +48,12 @@ div#dash-container {
   animation-delay: 0.5s;
   display: flex;
   width: 100lvw;
+  height: 100lvh;
 
   div#dash-content-container {
     flex-grow: 1;
     background-color: $main-bg-color;
-    padding: 20px 25px 20px 40px;
-    margin-top: 30px;
+    padding: 12px 25px 20px 35px;
   }
 }
 

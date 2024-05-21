@@ -28,8 +28,7 @@ const { logout } = useLogout()
 
 div.topbar-container {
   background-color: $main-bg-color;
-  margin-top: 35px;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   position: relative;
   display: flex;
   align-items: center;

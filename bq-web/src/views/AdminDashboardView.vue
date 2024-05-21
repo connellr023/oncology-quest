@@ -66,9 +66,17 @@ const setSelectedUser = (user: User) => {
     </div>
   </div>
   <Entries v-show="!isAdminViewingUsers" :key="selectedUser.username" :tasks="selectedUser.tasks" />
+  <div class="note">
+    <b><i></i>Note:</b> Popping entries does not change whether or not a user completed a task that was there before the entry was popped.
+  </div>
 </template>
 
 <style scoped lang="scss">
+div.note {
+  opacity: 0.4;
+  margin-top: 20px;
+  text-align: center;
+}
 
 div.user-option {
   cursor: pointer;

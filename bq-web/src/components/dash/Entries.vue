@@ -59,8 +59,8 @@ div#entries-container {
   display: flex;
   flex-direction: column;
   overflow: scroll;
-  height: 100lvh;
   margin: auto;
+  max-height: 100%;
 }
 
 .focusable {
