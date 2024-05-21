@@ -7,7 +7,7 @@
 <style scoped lang="scss">
 @import "../../main.scss";
 
-.cls-1 {
+svg {
   fill: $theme-color-1;
   stroke-width: 0;
 }

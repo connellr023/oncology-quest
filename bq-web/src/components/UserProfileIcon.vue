@@ -20,7 +20,7 @@ div.icon {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: $size / 2;
+  font-size: calc($size / 2);
   border: 2px solid transparent;
   transition: border-color 0.15s ease;
 

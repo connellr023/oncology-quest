@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { provide, ref } from "vue"
+import { User } from "./models/user"
 
 import useFetchSession from "./hooks/useFetchSession"
 
@@ -14,6 +15,15 @@ const { session, entries, loading, connectionError } = useFetchSession()
 provide("session", session)
 provide("entries", entries)
 
+const selectedUser = ref<User>({
+  username: "",
+  name: "",
+  email: "",
+  isAdmin: false,
+  tasks: {}
+})
+provide("selectedUser", selectedUser)
+
 const isEditing = ref(false)
 provide("isEditing", isEditing)
 </script>
@@ -22,13 +32,12 @@ provide("isEditing", isEditing)
   <main>
     <div class="flex-wrapper">
       <MainLogo :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
-      <div v-if="connectionError" id="connect-error"><b><i>bq</i></b> is currently under maintenance.
-      </div>
+      <div v-if="connectionError" class="connect-error"><b><i>bq</i></b> is currently under maintenance.</div>
       <div v-if="!connectionError && !loading">
         <NoSessionView v-if="!session" />
-        <div id="dash-container" v-else>
+        <div class="dash-container" v-else>
           <ManageUsersBar v-if="session.isAdmin" />
-          <div id="dash-content-container">
+          <div class="dash">
             <TopBar />
             <AdminDashboardView v-if="session.isAdmin" />
             <DashboardView v-else />
@@ -42,7 +51,7 @@ provide("isEditing", isEditing)
 <style scoped lang="scss">
 @import "main.scss";
 
-div#dash-container {
+div.dash-container {
   opacity: 0;
   animation: fade-in 1s forwards;
   animation-delay: 0.5s;
@@ -50,7 +59,7 @@ div#dash-container {
   width: 100lvw;
   height: 100lvh;
 
-  div#dash-content-container {
+  div.dash {
     flex-grow: 1;
     background-color: $main-bg-color;
     padding: 12px 25px 20px 35px;

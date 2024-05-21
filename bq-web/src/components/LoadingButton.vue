@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <button :disabled="loading" class="form-button std" type="submit" @click="$emit('click')">
     {{ text }}
-    <Spinner v-if="loading" />
+    <Spinner class="spinner" v-if="loading" />
   </button>
 </template>
 
@@ -23,15 +23,5 @@ svg {
   right: 12px;
   opacity: 0;
   top: 10px;
-  animation: fade-in 0.4s forwards, spin 0.6s ease-in-out infinite;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
 }
 </style>
