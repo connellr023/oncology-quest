@@ -2,21 +2,21 @@
 > An application to aid Medical Oncology students.
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
-![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/vue-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
 <br />
 
-`.env` file sample for connecting to Redis:
+Postgres URL for development:
+```
+postgres://admin:password@localhost:5432/bqdev
+```
+
+`.env` file sample
 ```
 HOST_IP=...
 HOST_PORT=...
-REDIS_USER=...
-REDIS_PASSWORD=...
-REDIS_ENDPOINT=...
-REDIS_PORT=...
-REDIS_DB=...
 ```
 
 <br />
