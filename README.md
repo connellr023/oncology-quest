@@ -8,15 +8,11 @@
 
 <br />
 
-Postgres URL for development:
-```
-postgres://admin:password@localhost:5432/bqdev
-```
-
 `.env` file sample
 ```
 HOST_IP=...
 HOST_PORT=...
+DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
 ```
 
 <br />

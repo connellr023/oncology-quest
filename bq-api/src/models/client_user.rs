@@ -1,4 +1,4 @@
-use super::{model::Model, tasks::UserTaskEntries, user_model::{UserModel, USER_KEY_SET}};
+use super::{model::Model, tasks::UserTaskEntries, user::{User, USER_KEY_SET}};
 use crate::utilities::parsables::{Username, Name, Email};
 use serde::{Serialize, Deserialize};
 use redis::Connection;
@@ -28,7 +28,7 @@ impl ClientUser {
     /// Returns a Result containing a vector of users that match the query. If an error occurs, it will be returned.
     pub fn text_search(connection: &mut Connection, query: &str) -> anyhow::Result<Vec<Self>> {
         let mut users = vec![];
-        let pattern = UserModel::fmt_key(format!("*{}*", query).as_str());
+        let pattern = User::fmt_key(format!("*{}*", query).as_str());
         let keys_iter = redis::cmd("SSCAN")
             .arg(USER_KEY_SET)
             .cursor_arg(0)
@@ -46,7 +46,7 @@ impl ClientUser {
 
         let users_encoding: Vec<String> = pipe.query(connection)?;
         for user_encoding in users_encoding {
-            let user = serde_json::from_str::<UserModel>(&user_encoding)?;
+            let user = serde_json::from_str::<User>(&user_encoding)?;
             let client_user = ClientUser::from(user);
             users.push(client_user);
         }
@@ -56,8 +56,8 @@ impl ClientUser {
     }
 }
 
-impl From<UserModel> for ClientUser {
-    fn from(user: UserModel) -> Self {
+impl From<User> for ClientUser {
+    fn from(user: User) -> Self {
         Self {
             username: user.username,
             name: user.name,

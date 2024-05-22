@@ -1,4 +1,4 @@
-use crate::{models::{model::Model, user_model::UserModel}, utilities::parsables::PlainTextPassword};
+use crate::{models::{model::Model, user::User}, utilities::parsables::PlainTextPassword};
 use crate::utilities::parsables::{Parsable, Username};
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
@@ -18,7 +18,7 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<ResetPasswor
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    let mut user = match UserModel::fetch(&mut connection, reset_password.username.as_str()) {
+    let mut user = match User::fetch(&mut connection, reset_password.username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
@@ -28,7 +28,7 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<ResetPasswor
         return HttpResponse::Forbidden().finish();
     }
 
-    let new_password = match UserModel::gen_password_hash(user.salt, reset_password.password.as_str()) {
+    let new_password = match User::gen_password_hash(user.salt, reset_password.password.as_str()) {
         Some(new_password) => new_password,
         None => return HttpResponse::InternalServerError().finish()
     };
@@ -61,11 +61,11 @@ pub(super) async fn allow_reset(session: Session, redis: Data<Client>, allow_res
     };
 
     // Only admins can allow users to reset their password.
-    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
+    if !User::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
     }
 
-    let mut target_user = match UserModel::fetch(&mut connection, allow_reset_password.username.as_str()) {
+    let mut target_user = match User::fetch(&mut connection, allow_reset_password.username.as_str()) {
         Ok(target_user) => target_user,
         Err(_) => return HttpResponse::NotFound().finish()
     };

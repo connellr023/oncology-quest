@@ -7,5 +7,5 @@ CREATE TABLE users (
     is_admin BOOLEAN NOT NULL,
     salt BIGINT NOT NULL,
     password TEXT NOT NULL,
-    login_count INT DEFAULT 0
+    login_count INT DEFAULT 0 NOT NULL
 );

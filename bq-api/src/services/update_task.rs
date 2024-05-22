@@ -1,4 +1,4 @@
-use crate::models::{model::Model, user_model::UserModel, tasks::{Subtask, UserTaskEntries}};
+use crate::models::{model::Model, user::User, tasks::{Subtask, UserTaskEntries}};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use serde::Deserialize;
@@ -57,7 +57,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    let mut user = match UserModel::fetch(&mut connection, username.as_str()) {
+    let mut user = match User::fetch(&mut connection, username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::NotFound().finish()
     };

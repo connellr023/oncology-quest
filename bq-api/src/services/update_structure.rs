@@ -1,4 +1,4 @@
-use crate::models::{model::Model, tasks_model::TasksModel, user_model::UserModel, entries::EntryIndex};
+use crate::models::{model::Model, tasks_model::TasksModel, user::User, entries::EntryIndex};
 use crate::utilities::parsables::SubtaskTitle;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
@@ -33,7 +33,7 @@ fn handle_update_structure(session: Session, redis: Data<Client>, action: EntryA
     };
 
     // Only admins can push/pop entries.
-    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
+    if !User::validate_is_admin(&mut connection, username.as_str()) {
         return HttpResponse::Forbidden().finish();
     };
 

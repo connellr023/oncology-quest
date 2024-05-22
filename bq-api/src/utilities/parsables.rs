@@ -2,6 +2,7 @@ use super::regex::*;
 use anyhow::anyhow;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use sqlx::Type;
 
 pub trait Parsable: for<'de> Deserialize<'de> + Sized {
     /// Parses a string into a value of this type.
@@ -21,19 +22,21 @@ pub trait Parsable: for<'de> Deserialize<'de> + Sized {
 
 macro_rules! parsable {
     ($t:ident, $regex:expr) => {
-        #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+        #[derive(Type, Serialize, Deserialize, Clone, PartialEq, Debug)]
+        #[sqlx(transparent)]
         pub struct $t(String);
 
-        // impl<'de> Deserialize<'de> for $t {
-        //     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        //     where D: Deserializer<'de> {
-        //         let value = String::deserialize(deserializer)?;
-        //         match Self::parse(value) {
-        //             Ok(parsed) => Ok(parsed),
-        //             Err(err) => Err(serde::de::Error::custom(err.to_string()))
-        //         }
-        //     }
-        // }
+        impl From<$t> for String {
+            fn from(item: $t) -> Self {
+                item.0
+            }
+        }
+        
+        impl From<String> for $t {
+            fn from(s: String) -> Self {
+                $t(s)
+            }
+        }
 
         impl Parsable for $t {
             fn parse(value: String) -> anyhow::Result<Self> {

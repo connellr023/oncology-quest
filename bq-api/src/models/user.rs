@@ -1,54 +1,90 @@
-use super::{model::Model, tasks::UserTaskEntries};
+use super::model::Model;
 use crate::utilities::parsables::{Parsable, Username, Name, Email, PlainTextPassword};
-use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
-use redis::Connection;
-use std::collections::HashMap;
+use sqlx::{prelude::FromRow, Pool, Postgres};
 use anyhow::anyhow;
 
 pub const USER_KEY_SET: &str = "user_keys";
 
-#[derive(Serialize, Deserialize)]
-pub struct UserModel {
-    pub username: Username,
-    pub name: Name,
-    pub email: Email,
-    pub can_reset_password: bool,
-    pub is_admin: bool,
-    pub tasks: UserTaskEntries,
-    pub salt: u64,
-    pub password: String
+#[derive(Debug, FromRow)]
+pub struct User {
+    id: i32,
+    username: Username,
+    name: Name,
+    email: Email,
+    can_reset_password: bool,
+    is_admin: bool,
+    salt: i64,
+    password: String,
+    login_count: i32
 }
 
-impl Model for UserModel {
-    /// Overridden method to store a user in Redis.
-    fn store(&self, connection: &mut Connection) -> anyhow::Result<()> {
-        let serialized = serde_json::to_string(self)?;
+impl Model for User {
+    async fn fetch(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
+        let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1;", primary_key)
+            .fetch_one(pool)
+            .await?;
 
-        if self.exists(connection) {
+        Ok(user)
+    }
+
+    async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+        if self.exists(pool).await {
             return Err(anyhow!("User already exists"));
         }
 
-        let key = self.key();
-
-        redis::pipe()
-            .cmd("SET").arg(&key).arg(serialized).ignore()
-            .cmd("SADD").arg(USER_KEY_SET).arg(&key).ignore()
-            .query::<()>(connection)?;
-
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO users (username, name, email, can_reset_password, is_admin, salt, password, login_count)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id
+            "#,
+            self.username.as_str(),
+            self.name.as_str(),
+            self.email.as_str(),
+            self.can_reset_password,
+            self.is_admin,
+            self.salt,
+            self.password.as_str(),
+            self.login_count
+        )
+        .fetch_one(pool)
+        .await?;
+    
+        self.id = row.id;
+    
         Ok(())
     }
 
-    fn fmt_key(identifier: &str) -> String {
-        format!("user:{}", identifier)
-    }
-
-    fn key(&self) -> String {
-        Self::fmt_key(self.username.as_str())
+    async fn delete(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"
+            DELETE FROM users
+            WHERE id = $1
+            "#,
+            primary_key
+        )
+        .execute(pool)
+        .await?;
+    
+        Ok(())
     }
 }
 
-impl UserModel {
+impl User {
+    pub async fn exists(&self, pool: &Pool<Postgres>) -> bool {
+        let exists_query = sqlx::query!(
+            r#"
+            SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)
+            "#,
+            self.username.as_str(), self.email.as_str()
+        )
+        .fetch_one(pool)
+        .await;
+
+        exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
+    }
+
     /// Generates a password hash using the provided salt and password.
     /// 
     /// # Arguments
@@ -59,7 +95,7 @@ impl UserModel {
     /// # Returns
     /// 
     /// Returns the hashed password if successful, `None` otherwise.
-    pub fn gen_password_hash(salt: u64, password: &str) -> Option<String> {
+    pub fn gen_password_hash(salt: i64, password: &str) -> Option<String> {
         match bcrypt::hash(format!("{}{}", password, salt), bcrypt::DEFAULT_COST) {
             Ok(hash) => Some(hash),
             Err(_) => None
@@ -79,14 +115,16 @@ impl UserModel {
     /// # Returns
     ///
     /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
+    /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
     pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> Option<Self> {
-        let salt = thread_rng().gen::<u64>();
+        let salt = thread_rng().gen::<i64>();
         let password = match Self::gen_password_hash(salt, plain_text_password.as_str()) {
             Some(password) => password,
             None => return None
         };
 
         Some(Self {
+            id: -1,
             username,
             name,
             email,
@@ -94,7 +132,7 @@ impl UserModel {
             salt,
             is_admin,
             can_reset_password: false,
-            tasks: HashMap::new()
+            login_count: 0
         })
     }
 
@@ -111,30 +149,18 @@ impl UserModel {
         bcrypt::verify(format!("{}{}", plain_text_password, self.salt), &self.password).unwrap_or(false)
     }
 
-    /// Gets a reference to the user's tasks.
-    /// 
-    /// # Returns
-    /// 
-    /// A mutable reference to the user's tasks.
-    pub fn tasks_mut(&mut self) -> &mut UserTaskEntries {
-        &mut self.tasks
-    }
-
     /// Checks if a given user is an admin.
     /// 
     /// # Arguments
     /// 
-    /// * `connection` - The Redis connection to use.
-    /// * `username` - The username of the user to check.
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `primary_key` - The primary key of the user to check.
     /// 
     /// # Returns
     /// 
     /// Returns `true` if the user is an admin, `false` otherwise.
-    pub fn validate_is_admin(connection: &mut Connection, username: &str) -> bool {
-        match Self::fetch(connection, username) {
-            Ok(user) => user.is_admin,
-            Err(_) => false
-        }
+    pub fn validate_is_admin(pool: Pool<Postgres>, primary_key: u32) -> bool {
+        todo!()
     }
 }
 
@@ -151,7 +177,7 @@ mod tests {
         let password = PlainTextPassword::parse("password".to_string()).unwrap();
         let is_admin = false;
 
-        let user = UserModel::new(username.clone(), name.clone(), email.clone(), password.clone(), is_admin).unwrap();
+        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), is_admin).unwrap();
 
         assert_eq!(user.username, username);
         assert_eq!(user.name, name);
@@ -166,7 +192,7 @@ mod tests {
         let email = Email::parse("lol@test.com".to_string()).unwrap();
         let plain_text_password = PlainTextPassword::parse("password".to_string()).unwrap();
 
-        let user = UserModel::new(username, name, email, plain_text_password.clone(), false).unwrap();
+        let user = User::new(username, name, email, plain_text_password.clone(), false).unwrap();
 
         assert_eq!(user.validate_password(plain_text_password.as_str()), true);
     }
@@ -178,7 +204,7 @@ mod tests {
         let email = Email::parse("lol@test.com".to_string()).unwrap();
         let password = PlainTextPassword::parse("password".to_string()).unwrap();
 
-        let user = UserModel::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
+        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
         let client_user: ClientUser = user.into();
 
         assert_eq!(client_user.username, username);

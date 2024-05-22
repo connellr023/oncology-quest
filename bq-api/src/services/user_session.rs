@@ -1,4 +1,4 @@
-use crate::models::{client_user::ClientUser, model::Model, tasks_model::TasksModel, user_model::UserModel};
+use crate::models::{client_user::ClientUser, model::Model, tasks_model::TasksModel, user::User};
 use actix_web::{web::{Data, Query}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
@@ -22,7 +22,7 @@ struct UserSession {
 /// # Returns
 /// 
 /// An `HttpResponse` containing the user session data with the task structure or an error response if an error occurred.
-pub(super) fn handle_session_response(connection: &mut Connection, structure_cache_timestamp: Option<DateTime<Utc>>, user: UserModel) -> HttpResponse {
+pub(super) fn handle_session_response(connection: &mut Connection, structure_cache_timestamp: Option<DateTime<Utc>>, user: User) -> HttpResponse {
     let structure = match TasksModel::fetch(connection, "") {
         Ok(structure) => {
             match structure_cache_timestamp {
@@ -70,7 +70,7 @@ pub(super) async fn session(session: Session, redis: Data<Client>, fetch_session
         _ => return HttpResponse::Unauthorized().finish()
     };
 
-    let user = match UserModel::fetch(&mut connection, username.as_str()) {
+    let user = match User::fetch(&mut connection, username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::NotFound().finish()
     };
