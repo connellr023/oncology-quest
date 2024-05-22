@@ -54,9 +54,9 @@ impl From<User> for ClientUser {
     fn from(user: User) -> Self {
         Self {
             id: user.id(),
-            username: *user.username(),
-            name: *user.name(),
-            email: *user.email(),
+            username: user.username().to_owned(),
+            name: user.name().to_owned(),
+            email: user.email().to_owned(),
             is_admin: user.is_admin(),
             login_count: user.login_count()
         }

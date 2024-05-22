@@ -3,7 +3,7 @@ use rand::{thread_rng, Rng};
 use sqlx::{prelude::FromRow, Pool, Postgres};
 use anyhow::anyhow;
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Clone)]
 pub struct User {
     id: i32,
     username: Username,
@@ -31,14 +31,11 @@ impl User {
     ///
     /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
     /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
-    pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> Option<Self> {
+    pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> anyhow::Result<Self> {
         let salt = thread_rng().gen::<i64>();
-        let password = match Self::gen_password_hash(salt, plain_text_password.as_str()) {
-            Some(password) => password,
-            None => return None
-        };
+        let password = Self::gen_password_hash(salt, plain_text_password.as_str())?;
 
-        Some(Self {
+        Ok(Self {
             id: -1,
             username,
             name,
@@ -51,11 +48,13 @@ impl User {
         })
     }
 
-    pub async fn fetch_by_id(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
+    pub async fn fetch_by_id(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Self> {
         let result = sqlx::query_as!(
             User,
-            "SELECT * FROM users WHERE id = $1;",
-            primary_key
+            r#"
+            SELECT * FROM users WHERE id = $1;
+            "#,
+            user_id
         )
         .fetch_one(pool)
         .await?;
@@ -63,16 +62,59 @@ impl User {
         Ok(result)
     }
 
-    pub async fn fetch_by_username(pool: &Pool<Postgres>, username: &str) -> anyhow::Result<Self> {
-        let result = sqlx::query_as!(
-            User,
-            "SELECT * FROM users WHERE username = $1;",
+    pub async fn update_allow_reset_password(pool: &Pool<Postgres>, user_id: i32, allow_reset: bool) -> anyhow::Result<()> {
+        let rows_affected = sqlx::query!(
+            r#"
+            UPDATE users
+            SET can_reset_password = $1
+            WHERE id = $2;
+            "#,
+            allow_reset, user_id
+        )
+        .execute(pool)
+        .await?
+        .rows_affected();
+
+        if rows_affected == 0 {
+            return Err(anyhow!("No user found with the given username, or the password was not updated"));
+        }
+
+        Ok(())
+    }
+
+    pub async fn update_password(pool: &Pool<Postgres>, username: &str, plain_text_password: &str) -> anyhow::Result<()> {
+        let record = match sqlx::query!(
+            r#"
+            SELECT password, salt
+            FROM users
+            WHERE username = $1 AND can_reset_password = TRUE;
+            "#,
             username
         )
-        .fetch_one(pool)
-        .await?;
+        .fetch_optional(pool)
+        .await? {
+            Some(record) => record,
+            None => return Err(anyhow!("User does not exist or cannot reset password"))
+        };
 
-        Ok(result)
+        let new_hashed_password = Self::gen_password_hash(record.salt, plain_text_password)?;
+        let rows_affected = sqlx::query!(
+            r#"
+            UPDATE users
+            SET password = $1, can_reset_password = FALSE
+            WHERE username = $2;
+            "#,
+            new_hashed_password, username
+        )
+        .execute(pool)
+        .await?
+        .rows_affected();
+
+        if rows_affected == 0 {
+            return Err(anyhow::anyhow!("No user found with the given username, or the password was not updated"));
+        }
+
+        Ok(())
     }
 
     /// Checks if a given user is an admin.
@@ -99,6 +141,47 @@ impl User {
         }
     }
 
+    /// Validates a user's login credentials and increments the login count.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `username` - The username of the user to validate.
+    /// * `plain_text_password` - The plain text password to validate.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns the user if the login was successful, an error otherwise.
+    pub async fn validate_login(pool: &Pool<Postgres>, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
+        let result_user = sqlx::query_as!(
+            User,
+            r#"
+            UPDATE users
+            SET login_count = login_count + 1
+            WHERE username = $1
+            RETURNING *;
+            "#,
+            username
+        )
+        .fetch_one(pool)
+        .await?;
+
+        if !result_user.validate_password(plain_text_password) {
+            return Err(anyhow!("Invalid password"));
+        }
+
+        Ok(result_user)
+    }
+
+    /// Inserts the user into the database and sets the user's ID.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns an error if the user already exists or if the insert operation fails.
     pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
         if self.exists(pool).await {
             return Err(anyhow!("User already exists"));
@@ -140,13 +223,13 @@ impl User {
         exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<()> {
         let delete_query = sqlx::query!(
             r#"
             DELETE FROM users
             WHERE id = $1
             "#,
-            primary_key
+            user_id
         )
         .execute(pool)
         .await?;
@@ -158,6 +241,21 @@ impl User {
         Ok(())
     }
 
+    pub async fn text_search(pool: &Pool<Postgres>, query: &str) -> anyhow::Result<Box<[Self]>> {
+        let result = sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM users
+            WHERE username ILIKE $1 OR name ILIKE $1 OR email ILIKE $1;
+            "#,
+            format!("%{}%", query)
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(result.into_boxed_slice())
+    }
+
     /// Generates a password hash using the provided salt and password.
     /// 
     /// # Arguments
@@ -167,12 +265,9 @@ impl User {
     /// 
     /// # Returns
     /// 
-    /// Returns the hashed password if successful, `None` otherwise.
-    pub fn gen_password_hash(salt: i64, password: &str) -> Option<String> {
-        match bcrypt::hash(format!("{}{}", password, salt), bcrypt::DEFAULT_COST) {
-            Ok(hash) => Some(hash),
-            Err(_) => None
-        }
+    /// Returns the hashed password if successful, an error otherwise.
+    pub fn gen_password_hash(salt: i64, password: &str) -> anyhow::Result<String> {
+        Ok(bcrypt::hash(format!("{}{}", password, salt), bcrypt::DEFAULT_COST)?)
     }
 
     /// Validates the provided plain text password against the user's hashed password.
