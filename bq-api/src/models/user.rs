@@ -167,6 +167,42 @@ impl User {
     pub fn validate_is_admin(pool: Pool<Postgres>, primary_key: u32) -> bool {
         todo!()
     }
+
+    pub fn id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn username(&self) -> &Username {
+        &self.username
+    }
+
+    pub fn name(&self) -> &Name {
+        &self.name
+    }
+
+    pub fn email(&self) -> &Email {
+        &self.email
+    }
+
+    pub fn can_reset_password(&self) -> bool {
+        self.can_reset_password
+    }
+
+    pub fn is_admin(&self) -> bool {
+        self.is_admin
+    }
+
+    pub fn login_count(&self) -> i32 {
+        self.login_count
+    }
+
+    pub fn salt(&self) -> i64 {
+        self.salt
+    }
+
+    pub fn password(&self) -> &str {
+        self.password.as_str()
+    }
 }
 
 #[cfg(test)]

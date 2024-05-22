@@ -2,12 +2,10 @@ use super::regex::*;
 use anyhow::anyhow;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use sqlx::Type;
 
 macro_rules! parsable {
     ($t:ident, $regex:expr) => {
-        #[derive(Type, Serialize, Deserialize, Clone, PartialEq, Debug)]
-        #[sqlx(transparent)]
+        #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
         pub struct $t(String);
 
         impl From<$t> for String {
