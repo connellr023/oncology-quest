@@ -1,5 +1,5 @@
-use crate::{models::{model::Model, user::User}, utilities::parsables::PlainTextPassword};
-use crate::utilities::parsables::{Parsable, Username};
+use crate::{models::{model::Model, user::User}, utilities::parsable::PlainTextPassword};
+use crate::utilities::parsable::{Parsable, Username};
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use redis::Client;

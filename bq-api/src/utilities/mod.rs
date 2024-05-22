@@ -1,3 +1,3 @@
 mod regex;
-pub mod parsables;
+pub mod parsable;
 pub mod environment;

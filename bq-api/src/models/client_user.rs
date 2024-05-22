@@ -1,5 +1,5 @@
 use super::{model::Model, tasks::UserTaskEntries, user::{User, USER_KEY_SET}};
-use crate::utilities::parsables::{Username, Name, Email};
+use crate::utilities::parsable::{Username, Name, Email};
 use serde::{Serialize, Deserialize};
 use redis::Connection;
 

@@ -79,7 +79,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utilities::parsables::{Parsable, Comment};
+    use crate::utilities::parsable::{Parsable, Comment};
     
     #[test]
     fn test_update_task_new() {

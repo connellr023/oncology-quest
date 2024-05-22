@@ -1,4 +1,4 @@
-pub mod model;
 pub mod user;
 pub mod client_user;
-pub mod entries;
+pub mod entry_structure;
+pub mod domain;

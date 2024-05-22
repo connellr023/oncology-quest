@@ -1,4 +1,4 @@
-use crate::utilities::parsables::{Username, Name, Email, PlainTextPassword};
+use crate::utilities::parsable::{Username, Name, Email, PlainTextPassword};
 use crate::models::{model::Model, user::User};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use serde::Deserialize;

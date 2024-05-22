@@ -1,5 +1,5 @@
 use crate::models::{model::Model, tasks_model::TasksModel, user::User, entries::EntryIndex};
-use crate::utilities::parsables::SubtaskTitle;
+use crate::utilities::parsable::SubtaskTitle;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use redis::Client;

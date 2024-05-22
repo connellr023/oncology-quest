@@ -1,6 +1,6 @@
 use super::user_session::handle_session_response;
 use crate::models::{model::Model, user::User};
-use crate::utilities::parsables::{Parsable, Username, PlainTextPassword};
+use crate::utilities::parsable::{Parsable, Username, PlainTextPassword};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};

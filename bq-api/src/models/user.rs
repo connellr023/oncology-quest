@@ -1,5 +1,4 @@
-use super::model::Model;
-use crate::utilities::parsables::{Parsable, Username, Name, Email, PlainTextPassword};
+use crate::utilities::parsable::{Email, Name, PlainTextPassword, Username};
 use rand::{thread_rng, Rng};
 use sqlx::{prelude::FromRow, Pool, Postgres};
 use anyhow::anyhow;
@@ -19,16 +18,20 @@ pub struct User {
     login_count: i32
 }
 
-impl Model for User {
-    async fn fetch(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
-        let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1;", primary_key)
-            .fetch_one(pool)
-            .await?;
+impl User {
+    pub async fn fetch(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
+        let result = sqlx::query_as!(
+            User,
+            "SELECT * FROM users WHERE id = $1;",
+            primary_key
+        )
+        .fetch_one(pool)
+        .await?;
 
-        Ok(user)
+        Ok(result)
     }
 
-    async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+    pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
         if self.exists(pool).await {
             return Err(anyhow!("User already exists"));
         }
@@ -56,22 +59,6 @@ impl Model for User {
         Ok(())
     }
 
-    async fn delete(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<()> {
-        sqlx::query!(
-            r#"
-            DELETE FROM users
-            WHERE id = $1
-            "#,
-            primary_key
-        )
-        .execute(pool)
-        .await?;
-    
-        Ok(())
-    }
-}
-
-impl User {
     pub async fn exists(&self, pool: &Pool<Postgres>) -> bool {
         let exists_query = sqlx::query!(
             r#"
@@ -83,6 +70,24 @@ impl User {
         .await;
 
         exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
+    }
+
+    pub async fn delete(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<()> {
+        let delete_query = sqlx::query!(
+            r#"
+            DELETE FROM users
+            WHERE id = $1
+            "#,
+            primary_key
+        )
+        .execute(pool)
+        .await?;
+
+        if delete_query.rows_affected() == 0 {
+            return Err(anyhow!("User does not exist"));
+        }
+    
+        Ok(())
     }
 
     /// Generates a password hash using the provided salt and password.

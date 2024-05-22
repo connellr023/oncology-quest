@@ -4,22 +4,6 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
 
-pub trait Parsable: for<'de> Deserialize<'de> + Sized {
-    /// Parses a string into a value of this type.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `value` - The string to parse.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns an error if the string is not valid.
-    fn parse(value: String) -> anyhow::Result<Self>;
-
-    /// Returns the parsed value as a string slice.
-    fn as_str(&self) -> &str;
-}
-
 macro_rules! parsable {
     ($t:ident, $regex:expr) => {
         #[derive(Type, Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -38,8 +22,8 @@ macro_rules! parsable {
             }
         }
 
-        impl Parsable for $t {
-            fn parse(value: String) -> anyhow::Result<Self> {
+        impl $t {
+            pub fn parse(value: String) -> anyhow::Result<Self> {
                 let pattern = Regex::new($regex)?;
 
                 match pattern.is_match(&value) {
@@ -48,7 +32,7 @@ macro_rules! parsable {
                 }
             }
 
-            fn as_str(&self) -> &str {
+            pub fn as_str(&self) -> &str {
                 &self.0
             }
         }
