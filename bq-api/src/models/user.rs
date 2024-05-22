@@ -3,8 +3,6 @@ use rand::{thread_rng, Rng};
 use sqlx::{prelude::FromRow, Pool, Postgres};
 use anyhow::anyhow;
 
-pub const USER_KEY_SET: &str = "user_keys";
-
 #[derive(Debug, FromRow)]
 pub struct User {
     id: i32,
@@ -19,7 +17,41 @@ pub struct User {
 }
 
 impl User {
-    pub async fn fetch(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
+    /// Creates a new User instance with the provided parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `username` - The username of the user.
+    /// * `name` - The name of the user.
+    /// * `email` - The email of the user.
+    /// * `plain_text_password` - The plain text password of the user.
+    /// * `is_admin` - A flag indicating whether the user is an admin or not.
+    ///
+    /// # Returns
+    ///
+    /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
+    /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
+    pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> Option<Self> {
+        let salt = thread_rng().gen::<i64>();
+        let password = match Self::gen_password_hash(salt, plain_text_password.as_str()) {
+            Some(password) => password,
+            None => return None
+        };
+
+        Some(Self {
+            id: -1,
+            username,
+            name,
+            email,
+            password,
+            salt,
+            is_admin,
+            can_reset_password: false,
+            login_count: 0
+        })
+    }
+
+    pub async fn fetch_by_id(pool: &Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
         let result = sqlx::query_as!(
             User,
             "SELECT * FROM users WHERE id = $1;",
@@ -29,6 +61,42 @@ impl User {
         .await?;
 
         Ok(result)
+    }
+
+    pub async fn fetch_by_username(pool: &Pool<Postgres>, username: &str) -> anyhow::Result<Self> {
+        let result = sqlx::query_as!(
+            User,
+            "SELECT * FROM users WHERE username = $1;",
+            username
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(result)
+    }
+
+    /// Checks if a given user is an admin.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `primary_key` - The primary key of the user to check.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns `true` if the user is an admin, `false` otherwise.
+    pub async fn validate_is_admin(pool: &Pool<Postgres>, primary_key: i32) -> bool {
+        match sqlx::query!(
+            r#"
+            SELECT is_admin FROM users WHERE id = $1;
+            "#,
+            primary_key
+        )
+        .fetch_one(pool)
+        .await {
+            Ok(query) => query.is_admin,
+            Err(_) => false
+        }
     }
 
     pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
@@ -107,40 +175,6 @@ impl User {
         }
     }
 
-    /// Creates a new User instance with the provided parameters.
-    ///
-    /// # Arguments
-    ///
-    /// * `username` - The username of the user.
-    /// * `name` - The name of the user.
-    /// * `email` - The email of the user.
-    /// * `plain_text_password` - The plain text password of the user.
-    /// * `is_admin` - A flag indicating whether the user is an admin or not.
-    ///
-    /// # Returns
-    ///
-    /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
-    /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
-    pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> Option<Self> {
-        let salt = thread_rng().gen::<i64>();
-        let password = match Self::gen_password_hash(salt, plain_text_password.as_str()) {
-            Some(password) => password,
-            None => return None
-        };
-
-        Some(Self {
-            id: -1,
-            username,
-            name,
-            email,
-            password,
-            salt,
-            is_admin,
-            can_reset_password: false,
-            login_count: 0
-        })
-    }
-
     /// Validates the provided plain text password against the user's hashed password.
     ///
     /// # Arguments
@@ -152,20 +186,6 @@ impl User {
     /// Returns `true` if the provided password matches the user's hashed password, `false` otherwise.
     pub fn validate_password(&self, plain_text_password: &str) -> bool {
         bcrypt::verify(format!("{}{}", plain_text_password, self.salt), &self.password).unwrap_or(false)
-    }
-
-    /// Checks if a given user is an admin.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `pool` - The Postgres connection pool to use for the operation.
-    /// * `primary_key` - The primary key of the user to check.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns `true` if the user is an admin, `false` otherwise.
-    pub fn validate_is_admin(pool: Pool<Postgres>, primary_key: u32) -> bool {
-        todo!()
     }
 
     pub fn id(&self) -> i32 {
@@ -248,9 +268,9 @@ mod tests {
         let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
         let client_user: ClientUser = user.into();
 
-        assert_eq!(client_user.username, username);
-        assert_eq!(client_user.name, name);
-        assert_eq!(client_user.email, email);
-        assert_eq!(client_user.is_admin, false);
+        assert_eq!(*client_user.username(), username);
+        assert_eq!(*client_user.name(), name);
+        assert_eq!(*client_user.email(), email);
+        assert_eq!(client_user.is_admin(), false);
     }
 }

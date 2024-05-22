@@ -1,29 +1,32 @@
+use super::user::User;
 use crate::utilities::parsable::{Username, Name, Email};
 use serde::{Serialize, Deserialize};
-
-use super::user::User;
-
-const MAX_SEARCH_RESULTS: u8 = 15;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
-    pub username: Username,
-    pub name: Name,
-    pub email: Email,
-    pub is_admin: bool,
-    pub login_count: i32
+    id: i32,
+    username: Username,
+    name: Name,
+    email: Email,
+    is_admin: bool,
+    login_count: i32
 }
 
 impl ClientUser {
-    pub fn new(username: Username, name: Name, email: Email, is_admin: bool, login_count: i32) -> Self {
+    pub fn new(id: i32, username: Username, name: Name, email: Email, is_admin: bool, login_count: i32) -> Self {
         Self {
+            id,
             username,
             name,
             email,
             is_admin,
             login_count
         }
+    }
+
+    pub fn id(&self) -> i32 {
+        self.id
     }
 
     pub fn username(&self) -> &Username {
@@ -50,6 +53,7 @@ impl ClientUser {
 impl From<User> for ClientUser {
     fn from(user: User) -> Self {
         Self {
+            id: user.id(),
             username: *user.username(),
             name: *user.name(),
             email: *user.email(),

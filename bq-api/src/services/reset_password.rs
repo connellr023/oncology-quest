@@ -18,7 +18,7 @@ pub(super) async fn reset(redis: Data<Client>, reset_password: Json<ResetPasswor
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    let mut user = match User::fetch(&mut connection, reset_password.username.as_str()) {
+    let mut user = match User::fetch_by_id(&mut connection, reset_password.username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
@@ -65,7 +65,7 @@ pub(super) async fn allow_reset(session: Session, redis: Data<Client>, allow_res
         return HttpResponse::Forbidden().finish();
     }
 
-    let mut target_user = match User::fetch(&mut connection, allow_reset_password.username.as_str()) {
+    let mut target_user = match User::fetch_by_id(&mut connection, allow_reset_password.username.as_str()) {
         Ok(target_user) => target_user,
         Err(_) => return HttpResponse::NotFound().finish()
     };

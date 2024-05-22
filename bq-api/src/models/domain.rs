@@ -1,7 +1,8 @@
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Postgres};
+use serde::Serialize;
 
-#[derive(Debug, FromRow)]
+#[derive(Serialize, Debug, FromRow)]
 pub struct Domain {
     id: i32,
     name: String,
@@ -9,18 +10,17 @@ pub struct Domain {
 }
 
 impl Domain {
-    pub async fn fetch(pool: &sqlx::Pool<Postgres>, primary_key: i32) -> anyhow::Result<Self> {
-        let domain = sqlx::query_as!(
+    pub async fn fetch_all(pool: &sqlx::Pool<Postgres>) -> anyhow::Result<Box<[Self]>> {
+        let domains = sqlx::query_as!(
             Domain,
             r#"
-            SELECT * FROM domains WHERE id = $1;
-            "#,
-            primary_key
+            SELECT * FROM domains;
+            "#
         )
-        .fetch_one(pool)
+        .fetch_all(pool)
         .await?;
 
-        Ok(domain)
+        Ok(domains.into_boxed_slice())
     }
 
     pub fn id(&self) -> i32 {

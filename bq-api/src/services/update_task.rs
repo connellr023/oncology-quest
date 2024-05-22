@@ -57,7 +57,7 @@ pub(super) async fn update(session: Session, redis: Data<Client>, task_update: J
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    let mut user = match User::fetch(&mut connection, username.as_str()) {
+    let mut user = match User::fetch_by_id(&mut connection, username.as_str()) {
         Ok(user) => user,
         Err(_) => return HttpResponse::NotFound().finish()
     };
