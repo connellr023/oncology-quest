@@ -12,7 +12,7 @@ pub struct UserSearchQuery {
 
 #[actix_web::get("/api/user/search/{query}")]
 pub(super) async fn search(session: Session, search: Path<UserSearchQuery>, pool: Data<Pool<Postgres>>) -> impl Responder {
-    auth_admin!(session, pool);
+    auth_admin!(user_id, session, pool);
 
     let users = match User::text_search(&pool, search.query.as_str()).await {
         Ok(users) => users,

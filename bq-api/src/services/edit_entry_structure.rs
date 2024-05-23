@@ -27,7 +27,7 @@ struct DeleteEntryQuery {
 
 #[actix_web::post("/api/supertasks/create")]
 pub(super) async fn create_supertask(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<EntryTitle>) -> impl Responder {
-    auth_admin!(session, pool);
+    auth_admin!(user_id, session, pool);
 
     // if Supertask::insert(&pool, create_entry_query.title.as_str()).await.is_err() {
     //     return HttpResponse::InternalServerError().finish();
@@ -38,7 +38,7 @@ pub(super) async fn create_supertask(session: Session, pool: Data<Pool<Postgres>
 
 #[actix_web::patch("/api/supertasks/update")]
 pub(super) async fn update_supertask(session: Session, pool: Data<Pool<Postgres>>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin!(session, pool);
+    auth_admin!(user_id, session, pool);
 
     if Supertask::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -49,7 +49,7 @@ pub(super) async fn update_supertask(session: Session, pool: Data<Pool<Postgres>
 
 #[actix_web::delete("/api/supertasks/delete")]
 pub(super) async fn delete_supertask(session: Session, pool: Data<Pool<Postgres>>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    auth_admin!(session, pool);
+    auth_admin!(user_id, session, pool);
 
     if Supertask::delete(&pool, delete_entry_query.entry_id).await.is_err() {
         return HttpResponse::InternalServerError().finish();

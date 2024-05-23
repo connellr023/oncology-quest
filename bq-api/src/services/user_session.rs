@@ -1,3 +1,4 @@
+use crate::auth_user;
 use crate::models::{client_user::ClientUser, domain::Domain, user::User};
 use actix_web::{web::Data, HttpResponse, Responder};
 use actix_session::Session;
@@ -35,10 +36,7 @@ impl UserSessionResponse {
 
 #[actix_web::get("/api/user/session")]
 pub(super) async fn session(session: Session, pool: Data<Pool<Postgres>>) -> impl Responder {
-    let user_id = match session.get::<i32>("uid") {
-        Ok(Some(user_id)) => user_id,
-        _ => return HttpResponse::Unauthorized().finish()
-    };
+    auth_user!(user_id, session);
 
     let user = match User::fetch_by_id(&pool, user_id).await {
         Ok(user) => user,
