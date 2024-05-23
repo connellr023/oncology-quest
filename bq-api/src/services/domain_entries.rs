@@ -1,4 +1,4 @@
-use crate::{auth_user, models::{domain::Domain, entry_structure::EntryStructure}};
+use crate::{auth_user_session, models::{domain::Domain, entry_structure::EntryStructure}};
 use actix_web::{web::{Data, Path}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
@@ -9,14 +9,14 @@ use sqlx::{Pool, Postgres};
 #[serde(rename_all = "camelCase")]
 struct FetchDomainEntriesQuery {
     pub domain_id: i32,
-    pub cache_timestamp: Option<DateTime<Utc>>
+    pub entries_cache_timestamp: Option<DateTime<Utc>>
 }
 
-#[actix_web::get("/api/domains/{domain_id}/{cache_timestamp}/entries")]
+#[actix_web::get("/api/domains/{domain_id}/{entries_cache_timestamp}")]
 pub(super) async fn fetch(session: Session, pool: Data<Pool<Postgres>>, fetch_domain_entries_query: Path<FetchDomainEntriesQuery>) -> impl Responder {
-    auth_user!(session);
+    auth_user_session!(session);
 
-    match Domain::is_cache_valid(&pool, fetch_domain_entries_query.domain_id, fetch_domain_entries_query.cache_timestamp).await {
+    match Domain::is_cache_valid(&pool, fetch_domain_entries_query.domain_id, fetch_domain_entries_query.entries_cache_timestamp).await {
         Err(_) => return HttpResponse::InternalServerError().finish(),
         Ok(true) => return HttpResponse::NotModified().finish(),
         _ => {}

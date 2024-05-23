@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! auth_user {
+macro_rules! auth_user_session {
     ($session:ident) => {
         match $session.get::<i32>("uid") {
             Ok(Some(_)) => {},
@@ -9,7 +9,7 @@ macro_rules! auth_user {
 }
 
 #[macro_export]
-macro_rules! auth_user_with_id {
+macro_rules! auth_user_session_with_id {
     ($varname:ident, $session:ident) => {
         let $varname = match $session.get::<i32>("uid") {
             Ok(Some($varname)) => $varname,
@@ -19,9 +19,9 @@ macro_rules! auth_user_with_id {
 }
 
 #[macro_export]
-macro_rules! auth_admin {
+macro_rules! auth_admin_session {
     ($varname:ident, $session:ident, $pool:ident) => {
-        crate::auth_user_with_id!($varname, $session);
+        crate::auth_user_session_with_id!($varname, $session);
 
         if !User::validate_is_admin(&$pool, $varname).await {
             return HttpResponse::Forbidden().finish();

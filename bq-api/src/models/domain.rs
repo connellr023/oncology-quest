@@ -53,16 +53,4 @@ impl Domain {
 
         Ok(domains.into_boxed_slice())
     }
-
-    pub fn id(&self) -> i32 {
-        self.id
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn last_updated(&self) -> DateTime<Utc> {
-        self.last_updated
-    }
 }

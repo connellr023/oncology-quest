@@ -1,4 +1,5 @@
 use crate::utilities::parsable::{Email, Name, PlainTextPassword, Username};
+use chrono::{DateTime, Utc};
 use rand::{thread_rng, Rng};
 use sqlx::{prelude::FromRow, Pool, Postgres};
 use anyhow::anyhow;
@@ -13,7 +14,8 @@ pub struct User {
     is_admin: bool,
     salt: i64,
     password: String,
-    login_count: i32
+    login_count: i32,
+    last_task_update: DateTime<Utc>
 }
 
 impl User {
@@ -44,7 +46,8 @@ impl User {
             salt,
             is_admin,
             can_reset_password: false,
-            login_count: 0
+            login_count: 0,
+            last_task_update: Utc::now()
         })
     }
 
@@ -189,8 +192,8 @@ impl User {
 
         let row = sqlx::query!(
             r#"
-            INSERT INTO users (username, name, email, can_reset_password, is_admin, salt, password, login_count)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO users (username, name, email, can_reset_password, is_admin, salt, password)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id
             "#,
             self.username.as_str(),
@@ -199,8 +202,7 @@ impl User {
             self.can_reset_password,
             self.is_admin,
             self.salt,
-            self.password.as_str(),
-            self.login_count
+            self.password.as_str()
         )
         .fetch_one(pool)
         .await?;
@@ -299,24 +301,12 @@ impl User {
         &self.email
     }
 
-    pub fn can_reset_password(&self) -> bool {
-        self.can_reset_password
-    }
-
     pub fn is_admin(&self) -> bool {
         self.is_admin
     }
 
     pub fn login_count(&self) -> i32 {
         self.login_count
-    }
-
-    pub fn salt(&self) -> i64 {
-        self.salt
-    }
-
-    pub fn password(&self) -> &str {
-        self.password.as_str()
     }
 }
 
@@ -363,9 +353,9 @@ mod tests {
         let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
         let client_user: ClientUser = user.into();
 
-        assert_eq!(*client_user.username(), username);
-        assert_eq!(*client_user.name(), name);
-        assert_eq!(*client_user.email(), email);
-        assert_eq!(client_user.is_admin(), false);
+        assert_eq!(client_user.username, username);
+        assert_eq!(client_user.name, name);
+        assert_eq!(client_user.email, email);
+        assert_eq!(client_user.is_admin, false);
     }
 }

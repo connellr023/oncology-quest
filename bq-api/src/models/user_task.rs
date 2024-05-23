@@ -1,7 +1,8 @@
 use crate::utilities::parsable::Comment;
 use sqlx::{FromRow, Pool, Postgres};
+use serde::Serialize;
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Serialize)]
 pub struct UserTask {
     id: i32,
     user_id: i32,
@@ -11,7 +12,7 @@ pub struct UserTask {
 }
 
 impl UserTask {
-    pub async fn fetch_by_user_id(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Vec<Self>> {
+    pub async fn fetch_all(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Box<[Self]>> {
         let records = sqlx::query_as!(
             UserTask,
             r#"
@@ -22,26 +23,24 @@ impl UserTask {
         .fetch_all(pool)
         .await?;
 
-        Ok(records)
+        Ok(records.into_boxed_slice())
     }
 
-    pub fn id(&self) -> i32 {
-        self.id
-    }
+    pub async fn update_is_completed(pool: &Pool<Postgres>, id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"
+            INSERT INTO user_tasks (id, is_completed, comment)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (id) DO UPDATE
+            SET is_completed = EXCLUDED.is_completed, comment = EXCLUDED.comment;
+            "#,
+            id,
+            is_completed,
+            comment
+        )
+        .execute(pool)
+        .await?;
 
-    pub fn user_id(&self) -> i32 {
-        self.user_id
-    }
-
-    pub fn is_completed(&self) -> bool {
-        self.is_completed
-    }
-
-    pub fn comment(&self) -> &Comment {
-        &self.comment
-    }
-
-    pub fn subtask_id(&self) -> i32 {
-        self.subtask_id
+        Ok(())
     }
 }

@@ -5,49 +5,12 @@ use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
-    id: i32,
-    username: Username,
-    name: Name,
-    email: Email,
-    is_admin: bool,
-    login_count: i32
-}
-
-impl ClientUser {
-    pub fn new(id: i32, username: Username, name: Name, email: Email, is_admin: bool, login_count: i32) -> Self {
-        Self {
-            id,
-            username,
-            name,
-            email,
-            is_admin,
-            login_count
-        }
-    }
-
-    pub fn id(&self) -> i32 {
-        self.id
-    }
-
-    pub fn username(&self) -> &Username {
-        &self.username
-    }
-
-    pub fn name(&self) -> &Name {
-        &self.name
-    }
-
-    pub fn email(&self) -> &Email {
-        &self.email
-    }
-
-    pub fn is_admin(&self) -> bool {
-        self.is_admin
-    }
-
-    pub fn login_count(&self) -> i32 {
-        self.login_count
-    }
+    pub id: i32,
+    pub username: Username,
+    pub name: Name,
+    pub email: Email,
+    pub is_admin: bool,
+    pub login_count: i32
 }
 
 impl From<User> for ClientUser {

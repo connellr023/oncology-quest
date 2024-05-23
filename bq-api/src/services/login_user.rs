@@ -2,6 +2,7 @@ use super::user_session::UserSessionResponse;
 use crate::models::user::User;
 use crate::utilities::parsable::{Username, PlainTextPassword};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
+use chrono::{DateTime, Utc};
 use sqlx::{Pool, Postgres};
 use actix_session::Session;
 use serde::Deserialize;
@@ -10,7 +11,8 @@ use serde::Deserialize;
 #[serde(rename_all = "camelCase")]
 pub struct LoginUserQuery {
     pub username: Username,
-    pub password: PlainTextPassword
+    pub password: PlainTextPassword,
+    pub task_cache_timestamp: Option<DateTime<Utc>>
 }
 
 #[actix_web::post("/api/user/login")]
@@ -24,7 +26,7 @@ pub(super) async fn login(session: Session, pool: Data<Pool<Postgres>>, login_us
         return HttpResponse::InternalServerError().finish();
     }
 
-    match UserSessionResponse::build_from_user(&pool, user).await {
+    match UserSessionResponse::build(&pool, user, login_user_query.task_cache_timestamp).await {
         Ok(response) => HttpResponse::Ok().json(response),
         Err(_) => HttpResponse::InternalServerError().finish()
     }

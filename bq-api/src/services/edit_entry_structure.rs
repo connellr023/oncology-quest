@@ -1,4 +1,4 @@
-use crate::auth_admin;
+use crate::auth_admin_session;
 use crate::{models::{entry_structure::{Supertask, Task, Subtask}, user::User}, utilities::parsable::EntryTitle};
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
@@ -28,7 +28,7 @@ struct DeleteEntryQuery {
 
 #[actix_web::post("/api/supertasks/create")]
 pub(super) async fn create_supertask(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<CreateEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     // If the parent_id is not None, then the entry is not a supertask.
     if create_entry_query.parent_id.is_some() {
@@ -44,7 +44,7 @@ pub(super) async fn create_supertask(session: Session, pool: Data<Pool<Postgres>
 
 #[actix_web::patch("/api/supertasks/update")]
 pub(super) async fn update_supertask(session: Session, pool: Data<Pool<Postgres>>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     if Supertask::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -55,7 +55,7 @@ pub(super) async fn update_supertask(session: Session, pool: Data<Pool<Postgres>
 
 #[actix_web::delete("/api/supertasks/delete")]
 pub(super) async fn delete_supertask(session: Session, pool: Data<Pool<Postgres>>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     if Supertask::delete(&pool, delete_entry_query.entry_id).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -66,7 +66,7 @@ pub(super) async fn delete_supertask(session: Session, pool: Data<Pool<Postgres>
 
 #[actix_web::post("/api/tasks/create")]
 pub(super) async fn create_task(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<CreateEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     // If the parent_id is None, then the entry is not a task.
     let supertask_id = match create_entry_query.parent_id {
@@ -83,7 +83,7 @@ pub(super) async fn create_task(session: Session, pool: Data<Pool<Postgres>>, cr
 
 #[actix_web::patch("/api/tasks/update")]
 pub(super) async fn update_task(session: Session, pool: Data<Pool<Postgres>>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     if Task::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -94,7 +94,7 @@ pub(super) async fn update_task(session: Session, pool: Data<Pool<Postgres>>, up
 
 #[actix_web::delete("/api/tasks/delete")]
 pub(super) async fn delete_task(session: Session, pool: Data<Pool<Postgres>>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     if Task::delete(&pool, delete_entry_query.entry_id).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -105,7 +105,7 @@ pub(super) async fn delete_task(session: Session, pool: Data<Pool<Postgres>>, de
 
 #[actix_web::post("/api/subtasks/create")]
 pub(super) async fn create_subtask(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<CreateEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     // If the parent_id is None, then the entry is not a subtask.
     let task_id = match create_entry_query.parent_id {
@@ -122,7 +122,7 @@ pub(super) async fn create_subtask(session: Session, pool: Data<Pool<Postgres>>,
 
 #[actix_web::patch("/api/subtasks/update")]
 pub(super) async fn update_subtask(session: Session, pool: Data<Pool<Postgres>>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     if Subtask::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -133,7 +133,7 @@ pub(super) async fn update_subtask(session: Session, pool: Data<Pool<Postgres>>,
 
 #[actix_web::delete("/api/subtasks/delete")]
 pub(super) async fn delete_subtask(session: Session, pool: Data<Pool<Postgres>>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    auth_admin!(user_id, session, pool);
+    auth_admin_session!(user_id, session, pool);
 
     if Subtask::delete(&pool, delete_entry_query.entry_id).await.is_err() {
         return HttpResponse::InternalServerError().finish();
