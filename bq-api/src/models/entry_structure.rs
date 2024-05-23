@@ -77,6 +77,25 @@ task_model!(Task, "tasks");
 task_model!(Subtask, "subtasks");
 
 impl Supertask {
+    pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32) -> anyhow::Result<()> {
+        let mut transaction = pool.begin().await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO supertasks (title, domain_id) VALUES ($1, $2);
+            UPDATE domain SET last_updated = NOW() WHERE id = $2;
+            "#,
+        )
+        .bind(title)
+        .bind(domain_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -99,6 +118,26 @@ impl Supertask {
 }
 
 impl Task {
+    pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32, supertask_id: i32) -> anyhow::Result<()> {
+        let mut transaction = pool.begin().await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO tasks (title, domain_id, supertask_id) VALUES ($1, $2, $3);
+            UPDATE domain SET last_updated = NOW() WHERE id = $2;
+            "#,
+        )
+        .bind(title)
+        .bind(domain_id)
+        .bind(supertask_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -120,6 +159,26 @@ impl Task {
 }
 
 impl Subtask {
+    pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32, task_id: i32) -> anyhow::Result<()> {
+        let mut transaction = pool.begin().await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO subtasks (title, domain_id, task_id) VALUES ($1, $2, $3);
+            UPDATE domain SET last_updated = NOW() WHERE id = $2;
+            "#,
+        )
+        .bind(title)
+        .bind(domain_id)
+        .bind(task_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
