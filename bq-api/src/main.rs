@@ -38,7 +38,7 @@ async fn main() -> io::Result<()> {
     HttpServer::new(move || {
         // Initialize the application.
         App::new()
-            .app_data(Data::new(pool))
+            .app_data(Data::new(pool.clone()))
             .configure(config)
             .wrap(session_middleware(&key))
             .wrap(cors())

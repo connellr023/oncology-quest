@@ -6,3 +6,4 @@ pub mod user_session;
 pub mod search_user;
 pub mod reset_password;
 pub mod delete_user;
+pub mod edit_entry_structure;

@@ -42,7 +42,7 @@ parsable!(Name, NAME_REGEX);
 parsable!(Email, EMAIL_REGEX);
 parsable!(PlainTextPassword, PASSWORD_REGEX);
 parsable!(Comment, COMMENT_REGEX);
-parsable!(SubtaskTitle, ENTRY_TITLE_REGEX);
+parsable!(EntryTitle, ENTRY_TITLE_REGEX);
 
 #[cfg(test)]
 mod tests {
@@ -110,13 +110,13 @@ mod tests {
 
     #[test]
     fn test_parse_entry_title_valid() {
-        let entry_title = SubtaskTitle::parse("My Entry".to_string()).unwrap();
+        let entry_title = EntryTitle::parse("My Entry".to_string()).unwrap();
         assert_eq!(entry_title.as_str(), "My Entry");
     }
 
     #[test]
     fn test_parse_entry_title_invalid() {
-        let result = SubtaskTitle::parse("".to_string());
+        let result = EntryTitle::parse("".to_string());
         assert!(result.is_err());
     }
 }
