@@ -1,35 +1,34 @@
-use super::domain::Domain;
 use sqlx::{FromRow, Pool, Postgres};
+use serde::Serialize;
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Serialize)]
 pub struct Supertask {
     id: i32,
     title: String,
     domain_id: i32,
 }
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Serialize)]
 pub struct Task {
     id: i32,
     supertask_id: Option<i32>,
     title: String,
-    domain_id: i32,
+    domain_id: i32
 }
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Serialize)]
 pub struct Subtask {
     id: i32,
     task_id: Option<i32>,
     title: String,
-    domain_id: i32,
+    domain_id: i32
 }
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Serialize)]
 pub struct EntryStructure {
-    domain: Domain,
     supertasks: Box<[Supertask]>,
     tasks: Box<[Task]>,
-    subtasks: Box<[Subtask]>,
+    subtasks: Box<[Subtask]>
 }
 
 macro_rules! task_model {
@@ -199,11 +198,8 @@ impl Subtask {
 }
 
 impl EntryStructure {
-    pub async fn fetch(pool: Pool<Postgres>, domain: Domain) -> anyhow::Result<Self> {
-        let domain_id = domain.id();
-
+    pub async fn fetch(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Self> {
         Ok(Self {
-            domain,
             supertasks: Supertask::fetch_all(&pool, domain_id).await?,
             tasks: Task::fetch_all(&pool, domain_id).await?,
             subtasks: Subtask::fetch_all(&pool, domain_id).await?,

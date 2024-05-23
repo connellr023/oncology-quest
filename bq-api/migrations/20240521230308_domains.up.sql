@@ -1,4 +1,4 @@
-CREATE TABLE domains(
+CREATE TABLE IF NOT EXISTS domains(
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     last_updated TIMESTAMPTZ NOT NULL

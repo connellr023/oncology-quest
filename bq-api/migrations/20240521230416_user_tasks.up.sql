@@ -1,4 +1,4 @@
-CREATE TABLE user_tasks(
+CREATE TABLE IF NOT EXISTS user_tasks(
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     subtask_id INT NOT NULL,
