@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
 
@@ -31,51 +32,52 @@ pub struct EntryStructure {
     subtasks: Box<[Subtask]>
 }
 
-macro_rules! task_model {
+macro_rules! fetch_all {
     ($struct_name:ident, $table_name:literal) => {
-        impl $struct_name {
-            pub async fn fetch_all(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Box<[Self]>> {
-                let records = sqlx::query_as!(
-                    $struct_name,
-                    "SELECT * FROM " + $table_name + " WHERE domain_id = $1;",
-                    domain_id
-                )
-                .fetch_all(pool)
-                .await?;
+        pub async fn fetch_all(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Box<[Self]>> {
+            let records = sqlx::query_as!(
+                $struct_name,
+                "SELECT * FROM " + $table_name + " WHERE domain_id = $1;",
+                domain_id
+            )
+            .fetch_all(pool)
+            .await?;
 
-                Ok(records.into_boxed_slice())
-            }
-
-            pub async fn update_title(pool: &Pool<Postgres>, id: i32, title: &str) -> anyhow::Result<()> {
-                let mut transaction = pool.begin().await?;
-                
-                sqlx::query(
-                    format!(
-                        r#"
-                        UPDATE {} SET title = $1 WHERE id = $2;
-                        UPDATE domain SET last_updated = NOW() WHERE id = (SELECT domain_id FROM {} WHERE id = $2);
-                        "#,
-                        $table_name, $table_name
-                    ).as_str(),
-                )
-                .bind(title)
-                .bind(id)
-                .execute(&mut *transaction)
-                .await?;
-
-                transaction.commit().await?;
-
-                Ok(())
-            }
+            Ok(records.into_boxed_slice())
         }
     };
 }
 
-task_model!(Supertask, "supertasks");
-task_model!(Task, "tasks");
-task_model!(Subtask, "subtasks");
+macro_rules! update_title {
+    ($struct_name:ident, $table_name:literal) => {
+        pub async fn update_title(pool: &Pool<Postgres>, id: i32, title: &str) -> anyhow::Result<()> {
+            let mut transaction = pool.begin().await?;
+            
+            sqlx::query(
+                format!(
+                    r#"
+                    UPDATE {} SET title = $1 WHERE id = $2;
+                    UPDATE domain SET last_updated = NOW() WHERE id = (SELECT domain_id FROM {} WHERE id = $2);
+                    "#,
+                    $table_name, $table_name
+                ).as_str(),
+            )
+            .bind(title)
+            .bind(id)
+            .execute(&mut *transaction)
+            .await?;
+
+            transaction.commit().await?;
+
+            Ok(())
+        }
+    };
+}
 
 impl Supertask {
+    fetch_all!(Supertask, "supertasks");
+    update_title!(Supertask, "supertasks");
+
     pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -117,6 +119,9 @@ impl Supertask {
 }
 
 impl Task {
+    fetch_all!(Task, "tasks");
+    update_title!(Task, "tasks");
+
     pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32, supertask_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -158,6 +163,9 @@ impl Task {
 }
 
 impl Subtask {
+    fetch_all!(Subtask, "subtasks");
+    update_title!(Subtask, "subtasks");
+
     pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32, task_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 

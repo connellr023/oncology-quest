@@ -1,5 +1,5 @@
-use crate::{auth_user, models::entry_structure::EntryStructure};
-use actix_web::{web::{Data, Json, Path}, HttpResponse, Responder};
+use crate::{auth_user, models::{domain::Domain, entry_structure::EntryStructure}};
+use actix_web::{web::{Data, Path}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
@@ -14,13 +14,17 @@ struct FetchDomainEntriesQuery {
 
 #[actix_web::get("/api/domains/{domain_id}/{cache_timestamp}/entries")]
 pub(super) async fn fetch(session: Session, pool: Data<Pool<Postgres>>, fetch_domain_entries_query: Path<FetchDomainEntriesQuery>) -> impl Responder {
-    auth_user!(user_id, session);
+    auth_user!(session);
 
-    // TODO: Add validation for the cache timestamp
-
-    if EntryStructure::fetch(&pool, fetch_domain_entries_query.domain_id).await.is_err() {
-        return HttpResponse::InternalServerError().finish();
+    match Domain::is_cache_valid(&pool, fetch_domain_entries_query.domain_id, fetch_domain_entries_query.cache_timestamp).await {
+        Err(_) => return HttpResponse::InternalServerError().finish(),
+        Ok(true) => return HttpResponse::NotModified().finish(),
+        _ => {}
     }
     
-    HttpResponse::Ok().finish()
+    // If the cache is not valid, then fetch the entry structure from the database.
+    match EntryStructure::fetch(&pool, fetch_domain_entries_query.domain_id).await {
+        Err(_) => HttpResponse::InternalServerError().finish(),
+        Ok(entry_structure) => HttpResponse::Ok().json(entry_structure)
+    }
 }
