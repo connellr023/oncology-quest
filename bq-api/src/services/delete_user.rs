@@ -1,3 +1,4 @@
+use crate::auth_admin;
 use crate::{models::user::User, utilities::parsable::PlainTextPassword};
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use actix_session::Session;
@@ -16,14 +17,7 @@ struct DeleteSelfQuery {
 
 #[actix_web::delete("/api/user/delete-user")]
 pub(super) async fn delete_user(session: Session, pool: Data<Pool<Postgres>>, admin_delete_user_query: Json<AdminDeleteUserQuery>) -> impl Responder {
-    let user_id = match session.get::<i32>("uid") {
-        Ok(Some(user_id)) => user_id,
-        _ => return HttpResponse::Unauthorized().finish()
-    };
-
-    if !User::validate_is_admin(&pool, user_id).await {
-        return HttpResponse::Forbidden().finish();
-    }
+    auth_admin!(session, pool);
 
     if User::delete(&pool, admin_delete_user_query.user_id).await.is_err() {
         return HttpResponse::InternalServerError().finish();

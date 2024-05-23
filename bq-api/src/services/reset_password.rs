@@ -1,3 +1,4 @@
+use crate::auth_admin;
 use crate::{models::user::User, utilities::parsable::PlainTextPassword};
 use crate::utilities::parsable::Username;
 use actix_session::Session;
@@ -27,14 +28,7 @@ struct AllowResetPasswordQuery {
 
 #[actix_web::patch("/api/user/allow-reset-password")]
 pub(super) async fn allow_reset(session: Session, pool: Data<Pool<Postgres>>, allow_reset_password_query: Json<AllowResetPasswordQuery>) -> impl Responder {
-    let user_id = match session.get::<i32>("uid") {
-        Ok(Some(user_id)) => user_id,
-        _ => return HttpResponse::Unauthorized().finish()
-    };
-
-    if !User::validate_is_admin(&pool, user_id).await {
-        return HttpResponse::Forbidden().finish();
-    }
+    auth_admin!(session, pool);
 
     match User::update_allow_reset_password(&pool, allow_reset_password_query.user_id, allow_reset_password_query.allow_reset).await {
         Ok(_) => HttpResponse::Ok().finish(),
