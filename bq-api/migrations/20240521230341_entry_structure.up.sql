@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS supertasks(
 
 CREATE TABLE IF NOT EXISTS tasks(
     id SERIAL PRIMARY KEY,
-    supertask_id INT,
+    supertask_id INT NOT NULL,
     title TEXT NOT NULL,
     domain_id INT NOT NULL,
     FOREIGN KEY (domain_id) REFERENCES domains(id),
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks(
 
 CREATE TABLE IF NOT EXISTS subtasks(
     id SERIAL PRIMARY KEY,
-    task_id INT,
+    task_id INT NOT NULL,
     title TEXT NOT NULL,
     domain_id INT NOT NULL,
     FOREIGN KEY (domain_id) REFERENCES domains(id),

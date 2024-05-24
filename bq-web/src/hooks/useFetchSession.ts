@@ -1,22 +1,22 @@
 import { ref, onMounted } from "vue"
 import { API_ENDPOINT } from "../utilities"
-import { User, UserSessionResponse } from "../models/user"
-import { Task } from "../models/task"
-import useStructureCache from "./useStructureCache"
+import { User, Session } from "../models/user"
+import { UserTask } from "../models/task"
+import useCache from "./useCache"
 
 const useFetchSession = () => {
-    const { cache, retrieve } = useStructureCache()
+    const { cacheUserTasks, retrieveUserTasks } = useCache()
 
     const session = ref<User | null>(null)
-    const entries = ref<Task[]>([])
+    const tasks = ref<UserTask[]>([])
 
     const loading = ref(true)
     const connectionError = ref(false)
 
     const checkSession = async () => {
         try {
-            const cachedStructure = retrieve()
-            const route = cachedStructure ? `session?structureCacheTimestamp=${cachedStructure.lastUpdated}` : "session"
+            const [cachedTasks, taskCacheTimestamp] = retrieveUserTasks()
+            const route = cachedTasks ? `session?taskCacheTimestamp=${taskCacheTimestamp}` : "session"
             const response = await fetch(`${API_ENDPOINT}/api/user/${route}`, {
                 credentials: "include",
                 headers: {
@@ -25,15 +25,15 @@ const useFetchSession = () => {
             })
     
             if (response.ok) {
-                const sessionData: UserSessionResponse = await response.json()
+                const sessionData: Session = await response.json()
                 session.value = sessionData.user
 
-                if (sessionData.structure) {
-                    entries.value = sessionData.structure.entries
-                    cache(sessionData.structure)
+                if (sessionData.tasks) {
+                    tasks.value = sessionData.tasks
+                    cacheUserTasks(sessionData.tasks)
                 }
-                else if (cachedStructure) {
-                    entries.value = cachedStructure.entries
+                else if (cachedTasks) {
+                    tasks.value = cachedTasks
                 }
             }
         }
@@ -48,7 +48,7 @@ const useFetchSession = () => {
 
     return {
         session,
-        entries,
+        tasks,
         loading,
         connectionError
     }

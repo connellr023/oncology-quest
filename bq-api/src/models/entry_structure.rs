@@ -11,7 +11,7 @@ pub struct Supertask {
 #[derive(Debug, FromRow, Serialize)]
 pub struct Task {
     id: i32,
-    supertask_id: Option<i32>,
+    supertask_id: i32,
     title: String,
     domain_id: i32
 }
@@ -19,7 +19,7 @@ pub struct Task {
 #[derive(Debug, FromRow, Serialize)]
 pub struct Subtask {
     id: i32,
-    task_id: Option<i32>,
+    task_id: i32,
     title: String,
     domain_id: i32
 }

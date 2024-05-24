@@ -1,10 +1,10 @@
 import { Ref, inject, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
 import { EntryIndex, Task } from "../models/task"
-import useStructureCache from "./useStructureCache"
+import useCache from "./useCache"
 
 const useEditEntryStructure = () => {
-    const { updateCache } = useStructureCache()
+    const { updateCache } = useCache()
 
     const message = ref("")
     const entries = inject<Ref<Task[]>>("entries")!

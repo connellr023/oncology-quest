@@ -1,20 +1,17 @@
-import { EntryStructureResponse, UserTaskEntries } from "./task"
+import { Domain } from "./domain"
+import { UserTask } from "./task"
 
-/**
- * Represents a user.
- */
 export interface User {
+    id: number,
     username: string,
     name: string,
     email: string,
     isAdmin: boolean,
-    tasks: UserTaskEntries
+    loginCount: number
 }
 
-/**
- * Represents a response from the server containing a user and the structure of their tasks.
- */
-export interface UserSessionResponse {
+export interface Session {
     user: User,
-    structure: EntryStructureResponse
+    domains: Domain[],
+    tasks?: UserTask[]
 }

@@ -1,16 +1,16 @@
 import { Ref, inject, ref } from "vue"
-import { User, UserSessionResponse } from "../models/user"
+import { User, Session } from "../models/user"
 import { Task } from "../models/task"
 import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidatePassword from "./validation/useValidatePassword"
-import useStructureCache from "./useStructureCache"
+import useCache from "./useCache"
 
 const useLogin = () => {
     const { username, usernameError } = useValidateUsername()
     const { password, passwordError } = useValidatePassword()
-    const { cache, retrieve } = useStructureCache()
+    const { cache, retrieve } = useCache()
 
     const loading = ref(false)
     const loginError = ref("")
@@ -37,7 +37,7 @@ const useLogin = () => {
             })
 
             if (response.ok) {
-                const sessionData: UserSessionResponse = await response.json()
+                const sessionData: Session = await response.json()
                 session.value = sessionData.user
 
                 if (sessionData.structure) {
