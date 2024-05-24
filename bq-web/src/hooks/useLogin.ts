@@ -1,6 +1,6 @@
 import { Ref, inject, ref } from "vue"
 import { User, Session } from "../models/user"
-import { Task } from "../models/task"
+import { UserTask } from "../models/task"
 import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
@@ -10,19 +10,19 @@ import useCache from "./useCache"
 const useLogin = () => {
     const { username, usernameError } = useValidateUsername()
     const { password, passwordError } = useValidatePassword()
-    const { cache, retrieve } = useCache()
+    const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
 
     const loading = ref(false)
     const loginError = ref("")
 
     const session = inject<Ref<User | null>>("session")!
-    const entries = inject<Ref<Task[]>>("entries")!
+    const tasks = inject<Ref<UserTask[]>>("tasks")!
 
     const login = async () => {
         loading.value = true
 
         try {
-            const cachedStructure = retrieve()
+            const [cachedTasks, taskCacheTimestamp] = retrieveUserTasks()
             const response = await fetch(`${API_ENDPOINT}/api/user/login`, {
                 credentials: "include",
                 method: "POST",
@@ -32,21 +32,15 @@ const useLogin = () => {
                 body: JSON.stringify({
                     username: username.value,
                     password: password.value,
-                    structureCacheTimestamp: cachedStructure ? cachedStructure.lastUpdated : null
+                    taskCacheTimestamp: cachedTasks ? taskCacheTimestamp : null
                 })
             })
 
             if (response.ok) {
                 const sessionData: Session = await response.json()
-                session.value = sessionData.user
 
-                if (sessionData.structure) {
-                    entries.value = sessionData.structure.entries
-                    cache(sessionData.structure)
-                }
-                else if (cachedStructure) {
-                    entries.value = cachedStructure.entries
-                }
+                session.value = sessionData.user
+                tasks.value = retrieveOrCacheUserTasks(sessionData.tasks)
             }
             else if (response.status === 401) {
                 loginError.value = "That username and password combination is incorrect."

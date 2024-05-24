@@ -184,12 +184,8 @@ impl User {
     /// 
     /// # Returns
     /// 
-    /// Returns an error if the user already exists or if the insert operation fails.
+    /// Returns an error if the insert operation fails.
     pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
-        if self.exists(pool).await {
-            return Err(anyhow!("User already exists"));
-        }
-
         let row = sqlx::query!(
             r#"
             INSERT INTO users (username, name, email, can_reset_password, is_admin, salt, password)

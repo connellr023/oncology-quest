@@ -15,6 +15,7 @@ struct RegisterUserQuery {
 #[actix_web::post("/api/user/register")]
 pub(super) async fn register(pool: Data<Pool<Postgres>>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
     let register_user_query = register_user_query.into_inner();
+    
     let mut user = match User::new(
         register_user_query.username,
         register_user_query.name,
@@ -25,6 +26,10 @@ pub(super) async fn register(pool: Data<Pool<Postgres>>, register_user_query: Js
         Ok(user) => user,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
+
+    if user.exists(&pool).await {
+        return HttpResponse::Conflict().finish();
+    }
 
     if user.insert(&pool).await.is_err() {
         return HttpResponse::InternalServerError().finish();

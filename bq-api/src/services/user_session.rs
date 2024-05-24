@@ -6,12 +6,7 @@ use actix_web::{web::Data, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
 use sqlx::{Pool, Postgres};
-use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize)]
-struct UserSessionQuery {
-    task_cache_timestamp: Option<DateTime<Utc>>
-}
+use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct UserSessionResponse {
@@ -47,16 +42,18 @@ impl UserSessionResponse {
     }
 }
 
-#[actix_web::get("/api/user/session/{task_cache_timestamp}")]
-pub(super) async fn session(session: Session, pool: Data<Pool<Postgres>>, user_session_query: Path<UserSessionQuery>) -> impl Responder {
+#[actix_web::get("/api/user/session/{task_cache_timestamp:.*}")]
+pub(super) async fn session(session: Session, pool: Data<Pool<Postgres>>, task_cache_timestamp: Path<String>) -> impl Responder {
     auth_user_session_with_id!(user_id, session);
+    
+    let task_cache_timestamp = task_cache_timestamp.parse::<DateTime<Utc>>().ok();
 
     let user = match User::fetch_by_id(&pool, user_id).await {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
 
-    let response = match UserSessionResponse::build(&pool, user, user_session_query.task_cache_timestamp).await {
+    let response = match UserSessionResponse::build(&pool, user, task_cache_timestamp).await {
         Ok(response) => response,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };

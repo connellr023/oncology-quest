@@ -1,11 +1,11 @@
-import { ref, onMounted } from "vue"
+import { ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
 import { User, Session } from "../models/user"
 import { UserTask } from "../models/task"
 import useCache from "./useCache"
 
 const useFetchSession = () => {
-    const { cacheUserTasks, retrieveUserTasks } = useCache()
+    const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
 
     const session = ref<User | null>(null)
     const tasks = ref<UserTask[]>([])
@@ -13,11 +13,11 @@ const useFetchSession = () => {
     const loading = ref(true)
     const connectionError = ref(false)
 
-    const checkSession = async () => {
+    const fetchSession = async () => {
         try {
             const [cachedTasks, taskCacheTimestamp] = retrieveUserTasks()
-            const route = cachedTasks ? `session?taskCacheTimestamp=${taskCacheTimestamp}` : "session"
-            const response = await fetch(`${API_ENDPOINT}/api/user/${route}`, {
+            const query_param = cachedTasks ? taskCacheTimestamp : ""
+            const response = await fetch(`${API_ENDPOINT}/api/user/session/${query_param}`, {
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
@@ -26,15 +26,9 @@ const useFetchSession = () => {
     
             if (response.ok) {
                 const sessionData: Session = await response.json()
+                
                 session.value = sessionData.user
-
-                if (sessionData.tasks) {
-                    tasks.value = sessionData.tasks
-                    cacheUserTasks(sessionData.tasks)
-                }
-                else if (cachedTasks) {
-                    tasks.value = cachedTasks
-                }
+                tasks.value = retrieveOrCacheUserTasks(sessionData.tasks)
             }
         }
         catch (_) {
@@ -44,13 +38,12 @@ const useFetchSession = () => {
         loading.value = false
     }
 
-    onMounted(checkSession);
-
     return {
         session,
         tasks,
         loading,
-        connectionError
+        connectionError,
+        fetchSession
     }
 }
 

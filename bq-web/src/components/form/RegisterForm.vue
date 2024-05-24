@@ -23,19 +23,19 @@ const {
 } = useRegister()
 
 const isStageOneErrors = computed(() => {
-  return usernameError.value || nameError.value || emailError.value
+  return (usernameError.value || nameError.value || emailError.value) ? true : false
 })
 
 const isStageTwoErrors = computed(() => {
-  return passwordError.value || confirmedPasswordError.value
+  return (passwordError.value || confirmedPasswordError.value) ? true : false
 })
 
 const canGotoStageTwo = computed(() => {
-  return !isStageOneErrors.value && username.value && name.value && email.value
+  return (!isStageOneErrors.value && username.value && name.value && email.value) ? true : false
 })
 
 const handleSubmit = (_: Event) => {
-  if (!isStageTwoErrors) {
+  if (!isStageTwoErrors.value) {
     register()
   }
 }
@@ -54,7 +54,7 @@ const switchStage = () => {
     <div :class="`${!inStageOne ? 'active' : ''}`" />
   </div>
   <form @submit.prevent="handleSubmit">
-    <template v-if="inStageOne">
+    <div class="stage-container" v-show="inStageOne">
       <LabeledFormInput
         title="Username"
         name="username"
@@ -77,8 +77,8 @@ const switchStage = () => {
         v-model="email"
       />
       <button :disabled="!canGotoStageTwo" class="form-button std" @click="switchStage">Next Step</button>
-    </template>
-    <template v-else>
+    </div>
+    <div class="stage-container" v-show="!inStageOne">
       <LabeledFormInput
         title="Password"
         name="password"
@@ -99,7 +99,7 @@ const switchStage = () => {
       </div>
       <LoadingButton :loading="loading" text="Register" />
       <button class="prev std" @click="switchStage">Previous Step</button>
-    </template>
+    </div>
   </form>
 </template>
 

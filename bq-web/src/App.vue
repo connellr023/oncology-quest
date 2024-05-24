@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { provide, ref } from "vue"
-import { User } from "./models/user"
+import { onMounted, provide, ref } from "vue"
+import { SelectedUser } from "./models/user"
 
-import useFetchSession from "./hooks/useFetchSession"
+import useSession from "./hooks/useSession"
 
 import NoSessionView from "./views/NoSessionView.vue"
 import DashboardView from "./views/DashboardView.vue"
@@ -11,17 +11,12 @@ import MainLogo from "./components/vector/MainLogo.vue"
 import ManageUsersBar from "./components/ManageUsersBar.vue"
 import TopBar from "./components/TopBar.vue"
 
-const { session, entries, loading, connectionError } = useFetchSession()
+const { fetchSession, session, tasks, loading, connectionError } = useSession()
 provide("session", session)
-provide("entries", entries)
+provide("tasks", tasks)
+onMounted(fetchSession)
 
-const selectedUser = ref<User>({
-  username: "",
-  name: "",
-  email: "",
-  isAdmin: false,
-  tasks: {}
-})
+const selectedUser = ref<SelectedUser | null>(null)
 provide("selectedUser", selectedUser)
 
 const isEditing = ref(false)
@@ -39,8 +34,8 @@ provide("isEditing", isEditing)
           <ManageUsersBar v-if="session.isAdmin" />
           <div class="dash">
             <TopBar />
-            <AdminDashboardView v-if="session.isAdmin" />
-            <DashboardView v-else />
+            <!-- <AdminDashboardView v-if="session.isAdmin" /> -->
+            <!-- <DashboardView v-else /> -->
           </div>
         </div>
       </div>
@@ -66,7 +61,7 @@ div.dash-container {
   }
 }
 
-div#connect-error {
+div.connect-error {
   margin-top: 20px;
   font-size: clamp(25px, 2.5lvw, 33px);
   color: #ffffff;

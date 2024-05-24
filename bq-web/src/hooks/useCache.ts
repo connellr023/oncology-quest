@@ -31,11 +31,22 @@ const useCache = () => {
         ]
     }
 
+    const retrieveOrCacheUserTasks = (tasks?: UserTask[]): UserTask[] => {
+        if (tasks) {
+            cacheUserTasks(tasks)
+            return tasks
+        }
+
+        const [cachedTasks] = retrieveUserTasks()
+        return cachedTasks || []
+    }
+
     return {
         cacheUserTasks,
         retrieveUserTasks,
         cacheDomainEntries,
-        retrieveDomainEntries
+        retrieveDomainEntries,
+        retrieveOrCacheUserTasks
     }
 }
 

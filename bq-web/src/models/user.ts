@@ -15,3 +15,8 @@ export interface Session {
     domains: Domain[],
     tasks?: UserTask[]
 }
+
+export interface SelectedUser {
+    user: User,
+    tasks: UserTask[]
+}
