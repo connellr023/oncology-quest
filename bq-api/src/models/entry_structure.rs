@@ -56,7 +56,8 @@ macro_rules! update_title {
                 format!(
                     r#"
                     UPDATE {} SET title = $1 WHERE id = $2;
-                    UPDATE domain SET last_updated = NOW() WHERE id = (SELECT domain_id FROM {} WHERE id = $2);
+                    UPDATE domain SET last_updated = NOW()
+                    WHERE id = (SELECT domain_id FROM {} WHERE id = $2);
                     "#,
                     $table_name, $table_name
                 ).as_str(),
@@ -104,7 +105,8 @@ impl Supertask {
             DELETE FROM supertasks WHERE id = $1;
             DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE supertask_id = $1);
             DELETE FROM tasks WHERE supertask_id = $1;
-            UPDATE domain SET last_updated = NOW() WHERE id = (SELECT domain_id FROM supertasks WHERE id = $1);
+            UPDATE domain SET last_updated = NOW()
+            WHERE id = (SELECT domain_id FROM supertasks WHERE id = $1);
             "#,
         )
         .bind(id)
@@ -127,7 +129,8 @@ impl Task {
         sqlx::query(
             r#"
             INSERT INTO tasks (title, domain_id, supertask_id) VALUES ($1, $2, $3);
-            UPDATE domain SET last_updated = NOW() WHERE id = $2;
+            UPDATE domain SET last_updated = NOW()
+            WHERE id = $2;
             "#,
         )
         .bind(title)
@@ -148,7 +151,8 @@ impl Task {
             r#"
             DELETE FROM tasks WHERE id = $1;
             DELETE FROM subtasks WHERE task_id = $1;
-            UPDATE domain SET last_updated = NOW() WHERE id = (SELECT domain_id FROM tasks WHERE id = $1);
+            UPDATE domain SET last_updated = NOW()
+            WHERE id = (SELECT domain_id FROM tasks WHERE id = $1);
             "#,
         )
         .bind(id)
@@ -171,7 +175,8 @@ impl Subtask {
         sqlx::query(
             r#"
             INSERT INTO subtasks (title, domain_id, task_id) VALUES ($1, $2, $3);
-            UPDATE domain SET last_updated = NOW() WHERE id = $2;
+            UPDATE domain SET last_updated = NOW()
+            WHERE id = $2;
             "#,
         )
         .bind(title)
@@ -191,7 +196,8 @@ impl Subtask {
         sqlx::query(
             r#"
             DELETE FROM subtasks WHERE id = $1;
-            UPDATE domain SET last_updated = NOW() WHERE id = (SELECT domain_id FROM subtasks WHERE id = $1);
+            UPDATE domain SET last_updated = NOW()
+            WHERE id = (SELECT domain_id FROM subtasks WHERE id = $1);
             "#,
         )
         .bind(id)
