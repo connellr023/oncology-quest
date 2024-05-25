@@ -1,23 +1,36 @@
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue"
 import { SelectedUser } from "./models/user"
+import { Domain } from "./models/domain"
 
 import useSession from "./hooks/useSession"
 
+// import DashboardView from "./views/DashboardView.vue"
+// import AdminDashboardView from "./views/AdminDashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
-import DashboardView from "./views/DashboardView.vue"
-import AdminDashboardView from "./views/AdminDashboardView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
 import ManageUsersBar from "./components/ManageUsersBar.vue"
 import TopBar from "./components/TopBar.vue"
 
-const { fetchSession, session, tasks, loading, connectionError } = useSession()
+const {
+  fetchSession,
+  session,
+  tasks,
+  domains,
+  loading,
+  connectionError
+} = useSession()
 provide("session", session)
 provide("tasks", tasks)
+provide("domains", domains)
+
 onMounted(fetchSession)
 
 const selectedUser = ref<SelectedUser | null>(null)
 provide("selectedUser", selectedUser)
+
+const selectedDomain = ref<Domain | null>(null)
+provide("selectedDomain", selectedDomain)
 
 const isEditing = ref(false)
 provide("isEditing", isEditing)
@@ -36,6 +49,7 @@ provide("isEditing", isEditing)
             <TopBar />
             <!-- <AdminDashboardView v-if="session.isAdmin" /> -->
             <!-- <DashboardView v-else /> -->
+            <p class="note" v-if="!selectedDomain">Select a domain from the list in the top right corner to get started.</p>
           </div>
         </div>
       </div>
@@ -45,6 +59,16 @@ provide("isEditing", isEditing)
 
 <style scoped lang="scss">
 @import "main.scss";
+
+p.note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: clamp(18px, 1.3lvw, 23px);
+  text-wrap: wrap;
+  height: 100%;
+}
 
 div.dash-container {
   opacity: 0;

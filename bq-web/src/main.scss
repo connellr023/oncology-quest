@@ -194,11 +194,12 @@ body {
 }
 
 button {
+  cursor: pointer;
+  appearance: none;
   border: 2px solid $main-txt-color;
   border-radius: 8px;
   background: none;
   color: $main-txt-color;
-  cursor: pointer;
   padding: 9px;
   font-size: clamp(17px, 2vw, 19px);
   font-family: $main-font;
