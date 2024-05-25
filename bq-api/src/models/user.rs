@@ -15,6 +15,8 @@ pub struct User {
     salt: i64,
     password: String,
     login_count: i32,
+
+    #[allow(dead_code)] // This field is used in the database but not in the code.
     last_task_update: DateTime<Utc>
 }
 
@@ -222,15 +224,19 @@ impl User {
     }
 
     pub async fn delete(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<()> {
-        let delete_query = sqlx::query!(
+        let mut transaction = pool.begin().await?;
+
+        let delete_query = sqlx::query(
             r#"
-            DELETE FROM users
-            WHERE id = $1
+            DELETE FROM user_tasks WHERE user_id = $1;
+            DELETE FROM users WHERE id = $1;
             "#,
-            user_id
         )
-        .execute(pool)
+        .bind(user_id)
+        .execute(&mut *transaction)
         .await?;
+
+        transaction.commit().await?;
 
         if delete_query.rows_affected() == 0 {
             return Err(anyhow!("User does not exist"));

@@ -14,7 +14,7 @@ pub(super) async fn search(session: Session, pool: Data<Pool<Postgres>>, query: 
     };
 
     let users = users
-        .into_iter()
+        .iter()
         .map(|user| ClientUser::from((*user).to_owned()))
         .collect::<Box<[ClientUser]>>();
 

@@ -2,6 +2,7 @@ use crate::utilities::parsable::Comment;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
+use anyhow::anyhow;
 
 #[derive(Debug, FromRow, Serialize)]
 pub struct UserTask {
@@ -13,6 +14,16 @@ pub struct UserTask {
 }
 
 impl UserTask {
+    pub fn new(user_id: i32, subtask_id: i32, is_completed: bool, comment: Comment) -> Self {
+        Self {
+            id: -1,
+            user_id,
+            subtask_id,
+            is_completed,
+            comment
+        }
+    }
+
     /// Fetches all user tasks for a user from the database if the user's task cache is outdated.
     /// 
     /// # Arguments
@@ -45,20 +56,44 @@ impl UserTask {
         }
     }
 
-    pub async fn update_is_completed(pool: &Pool<Postgres>, id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
-        sqlx::query!(
+    pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+        let row = sqlx::query!(
             r#"
-            INSERT INTO user_tasks (id, is_completed, comment)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (id) DO UPDATE
-            SET is_completed = EXCLUDED.is_completed, comment = EXCLUDED.comment;
+            INSERT INTO user_tasks (user_id, subtask_id, is_completed, comment)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id;
             "#,
-            id,
+            self.user_id,
+            self.subtask_id,
+            self.is_completed,
+            self.comment.as_str()
+        )
+        .fetch_one(pool)
+        .await?;
+
+        self.id = row.id;
+
+        Ok(())
+    }
+
+    pub async fn update(pool: &Pool<Postgres>, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
+        let update_query = sqlx::query!(
+            r#"
+            UPDATE user_tasks
+            SET is_completed = $1, comment = $2
+            WHERE id = $3 AND user_id = $4;
+            "#,
             is_completed,
-            comment
+            comment,
+            id,
+            user_id
         )
         .execute(pool)
         .await?;
+
+        if update_query.rows_affected() == 0 {
+            return Err(anyhow!("User task does not exist."));
+        }
 
         Ok(())
     }

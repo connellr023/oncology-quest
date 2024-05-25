@@ -1,5 +1,6 @@
 use crate::auth_admin_session;
-use crate::{models::{entry_structure::{Supertask, Task, Subtask}, user::User}, utilities::parsable::EntryTitle};
+use crate::{models::entry_structure::{Supertask, Task, Subtask}, utilities::parsable::EntryTitle};
+use crate::models::domain::Domain;
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use serde::Deserialize;
@@ -26,9 +27,19 @@ struct DeleteEntryQuery {
     pub entry_id: i32
 }
 
+macro_rules! validate_session_and_entry_id {
+    ($varname:ident, $session:ident, $pool:ident, $entry_id:expr) => {
+        auth_admin_session!(user_id, $session, $pool);
+
+        if !Domain::exists(&$pool, $entry_id).await {
+            return HttpResponse::BadRequest().finish();
+        }
+    };
+}
+
 #[actix_web::post("/api/supertasks/create")]
 pub(super) async fn create_supertask(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<CreateEntryQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
+    validate_session_and_entry_id!(domain, session, pool, create_entry_query.domain_id);
 
     // If the parent_id is not None, then the entry is not a supertask.
     if create_entry_query.parent_id.is_some() {
@@ -66,7 +77,7 @@ pub(super) async fn delete_supertask(session: Session, pool: Data<Pool<Postgres>
 
 #[actix_web::post("/api/tasks/create")]
 pub(super) async fn create_task(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<CreateEntryQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
+    validate_session_and_entry_id!(domain, session, pool, create_entry_query.domain_id);
 
     // If the parent_id is None, then the entry is not a task.
     let supertask_id = match create_entry_query.parent_id {
@@ -105,7 +116,7 @@ pub(super) async fn delete_task(session: Session, pool: Data<Pool<Postgres>>, de
 
 #[actix_web::post("/api/subtasks/create")]
 pub(super) async fn create_subtask(session: Session, pool: Data<Pool<Postgres>>, create_entry_query: Json<CreateEntryQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
+    validate_session_and_entry_id!(domain, session, pool, create_entry_query.domain_id);
 
     // If the parent_id is None, then the entry is not a subtask.
     let task_id = match create_entry_query.parent_id {

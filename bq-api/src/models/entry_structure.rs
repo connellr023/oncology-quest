@@ -213,9 +213,9 @@ impl Subtask {
 impl EntryStructure {
     pub async fn fetch(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Self> {
         Ok(Self {
-            supertasks: Supertask::fetch_all(&pool, domain_id).await?,
-            tasks: Task::fetch_all(&pool, domain_id).await?,
-            subtasks: Subtask::fetch_all(&pool, domain_id).await?,
+            supertasks: Supertask::fetch_all(pool, domain_id).await?,
+            tasks: Task::fetch_all(pool, domain_id).await?,
+            subtasks: Subtask::fetch_all(pool, domain_id).await?,
         })
     }
 }

@@ -1,6 +1,8 @@
+use crate::utilities::parsable::Name;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
+use anyhow::anyhow;
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct Domain {
@@ -10,6 +12,55 @@ pub struct Domain {
 }
 
 impl Domain {
+    pub fn new(name: Name) -> Self {
+        Self {
+            id: -1,
+            name: name.into(),
+            last_updated: Utc::now()
+        }
+    }
+
+    pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO domains (name)
+            VALUES ($1)
+            RETURNING id;
+            "#,
+            self.name
+        )
+        .fetch_one(pool)
+        .await?;
+
+        self.id = row.id;
+
+        Ok(())
+    }
+
+    pub async fn delete(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<()> {
+        let mut transaction = pool.begin().await?;
+
+        let delete_query = sqlx::query(
+            r#"
+            DELETE FROM subtasks WHERE domain_id = $1;
+            DELETE FROM tasks WHERE domain_id = $1;
+            DELETE FROM supertasks WHERE domain_id = $1;
+            DELETE FROM domains WHERE id = $1;
+            "#,
+        )
+        .bind(domain_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        if delete_query.rows_affected() == 0 {
+            return Err(anyhow!("Domain does not exist."));
+        }
+
+        Ok(())
+    }
+
     /// Checks if a cache is valid by comparing the cache timestamp with the last updated timestamp of the domain.
     /// 
     /// # Arguments
@@ -52,5 +103,18 @@ impl Domain {
         .await?;
 
         Ok(domains.into_boxed_slice())
+    }
+
+    pub async fn exists(pool: &Pool<Postgres>, domain_id: i32) -> bool {
+        let exists_query = sqlx::query!(
+            r#"
+            SELECT EXISTS(SELECT id FROM domains WHERE id = $1);
+            "#,
+            domain_id
+        )
+        .fetch_one(pool)
+        .await;
+
+        exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
     }
 }

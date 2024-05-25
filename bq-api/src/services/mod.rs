@@ -8,3 +8,5 @@ pub mod reset_password;
 pub mod delete_user;
 pub mod edit_entry_structure;
 pub mod domain_entries;
+pub mod edit_domains;
+pub mod edit_user_task;

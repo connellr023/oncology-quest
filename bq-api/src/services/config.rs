@@ -25,4 +25,8 @@ pub fn config(cfg: &mut ServiceConfig) {
     cfg.service(edit_entry_structure::create_subtask);
     cfg.service(edit_entry_structure::update_subtask);
     cfg.service(edit_entry_structure::delete_subtask);
+    cfg.service(edit_domains::create_domain);
+    cfg.service(edit_domains::delete_domain);
+    cfg.service(edit_user_task::create_user_task);
+    cfg.service(edit_user_task::update_user_task);
 }
