@@ -237,6 +237,7 @@ button {
     font-size: 16px;
     opacity: 0.6;
 
+    &.focused,
     &:hover {
       color: $main-txt-color;
       opacity: 1;
@@ -260,6 +261,18 @@ button {
         svg {
           fill: $theme-color-1;
         }
+      }
+    }
+
+    &.green {
+      &:hover {
+        color: $theme-color-green;
+      }
+    }
+
+    &.red {
+      &:hover {
+        color: $theme-color-red;
       }
     }
   }

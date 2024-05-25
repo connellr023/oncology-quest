@@ -18,8 +18,8 @@ defineProps<{
       <input :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
-        <button class="bubble confirm" @click="onConfirm">Create</button>
-        <button class="bubble cancel" @click="onCancel">Cancel</button>
+        <button class="bubble green" @click="onConfirm">Create</button>
+        <button class="bubble red" @click="onCancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -70,18 +70,6 @@ div.modal {
 
       button {
         margin: 0 5px;
-
-        &.confirm {
-          &:hover {
-            color: $theme-color-green;
-          }
-        }
-
-        &.cancel {
-          &:hover {
-            color: $theme-color-red;
-          }
-        }
       }
     }
   }

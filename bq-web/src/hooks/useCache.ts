@@ -5,12 +5,12 @@ type RetrieveCacheResponse<T> = [T | null, string]
 const useCache = () => {
     const timestamp = () => new Date().toISOString()
 
-    const cacheUserTasks = (tasks: UserTask[]) => {
+    const cacheUserTasks = (tasks: Map<number, UserTask>) => {
         sessionStorage.setItem("tasks", JSON.stringify(tasks))
         sessionStorage.setItem("taskCacheTimestamp", timestamp())
     }
 
-    const retrieveUserTasks = (): RetrieveCacheResponse<UserTask[]> => {
+    const retrieveUserTasks = (): RetrieveCacheResponse<Map<number, UserTask>> => {
         const cachedTasks = sessionStorage.getItem("tasks")
         return [
             cachedTasks ? JSON.parse(cachedTasks) : null,
@@ -31,14 +31,14 @@ const useCache = () => {
         ]
     }
 
-    const retrieveOrCacheUserTasks = (tasks?: UserTask[]): UserTask[] => {
+    const retrieveOrCacheUserTasks = (tasks?: Map<number, UserTask>): Map<number, UserTask> => {
         if (tasks) {
             cacheUserTasks(tasks)
             return tasks
         }
 
         const [cachedTasks] = retrieveUserTasks()
-        return cachedTasks || []
+        return cachedTasks || new Map<number, UserTask>()
     }
 
     return {

@@ -1,19 +1,31 @@
-import { ref } from "vue"
+import { Ref, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
 import { User, Session } from "../models/user"
 import { UserTask } from "../models/task"
 import useCache from "./useCache"
 import { Domain } from "../models/domain"
 
-const useFetchSession = () => {
+const useSession = () => {
     const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
 
     const session = ref<User | null>(null)
-    const tasks = ref<UserTask[]>([])
-    const domains = ref<Domain[]>([])
+    const tasks = ref<Map<number, UserTask>>(new Map())
+    const domains = ref<Map<number, Domain>>(new Map())
 
     const loading = ref(true)
     const connectionError = ref(false)
+
+    const updateSessionData = async (data: Session, session: Ref<User | null>, tasks: Ref<Map<number, UserTask>>, domains: Ref<Map<number, Domain>>) => {
+        session.value = data.user;
+
+        tasks.value = retrieveOrCacheUserTasks(
+            data.tasks?.reduce((map, task) => map.set(task.id, task), new Map())
+        );
+        
+        domains.value = data.domains.reduce(
+            (map, domain) => map.set(domain.id, domain), new Map()
+        );
+    }
 
     const fetchSession = async () => {
         try {
@@ -28,10 +40,7 @@ const useFetchSession = () => {
     
             if (response.ok) {
                 const sessionData: Session = await response.json()
-                
-                session.value = sessionData.user
-                tasks.value = retrieveOrCacheUserTasks(sessionData.tasks)
-                domains.value = sessionData.domains
+                updateSessionData(sessionData, session, tasks, domains)
             }
         }
         catch (_) {
@@ -42,6 +51,7 @@ const useFetchSession = () => {
     }
 
     return {
+        updateSessionData,
         session,
         tasks,
         domains,
@@ -51,4 +61,4 @@ const useFetchSession = () => {
     }
 }
 
-export default useFetchSession;
+export default useSession;

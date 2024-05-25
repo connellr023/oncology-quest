@@ -1,8 +1,8 @@
+use crate::query_many;
 use crate::utilities::parsable::Name;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
-use anyhow::anyhow;
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct Domain {
@@ -25,7 +25,7 @@ impl Domain {
             r#"
             INSERT INTO domains (name)
             VALUES ($1)
-            RETURNING id;
+            RETURNING id, last_updated;
             "#,
             self.name
         )
@@ -33,6 +33,7 @@ impl Domain {
         .await?;
 
         self.id = row.id;
+        self.last_updated = row.last_updated;
 
         Ok(())
     }
@@ -40,23 +41,14 @@ impl Domain {
     pub async fn delete(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        let delete_query = sqlx::query(
-            r#"
-            DELETE FROM subtasks WHERE domain_id = $1;
-            DELETE FROM tasks WHERE domain_id = $1;
-            DELETE FROM supertasks WHERE domain_id = $1;
-            DELETE FROM domains WHERE id = $1;
-            "#,
-        )
-        .bind(domain_id)
-        .execute(&mut *transaction)
-        .await?;
+        query_many!(&mut *transaction, domain_id,
+            "DELETE FROM subtasks WHERE domain_id = $1",
+            "DELETE FROM tasks WHERE domain_id = $1",
+            "DELETE FROM supertasks WHERE domain_id = $1",
+            "DELETE FROM domains WHERE id = $1",
+        );
 
         transaction.commit().await?;
-
-        if delete_query.rows_affected() == 0 {
-            return Err(anyhow!("Domain does not exist."));
-        }
 
         Ok(())
     }
@@ -116,5 +108,13 @@ impl Domain {
         .await;
 
         exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
+    }
+
+    pub fn id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn last_updated(&self) -> DateTime<Utc> {
+        self.last_updated
     }
 }

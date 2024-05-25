@@ -1,22 +1,26 @@
 import { Ref, inject, ref } from "vue"
 import { User, Session } from "../models/user"
 import { UserTask } from "../models/task"
+import { Domain } from "../models/domain"
 import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidatePassword from "./validation/useValidatePassword"
 import useCache from "./useCache"
+import useSession from "./useSession"
 
 const useLogin = () => {
+    const { updateSessionData } = useSession()
     const { username, usernameError } = useValidateUsername()
     const { password, passwordError } = useValidatePassword()
-    const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
+    const { retrieveUserTasks } = useCache()
 
     const loading = ref(false)
     const loginError = ref("")
 
     const session = inject<Ref<User | null>>("session")!
-    const tasks = inject<Ref<UserTask[]>>("tasks")!
+    const tasks = inject<Ref<Map<number, UserTask>>>("tasks")!
+    const domains = inject<Ref<Map<number, Domain>>>("domains")!
 
     const login = async () => {
         loading.value = true
@@ -38,9 +42,7 @@ const useLogin = () => {
 
             if (response.ok) {
                 const sessionData: Session = await response.json()
-
-                session.value = sessionData.user
-                tasks.value = retrieveOrCacheUserTasks(sessionData.tasks)
+                updateSessionData(sessionData, session, tasks, domains)
             }
             else if (response.status === 401) {
                 loginError.value = "That username and password combination is incorrect."

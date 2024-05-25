@@ -4,7 +4,8 @@ use crate::utilities::parsable::Name;
 use actix_session::Session;
 use actix_web::web::{Data, Json};
 use actix_web::{HttpResponse, Responder};
-use serde::Deserialize;
+use chrono::{DateTime, Utc};
+use serde::{Serialize, Deserialize};
 use sqlx::{Pool, Postgres};
 
 #[derive(Deserialize)]
@@ -12,7 +13,15 @@ struct CreateDomainQuery {
     name: Name
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CreateDomainResponse {
+    domain_id: i32,
+    last_updated: DateTime<Utc>
+}
+
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct DeleteDomainQuery {
     domain_id: i32
 }
@@ -27,7 +36,10 @@ pub(super) async fn create_domain(session: Session, pool: Data<Pool<Postgres>>, 
         return HttpResponse::InternalServerError().finish();
     }
 
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(CreateDomainResponse {
+        domain_id: domain.id(),
+        last_updated: domain.last_updated()
+    })
 }
 
 #[actix_web::delete("/api/domains/delete")]
