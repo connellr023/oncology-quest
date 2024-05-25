@@ -140,10 +140,6 @@ div.search-container {
     width: calc(100% - 15px);
     font-size: clamp(16px, 1.2lvw, 18px);
     padding-right: 38px;
-
-    &::placeholder {
-      font-style: italic;
-    }
   }
 
   svg {

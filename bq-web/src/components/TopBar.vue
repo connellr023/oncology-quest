@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { Ref, inject, onMounted, onUnmounted, ref } from "vue";
 import { User } from "../models/user"
+import { Domain } from "../models/domain";
 
 import useLogout from "../hooks/useLogout"
+import useValidateName from "../hooks/validation/useValidateName";
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
-import { Domain } from "../models/domain";
+import PushStackIcon from "./vector/PushStackIcon.vue"
+import InputModal from "./InputModal.vue"
 
 const session = inject<Ref<User>>("session")!.value
 const domains = inject<Ref<Domain[]>>("domains")!.value
 
 const { logout } = useLogout()
+const { name, nameError } = useValidateName()
 
 const showProfileOptions = ref(false)
+const showCreateDomainModal = ref(false)
 
 const toggleProfileOptions = () => {
   showProfileOptions.value = !showProfileOptions.value
@@ -22,6 +27,12 @@ const toggleProfileOptions = () => {
 const hideProfileOptions = () => {
   if (showProfileOptions.value) {
     showProfileOptions.value = false
+  }
+}
+
+const createDomain = () => {
+  if (!nameError.value && name.value.length > 0) {
+    showCreateDomainModal.value = false
   }
 }
 
@@ -47,10 +58,24 @@ onUnmounted(() => {
     </div>
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
     <div class="domain-select-container">
-      <p v-if="domains.length === 0">Currently no domains to select.</p>
-      <button v-else v-for="domain in domains" class="bubble highlight" :key="domain.id">{{ domain.name }}</button>
+      <button @click="() => { showCreateDomainModal = true }" v-if="session.isAdmin" class="bubble highlight">
+        <PushStackIcon />
+        New Domain
+      </button>
+      <p v-else-if="domains.length === 0">Currently no domains to select.</p>
+      <button v-else v-for="domain in domains" class="bubble" :key="domain.id">{{ domain.name }}</button>
     </div>
   </div>
+  <InputModal
+    v-if="session.isAdmin"
+    v-model="name"
+    title="New Domain"
+    placeholder="Enter domain name..."
+    :error="nameError"
+    :visible="showCreateDomainModal"
+    :onConfirm="createDomain"
+    :onCancel="() => { showCreateDomainModal = false }"
+  />
 </template>
 
 <style scoped lang="scss">
