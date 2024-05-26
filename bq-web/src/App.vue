@@ -1,28 +1,36 @@
 <script setup lang="ts">
-import { provide, ref } from "vue"
-import { User } from "./models/user"
+import { onMounted, provide, ref } from "vue"
+import { UserWithTasks } from "./models/user"
+import { Domain } from "./models/domain"
 
-import useFetchSession from "./hooks/useFetchSession"
+import useSession from "./hooks/useSession"
 
+// import DashboardView from "./views/DashboardView.vue"
+// import AdminDashboardView from "./views/AdminDashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
-import DashboardView from "./views/DashboardView.vue"
-import AdminDashboardView from "./views/AdminDashboardView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
 import ManageUsersBar from "./components/ManageUsersBar.vue"
 import TopBar from "./components/TopBar.vue"
 
-const { session, entries, loading, connectionError } = useFetchSession()
+const {
+  fetchSession,
+  session,
+  tasks,
+  domains,
+  loading,
+  connectionError
+} = useSession()
 provide("session", session)
-provide("entries", entries)
+provide("tasks", tasks)
+provide("domains", domains)
 
-const selectedUser = ref<User>({
-  username: "",
-  name: "",
-  email: "",
-  isAdmin: false,
-  tasks: {}
-})
+onMounted(fetchSession)
+
+const selectedUser = ref<UserWithTasks | null>(null)
 provide("selectedUser", selectedUser)
+
+const selectedDomain = ref<Domain | null>(null)
+provide("selectedDomain", selectedDomain)
 
 const isEditing = ref(false)
 provide("isEditing", isEditing)
@@ -39,8 +47,9 @@ provide("isEditing", isEditing)
           <ManageUsersBar v-if="session.isAdmin" />
           <div class="dash">
             <TopBar />
-            <AdminDashboardView v-if="session.isAdmin" />
-            <DashboardView v-else />
+            <!-- <AdminDashboardView v-if="session.isAdmin" /> -->
+            <!-- <DashboardView v-else /> -->
+            <p class="note" v-if="!selectedDomain">Select a domain from the list in the top right corner to get started.</p>
           </div>
         </div>
       </div>
@@ -50,6 +59,16 @@ provide("isEditing", isEditing)
 
 <style scoped lang="scss">
 @import "main.scss";
+
+p.note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: clamp(18px, 1.3lvw, 23px);
+  text-wrap: wrap;
+  height: 100%;
+}
 
 div.dash-container {
   opacity: 0;
@@ -66,7 +85,7 @@ div.dash-container {
   }
 }
 
-div#connect-error {
+div.connect-error {
   margin-top: 20px;
   font-size: clamp(25px, 2.5lvw, 33px);
   color: #ffffff;

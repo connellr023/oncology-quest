@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, inject, reactive } from "vue"
 import { User } from "../../models/user"
-import { Task, UserTaskEntries } from "../../models/task"
+import { Task, UserTask } from "../../models/task"
 
 import useTaskProgress from "../../hooks/useTaskProgress"
 
@@ -11,7 +11,7 @@ import EditTaskHeading from "./EditTaskHeading.vue"
 import EditSubtaskEntry from "./EditSubtaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
 
-const props = defineProps<{ tasks: UserTaskEntries }>()
+const props = defineProps<{ tasks: UserTask }>()
 
 const session = inject<Ref<User>>("session")!
 const entries = inject<Ref<Task[]>>("entries")!

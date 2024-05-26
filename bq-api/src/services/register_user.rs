@@ -1,8 +1,8 @@
-use crate::utilities::parsables::{Username, Name, Email, PlainTextPassword};
-use crate::models::{model::Model, user_model::UserModel};
+use crate::utilities::parsable::{Username, Name, Email, PlainTextPassword};
+use crate::models::user::User;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use serde::Deserialize;
-use redis::Client;
+use sqlx::{Pool, Postgres};
 
 #[derive(Deserialize)]
 struct RegisterUserQuery {
@@ -13,27 +13,27 @@ struct RegisterUserQuery {
 }
 
 #[actix_web::post("/api/user/register")]
-pub(super) async fn register(redis: Data<Client>, create_user: Json<RegisterUserQuery>) -> impl Responder {
-    let create_user = create_user.into_inner();
-    let user = match UserModel::new(
-        create_user.username,
-        create_user.name,
-        create_user.email,
-        create_user.password,
+pub(super) async fn register(pool: Data<Pool<Postgres>>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
+    let register_user_query = register_user_query.into_inner();
+    
+    let mut user = match User::new(
+        register_user_query.username,
+        register_user_query.name,
+        register_user_query.email,
+        register_user_query.password,
         false
     ) {
-        Some(user) => user,
-        None => return HttpResponse::InternalServerError().finish()
-    };
-
-    let mut connection = match redis.get_connection() {
-        Ok(connection) => connection,
+        Ok(user) => user,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    if user.store(&mut connection).is_err() {
-        return HttpResponse::Created().finish();
+    if user.exists(&pool).await {
+        return HttpResponse::Conflict().finish();
     }
-    
-    HttpResponse::InternalServerError().finish()
+
+    if user.insert(&pool).await.is_err() {
+        return HttpResponse::InternalServerError().finish();
+    }
+
+    HttpResponse::Created().finish()
 }

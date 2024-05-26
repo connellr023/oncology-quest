@@ -30,6 +30,7 @@ const useRegister = () => {
         else {
             try {
                 const response = await fetch(`${API_ENDPOINT}/api/user/register`, {
+                    credentials: "include",
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -41,13 +42,25 @@ const useRegister = () => {
                         password: password.value,
                     }),
                 })
-    
-                if (response.status === 201) {
-                    message.value = "User created successfully."
-                } else {
-                    serverError.value = `Received status code ${response.status}`
+
+                if (response.ok) {
+                    message.value = "Registration successful."
                 }
-            } catch (error) {
+                else {
+                    switch (response.status) {
+                        case 400:
+                            serverError.value = "Invalid registration data. Please check your inputs."
+                            break
+                        case 409:
+                            serverError.value = "That username is already taken. Please choose another."
+                            break
+                        default:
+                            serverError.value = "Server error. Please try again later."
+                            break
+                    }
+                }
+            }
+            catch (error) {
                 serverError.value = "Server error. Please try again later."
             }
         }

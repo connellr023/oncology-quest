@@ -1,28 +1,32 @@
 import { Ref, inject, ref } from "vue"
-import { User, UserSessionResponse } from "../models/user"
-import { Task } from "../models/task"
+import { User, Session } from "../models/user"
+import { UserTask } from "../models/task"
+import { Domain } from "../models/domain"
 import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidatePassword from "./validation/useValidatePassword"
-import useStructureCache from "./useStructureCache"
+import useCache from "./useCache"
+import useSession from "./useSession"
 
 const useLogin = () => {
+    const { updateSessionData } = useSession()
     const { username, usernameError } = useValidateUsername()
     const { password, passwordError } = useValidatePassword()
-    const { cache, retrieve } = useStructureCache()
+    const { retrieveUserTasks } = useCache()
 
     const loading = ref(false)
     const loginError = ref("")
 
     const session = inject<Ref<User | null>>("session")!
-    const entries = inject<Ref<Task[]>>("entries")!
+    const tasks = inject<Ref<Map<number, UserTask>>>("tasks")!
+    const domains = inject<Ref<Map<number, Domain>>>("domains")!
 
     const login = async () => {
         loading.value = true
 
         try {
-            const cachedStructure = retrieve()
+            const [cachedTasks, taskCacheTimestamp] = retrieveUserTasks()
             const response = await fetch(`${API_ENDPOINT}/api/user/login`, {
                 credentials: "include",
                 method: "POST",
@@ -32,21 +36,13 @@ const useLogin = () => {
                 body: JSON.stringify({
                     username: username.value,
                     password: password.value,
-                    structureCacheTimestamp: cachedStructure ? cachedStructure.lastUpdated : null
+                    taskCacheTimestamp: cachedTasks ? taskCacheTimestamp : null
                 })
             })
 
             if (response.ok) {
-                const sessionData: UserSessionResponse = await response.json()
-                session.value = sessionData.user
-
-                if (sessionData.structure) {
-                    entries.value = sessionData.structure.entries
-                    cache(sessionData.structure)
-                }
-                else if (cachedStructure) {
-                    entries.value = cachedStructure.entries
-                }
+                const sessionData: Session = await response.json()
+                updateSessionData(sessionData, session, tasks, domains)
             }
             else if (response.status === 401) {
                 loginError.value = "That username and password combination is incorrect."

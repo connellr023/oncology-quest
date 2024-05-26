@@ -1,9 +1,10 @@
-use crate::{models::{model::Model, user_model::UserModel}, utilities::parsables::PlainTextPassword};
-use crate::utilities::parsables::{Parsable, Username};
+use crate::auth_admin_session;
+use crate::{models::user::User, utilities::parsable::PlainTextPassword};
+use crate::utilities::parsable::Username;
 use actix_session::Session;
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
-use redis::Client;
 use serde::Deserialize;
+use sqlx::{Pool, Postgres};
 
 #[derive(Deserialize)]
 struct ResetPasswordQuery {
@@ -12,74 +13,25 @@ struct ResetPasswordQuery {
 }
 
 #[actix_web::post("/api/user/reset-password")]
-pub(super) async fn reset(redis: Data<Client>, reset_password: Json<ResetPasswordQuery>) -> impl Responder {
-    let mut connection = match redis.get_connection() {
-        Ok(connection) => connection,
-        Err(_) => return HttpResponse::InternalServerError().finish()
-    };
-
-    let mut user = match UserModel::fetch(&mut connection, reset_password.username.as_str()) {
-        Ok(user) => user,
-        Err(_) => return HttpResponse::Unauthorized().finish()
-    };
-
-    // Only users that can reset their password can reset their password.
-    if !user.can_reset_password {
-        return HttpResponse::Forbidden().finish();
+pub(super) async fn reset(pool: Data<Pool<Postgres>>, reset_password_query: Json<ResetPasswordQuery>) -> impl Responder {
+    match User::update_password(&pool, reset_password_query.username.as_str(), reset_password_query.password.as_str()).await.is_err() {
+        true => HttpResponse::Forbidden().finish(),
+        false => HttpResponse::Ok().finish()
     }
-
-    let new_password = match UserModel::gen_password_hash(user.salt, reset_password.password.as_str()) {
-        Some(new_password) => new_password,
-        None => return HttpResponse::InternalServerError().finish()
-    };
-
-    user.password = new_password;
-
-    if user.store(&mut connection).is_err() {
-        return HttpResponse::InternalServerError().finish();
-    }
-
-    HttpResponse::Ok().finish()
 }
 
 #[derive(Deserialize)]
 struct AllowResetPasswordQuery {
-    username: Username,
+    user_id: i32,
     allow_reset: bool
 }
 
 #[actix_web::patch("/api/user/allow-reset-password")]
-pub(super) async fn allow_reset(session: Session, redis: Data<Client>, allow_reset_password: Json<AllowResetPasswordQuery>) -> impl Responder {
-    let mut connection = match redis.get_connection() {
-        Ok(connection) => connection,
-        Err(_) => return HttpResponse::InternalServerError().finish()
-    };
+pub(super) async fn allow_reset(session: Session, pool: Data<Pool<Postgres>>, allow_reset_password_query: Json<AllowResetPasswordQuery>) -> impl Responder {
+    auth_admin_session!(user_id, session, pool);
 
-    let username = match session.get::<String>("username") {
-        Ok(Some(username)) => username,
-        _ => return HttpResponse::Unauthorized().finish()
-    };
-
-    // Only admins can allow users to reset their password.
-    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
-        return HttpResponse::Forbidden().finish();
+    match User::update_allow_reset_password(&pool, allow_reset_password_query.user_id, allow_reset_password_query.allow_reset).await {
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(_) => HttpResponse::Forbidden().finish()
     }
-
-    let mut target_user = match UserModel::fetch(&mut connection, allow_reset_password.username.as_str()) {
-        Ok(target_user) => target_user,
-        Err(_) => return HttpResponse::NotFound().finish()
-    };
-
-    // Admins cannot allow themselves to reset their password.
-    if target_user.is_admin {
-        return HttpResponse::Forbidden().finish();
-    }
-
-    target_user.can_reset_password = allow_reset_password.allow_reset;
-
-    if target_user.store(&mut connection).is_err() {
-        return HttpResponse::InternalServerError().finish();
-    }
-    
-    HttpResponse::Ok().finish()
 }

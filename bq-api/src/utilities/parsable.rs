@@ -3,40 +3,25 @@ use anyhow::anyhow;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-pub trait Parsable: for<'de> Deserialize<'de> + Sized {
-    /// Parses a string into a value of this type.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `value` - The string to parse.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns an error if the string is not valid.
-    fn parse(value: String) -> anyhow::Result<Self>;
-
-    /// Returns the parsed value as a string slice.
-    fn as_str(&self) -> &str;
-}
-
 macro_rules! parsable {
     ($t:ident, $regex:expr) => {
         #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
         pub struct $t(String);
 
-        // impl<'de> Deserialize<'de> for $t {
-        //     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        //     where D: Deserializer<'de> {
-        //         let value = String::deserialize(deserializer)?;
-        //         match Self::parse(value) {
-        //             Ok(parsed) => Ok(parsed),
-        //             Err(err) => Err(serde::de::Error::custom(err.to_string()))
-        //         }
-        //     }
-        // }
+        impl From<$t> for String {
+            fn from(item: $t) -> Self {
+                item.0
+            }
+        }
+        
+        impl From<String> for $t {
+            fn from(s: String) -> Self {
+                $t(s)
+            }
+        }
 
-        impl Parsable for $t {
-            fn parse(value: String) -> anyhow::Result<Self> {
+        impl $t {
+            pub fn parse(value: String) -> anyhow::Result<Self> {
                 let pattern = Regex::new($regex)?;
 
                 match pattern.is_match(&value) {
@@ -45,7 +30,7 @@ macro_rules! parsable {
                 }
             }
 
-            fn as_str(&self) -> &str {
+            pub fn as_str(&self) -> &str {
                 &self.0
             }
         }
@@ -57,7 +42,7 @@ parsable!(Name, NAME_REGEX);
 parsable!(Email, EMAIL_REGEX);
 parsable!(PlainTextPassword, PASSWORD_REGEX);
 parsable!(Comment, COMMENT_REGEX);
-parsable!(SubtaskTitle, ENTRY_TITLE_REGEX);
+parsable!(EntryTitle, ENTRY_TITLE_REGEX);
 
 #[cfg(test)]
 mod tests {
@@ -125,13 +110,13 @@ mod tests {
 
     #[test]
     fn test_parse_entry_title_valid() {
-        let entry_title = SubtaskTitle::parse("My Entry".to_string()).unwrap();
+        let entry_title = EntryTitle::parse("My Entry".to_string()).unwrap();
         assert_eq!(entry_title.as_str(), "My Entry");
     }
 
     #[test]
     fn test_parse_entry_title_invalid() {
-        let result = SubtaskTitle::parse("".to_string());
+        let result = EntryTitle::parse("".to_string());
         assert!(result.is_err());
     }
 }

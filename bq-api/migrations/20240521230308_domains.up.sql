@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS domains(
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    last_updated TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);

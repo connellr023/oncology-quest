@@ -1,69 +1,27 @@
-use super::{model::Model, tasks::UserTaskEntries, user_model::{UserModel, USER_KEY_SET}};
-use crate::utilities::parsables::{Username, Name, Email};
+use super::user::User;
+use crate::utilities::parsable::{Username, Name, Email};
 use serde::{Serialize, Deserialize};
-use redis::Connection;
-
-const MAX_SEARCH_RESULTS: u8 = 15;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
+    pub id: i32,
     pub username: Username,
     pub name: Name,
     pub email: Email,
-    pub tasks: UserTaskEntries,
-    pub is_admin: bool
+    pub is_admin: bool,
+    pub login_count: i32
 }
 
-impl ClientUser {
-    /// Searches for users based on the provided query.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `connection` - A mutable reference to the Redis connection.
-    /// * `query` - The query to search for.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns a Result containing a vector of users that match the query. If an error occurs, it will be returned.
-    pub fn text_search(connection: &mut Connection, query: &str) -> anyhow::Result<Vec<Self>> {
-        let mut users = vec![];
-        let pattern = UserModel::fmt_key(format!("*{}*", query).as_str());
-        let keys_iter = redis::cmd("SSCAN")
-            .arg(USER_KEY_SET)
-            .cursor_arg(0)
-            .arg("MATCH")
-            .arg(pattern)
-            .arg("COUNT")
-            .arg(MAX_SEARCH_RESULTS)
-            .clone()
-            .iter::<String>(connection)?;
-
-        let mut pipe = redis::pipe();
-        for key in keys_iter {
-            pipe.cmd("GET").arg(key);
-        }
-
-        let users_encoding: Vec<String> = pipe.query(connection)?;
-        for user_encoding in users_encoding {
-            let user = serde_json::from_str::<UserModel>(&user_encoding)?;
-            let client_user = ClientUser::from(user);
-            users.push(client_user);
-        }
-
-        users.retain(|user| !user.is_admin);
-        Ok(users)
-    }
-}
-
-impl From<UserModel> for ClientUser {
-    fn from(user: UserModel) -> Self {
+impl From<User> for ClientUser {
+    fn from(user: User) -> Self {
         Self {
-            username: user.username,
-            name: user.name,
-            email: user.email,
-            tasks: user.tasks,
-            is_admin: user.is_admin
+            id: user.id(),
+            username: user.username().to_owned(),
+            name: user.name().to_owned(),
+            email: user.email().to_owned(),
+            is_admin: user.is_admin(),
+            login_count: user.login_count()
         }
     }
 }

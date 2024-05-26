@@ -194,11 +194,12 @@ body {
 }
 
 button {
+  cursor: pointer;
+  appearance: none;
   border: 2px solid $main-txt-color;
   border-radius: 8px;
   background: none;
   color: $main-txt-color;
-  cursor: pointer;
   padding: 9px;
   font-size: clamp(17px, 2vw, 19px);
   font-family: $main-font;
@@ -236,6 +237,7 @@ button {
     font-size: 16px;
     opacity: 0.6;
 
+    &.focused,
     &:hover {
       color: $main-txt-color;
       opacity: 1;
@@ -259,6 +261,18 @@ button {
         svg {
           fill: $theme-color-1;
         }
+      }
+    }
+
+    &.green {
+      &:hover {
+        color: $theme-color-green;
+      }
+    }
+
+    &.red {
+      &:hover {
+        color: $theme-color-red;
       }
     }
   }
@@ -298,11 +312,19 @@ input {
   &.bubble {
     border-radius: 10px;
     padding: 10px;
-    border: none;
-    background-color: rgba(255, 255, 255, 0.02);
+    border: 2px solid transparent;
+    background-color: rgba(255, 255, 255, 0.015);
 
     &:focus {
-      background-color: rgba(255, 255, 255, 0.05);
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    &::placeholder {
+      font-style: italic;
+    }
+
+    &.error {
+      border: 2px solid $theme-color-red;
     }
   }
 
@@ -317,7 +339,8 @@ h1 {
   font-size: clamp(25px, 2.4lvw, 32px);
 }
 
-form {
+form,
+form > div.stage-container {
   display: flex;
   flex-direction: column;
   align-items: center;

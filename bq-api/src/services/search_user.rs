@@ -1,32 +1,16 @@
-use crate::models::{user_model::UserModel, client_user::ClientUser};
+use crate::auth_admin_session;
+use crate::models::search_result_user::SearchResultUser;
 use actix_web::{web::{Data, Path}, HttpResponse, Responder};
 use actix_session::Session;
-use serde::Deserialize;
-use redis::Client;
+use sqlx::{Pool, Postgres};
 
-#[derive(Deserialize)]
-pub struct UserSearchQuery {
-    pub query: String
-}
+const SEARCH_LIMIT: i64 = 10;
 
 #[actix_web::get("/api/user/search/{query}")]
-pub(super) async fn search(session: Session, search: Path<UserSearchQuery>, redis: Data<Client>) -> impl Responder {
-    let mut connection = match redis.get_connection() {
-        Ok(connection) => connection,
-        Err(_) => return HttpResponse::InternalServerError().finish()
-    };
+pub(super) async fn search(session: Session, pool: Data<Pool<Postgres>>, query: Path<String>) -> impl Responder {
+    auth_admin_session!(user_id, session, pool);
 
-    let username = match session.get::<String>("username") {
-        Ok(Some(username)) => username,
-        _ => return HttpResponse::Unauthorized().finish()
-    };
-
-    // Only admins can search for users.
-    if !UserModel::validate_is_admin(&mut connection, username.as_str()) {
-        return HttpResponse::Forbidden().finish();
-    };
-
-    let users = match ClientUser::text_search(&mut connection, search.query.as_str()) {
+    let users = match SearchResultUser::text_search(&pool, query.as_str(), SEARCH_LIMIT).await {
         Ok(users) => users,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };

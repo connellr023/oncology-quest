@@ -3,11 +3,11 @@ import { API_ENDPOINT } from "../utilities"
 import { Task } from "../models/task"
 
 import useValidateTitle from "./validation/useValidateTitle"
-import useStructureCache from "./useStructureCache"
+import useCache from "./useCache"
 
 const useSaveEntryTitle = () => {
     const { title, titleError } = useValidateTitle()
-    const { updateCache } = useStructureCache()
+    const { updateCache } = useCache()
 
     const entries = inject<Ref<Task[]>>("entries")!
     const message = ref("")
