@@ -238,18 +238,30 @@ impl<T: Sized, U: Sized> EntryLevel<T, U> {
     }
 }
 
-macro_rules! id_to_index_lookup_map {
-    ($fn_name:ident, $task_type:ty) => {
-        fn $fn_name(collection: &[$task_type]) -> HashMap<i32, usize> {
-            let mut lookup_map = HashMap::new();
+trait Mappable: Sized {
+    fn id(&self) -> i32;
 
-            for i in 0..collection.len() {
-                lookup_map.insert(collection[i].id, i);
-            }
+    fn build_lookup_map(collection: &[Self]) -> HashMap<i32, usize> {
+        let mut lookup_map = HashMap::with_capacity(collection.len());
 
-            lookup_map
+        for i in 0..collection.len() {
+            lookup_map.insert(collection[i].id(), i);
         }
-    };
+
+        lookup_map
+    }
+}
+
+impl Mappable for Supertask {
+    fn id(&self) -> i32 {
+        self.id
+    }
+}
+
+impl Mappable for Task {
+    fn id(&self) -> i32 {
+        self.id
+    }
 }
 
 impl EntryStructure {
@@ -273,10 +285,8 @@ impl EntryStructure {
         tasks[task_index].children_mut()
     }
 
-    id_to_index_lookup_map!(build_supertask_lookup_map, Supertask);
-    id_to_index_lookup_map!(build_task_lookup_map, Task);
-
     /// Builds an entry structure from an unordered collection of supertasks, tasks, and subtasks.
+    /// Takes ownership of the collections.
     /// 
     /// # Parameters
     /// 
@@ -288,8 +298,8 @@ impl EntryStructure {
     /// 
     /// The entry structure.
     pub fn build(supertasks: Box<[Supertask]>, tasks: Box<[Task]>, subtasks: Box<[Subtask]>) -> anyhow::Result<Self> {
-        let supertask_lookup_map = Self::build_supertask_lookup_map(&supertasks);
-        let task_lookup_map = Self::build_task_lookup_map(&tasks);
+        let supertask_lookup_map = Supertask::build_lookup_map(&supertasks);
+        let task_lookup_map = Task::build_lookup_map(&tasks);
 
         let mut entry_structure = EntryStructure::new(supertasks.len());
 

@@ -245,21 +245,6 @@ impl User {
         Ok(())
     }
 
-    pub async fn text_search(pool: &Pool<Postgres>, query: &str) -> anyhow::Result<Box<[Self]>> {
-        let result = sqlx::query_as!(
-            User,
-            r#"
-            SELECT * FROM users
-            WHERE username ILIKE $1 OR name ILIKE $1 OR email ILIKE $1;
-            "#,
-            format!("%{}%", query)
-        )
-        .fetch_all(pool)
-        .await?;
-
-        Ok(result.into_boxed_slice())
-    }
-
     /// Generates a password hash using the provided salt and password.
     /// 
     /// # Arguments

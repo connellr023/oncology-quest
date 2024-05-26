@@ -24,6 +24,22 @@ impl UserTask {
         }
     }
 
+    pub async fn fetch_all(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Box<[Self]>> {
+        let records = sqlx::query_as!(
+            UserTask,
+            r#"
+            SELECT * 
+            FROM user_tasks
+            WHERE user_id = $1;
+            "#,
+            user_id
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(records.into_boxed_slice())
+    }
+
     /// Fetches all user tasks for a user from the database if the user's task cache is outdated.
     /// 
     /// # Arguments

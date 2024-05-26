@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
-import { User } from "../models/user"
+import { UserWithTasks, User } from "../models/user"
 
 import useUserSearch from "../hooks/useUserSearch"
 
@@ -8,7 +8,7 @@ import Spinner from "../components/vector/Spinner.vue"
 import SearchIcon from "../components/vector/SearchIcon.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
 
-const selectedUser = inject<Ref<User>>("selectedUser")!
+const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
   
 const { search, results, loading, searchError } = useUserSearch()
@@ -20,13 +20,13 @@ const toggleCollapse = () => {
 }
   
 const searchUser = () => {
-  if (query.value.length > 0 && !loading) {
+  if (query.value.length > 0 && !loading.value) {
     search(query.value)
   }
 }
 
-const setSelectedUser = (user: User) => {
-  selectedUser.value = user
+const setSelectedUser = (selection: UserWithTasks) => {
+  selectedUser.value = selection;
 }
 </script>
 
@@ -43,9 +43,9 @@ const setSelectedUser = (user: User) => {
         <div v-if="searchError" class="status">An error occurred while searching for users.</div>
         <div v-else-if="results.length === 0" class="status">No results found.</div>
         <div v-else>
-          <div v-for="user in results" :key="user.username" class="user-option" :class="`${selectedUser.name === user.name ? 'selected' : ''}`" @click="setSelectedUser(user)">
-            <UserProfileIcon :initials="user.name.substring(0, 2)" />
-            <span><b>{{ user.name }}</b> ({{ user.username }})</span>
+          <div v-for="result in results" :key="result.user.username" class="user-option" :class="`${selectedUser?.user.name === result.user.name ? 'selected' : ''}`" @click="setSelectedUser(result)">
+            <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
+            <span><b>{{ result.user.name }}</b> ({{ result.user.username }})</span>
           </div>
         </div>
       </div>

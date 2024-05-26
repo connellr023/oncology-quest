@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue"
-import { SelectedUser } from "./models/user"
+import { UserWithTasks } from "./models/user"
 import { Domain } from "./models/domain"
 
 import useSession from "./hooks/useSession"
@@ -26,7 +26,7 @@ provide("domains", domains)
 
 onMounted(fetchSession)
 
-const selectedUser = ref<SelectedUser | null>(null)
+const selectedUser = ref<UserWithTasks | null>(null)
 provide("selectedUser", selectedUser)
 
 const selectedDomain = ref<Domain | null>(null)

@@ -16,7 +16,7 @@ export interface Session {
     tasks?: UserTask[]
 }
 
-export interface SelectedUser {
+export interface UserWithTasks {
     user: User,
     tasks: UserTask[]
 }

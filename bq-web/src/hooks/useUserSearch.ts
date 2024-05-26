@@ -1,9 +1,9 @@
 import { reactive, ref } from "vue"
-import { User } from "../models/user"
+import { UserWithTasks } from "../models/user"
 import { API_ENDPOINT } from "../utilities"
 
 const useUserSearch = () => {
-    const results = reactive<User[]>([])
+    const results = reactive<UserWithTasks[]>([])
     const loading = ref(false)
     const searchError = ref(false)
 
@@ -25,7 +25,7 @@ const useUserSearch = () => {
             }
             else {
                 try {
-                    const users: User[] = await response.json()
+                    const users: UserWithTasks[] = await response.json()
                     results.splice(0, results.length, ...users)
                 }
                 catch (_) {
