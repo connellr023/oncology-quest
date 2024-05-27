@@ -1,6 +1,6 @@
 import { Ref, inject, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
-import { Task } from "../models/task"
+import { Task } from "../models/tasks"
 
 import useValidateTitle from "./validation/useValidateTitle"
 import useCache from "./useCache"

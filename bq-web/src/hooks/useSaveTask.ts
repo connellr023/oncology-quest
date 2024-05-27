@@ -1,5 +1,5 @@
 import { Ref, inject, ref } from "vue"
-import { UserTask } from "../models/task"
+import { UserTask } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
 import { User } from "../models/user"
 

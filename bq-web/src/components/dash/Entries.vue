@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { Ref, inject, reactive } from "vue"
 import { User } from "../../models/user"
-import { Task, UserTask } from "../../models/task"
+import { EntryStructure, UserTask } from "../../models/tasks"
+import { Domain } from "../../models/domain"
 
-import useTaskProgress from "../../hooks/useTaskProgress"
+// import useTaskProgress from "../../hooks/useTaskProgress"
 
 import EditTask from "./EditTask.vue"
 import EditSupertaskHeading from "./EditSupertaskHeading.vue"
-import EditTaskHeading from "./EditTaskHeading.vue"
-import EditSubtaskEntry from "./EditSubtaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
+// import EditTaskHeading from "./EditTaskHeading.vue"
+// import EditSubtaskEntry from "./EditSubtaskEntry.vue"
 
-const props = defineProps<{ tasks: UserTask }>()
+defineProps<{ tasks: Record<number, UserTask> }>()
 
 const session = inject<Ref<User>>("session")!
-const entries = inject<Ref<Task[]>>("entries")!
+const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
+const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
 let visibility = reactive<Record<string, boolean>>({})
 
@@ -22,38 +24,51 @@ const toggleVisibility = (key: string) => {
   visibility[key] = !visibility[key]
 }
 
-const computeKey = (...indicies: number[]) => indicies.join("-")
+const computeKey = (...values: number[]) => values.join("-")
 
-const { calculateTaskProgress, calculateSupertaskProgress } = useTaskProgress(props.tasks)
+// const { calculateTaskProgress, calculateSupertaskProgress } = useTaskProgress(props.tasks)
 </script>
 
 <template>
-  <div id="entries-container">
-    <div :class="`supertask focusable ${visibility[computeKey(superIndex)] ? 'focused': ''}`" v-for="(entry, superIndex) in entries" :key="computeKey(superIndex)">
-      <ProgressableEntryHeading :progress="calculateSupertaskProgress(superIndex)" :isActive="visibility[computeKey(superIndex)] || false" :index="[superIndex]" :title="entry.title" @click="toggleVisibility(computeKey(superIndex))" />
-      <ul v-show="visibility[computeKey(superIndex)]" :key="computeKey(superIndex, 0)">
-        <li :class="`task focusable layer-2 ${visibility[computeKey(superIndex, index)] ? 'focused': ''}`" v-for="(subTask, index) in entry.tasks" :key="computeKey(superIndex, index)">
-          <ProgressableEntryHeading :progress="calculateTaskProgress([superIndex, index])" :isActive="visibility[computeKey(superIndex, index)] || false" :index="[superIndex, index]" :title="subTask.title" @click="toggleVisibility(computeKey(superIndex, index))" />
-          <ul v-show="visibility[computeKey(superIndex, index)]" :key="computeKey(superIndex, index, 0)">
-            <li v-for="(task, subIndex) in subTask.tasks" :key="computeKey(superIndex, index, subIndex)">
+  <div id="entries-container" v-if="selectedDomain">
+    <div :class="`supertask focusable ${visibility[computeKey(domainId)] ? 'focused': ''}`" v-for="(supertask, domainId) in entries[selectedDomain.id]" :key="computeKey(domainId)">
+      <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(domainId)] || false" :index="[-1]" :title="supertask.entry.title" @click="toggleVisibility(computeKey(domainId))" />
+      <ul v-show="visibility[computeKey(domainId)]" :key="computeKey(domainId, -1)">
+        <li :class="`task focusable layer-2 ${visibility[computeKey(domainId, taskIndex)] ? 'focused': ''}`" v-for="(task, taskIndex) in supertask.children" :key="computeKey(domainId, taskIndex)">
+          <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(domainId, taskIndex)] || false" :index="[-1, -1]" :title="task.entry.title" @click="toggleVisibility(computeKey(domainId, taskIndex))" />
+          <ul v-show="visibility[computeKey(domainId, taskIndex)]" :key="computeKey(domainId, taskIndex, -1)">
+            <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(domainId, taskIndex, subtaskIndex)">
               <EditTask
-                :task="tasks[superIndex]?.[index]?.[subIndex] ?? null"
-                :value="task"
-                :index="[superIndex, index, subIndex]"
+                :task="tasks[subtask.id] ?? null"
+                :value="subtask.title"
+                :index="[-1, -1, -1]"
               />
             </li>
-            <EditSubtaskEntry v-if="session.isAdmin" :index="[superIndex, index]" />
+            <!-- <EditSubtaskEntry v-if="session.isAdmin" :index="[superIndex, index]" /> -->
           </ul>
         </li>
-        <EditTaskHeading v-if="session.isAdmin" :index="superIndex" />
+        <!-- <EditTaskHeading v-if="session.isAdmin" :index="superIndex" /> -->
       </ul>
     </div>
+    <p class="empty-domainn note" v-if="entries[selectedDomain.id] ? entries[selectedDomain.id].length === 0 : true">This domain is looking sparse.</p>
     <EditSupertaskHeading v-if="session.isAdmin" />
   </div>
+  <p class="note" v-else>Select a domain from the list in the top right corner to get started.</p>
 </template>
 
 <style scoped lang="scss">
 @import "../../main.scss";
+
+p.note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: clamp(19px, 1.3lvw, 24px);
+  text-wrap: wrap;
+  opacity: 0.8;
+  height: 100%;
+}
 
 div#entries-container {
   display: flex;

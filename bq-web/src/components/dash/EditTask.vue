@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Ref, VNodeRef, inject, onMounted, ref } from "vue"
-import { UserTask } from "../../models/task"
+import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
 
 import useSaveTask from "../../hooks/useSaveTask"
@@ -24,7 +24,7 @@ const props = defineProps<{
 
 onMounted(() => {
   if (props.task) {
-    completed.value = props.task.completed
+    completed.value = props.task.isComplete
     comment.value = props.task.comment
   }
 })

@@ -2,29 +2,29 @@ use crate::{auth_user_session, models::{domain::Domain, entry_structure::EntrySt
 use actix_web::{web::{Data, Path}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct FetchDomainEntriesQuery {
-    pub domain_id: i32,
-    pub entries_cache_timestamp: Option<DateTime<Utc>>
+macro_rules! fetch_entry_structure {
+    ($pool:ident, $domain_id:expr, $entry_structure:ident) => {
+        match EntryStructure::fetch(&$pool, $domain_id).await {
+            Err(_) => HttpResponse::InternalServerError().finish(),
+            Ok($entry_structure) => HttpResponse::Ok().json($entry_structure)
+        }
+    };
 }
 
-#[actix_web::get("/api/domains/{domain_id}/{entries_cache_timestamp}")]
-pub(super) async fn fetch(session: Session, pool: Data<Pool<Postgres>>, fetch_domain_entries_query: Path<FetchDomainEntriesQuery>) -> impl Responder {
+#[actix_web::get("/api/domains/{domain_id}/{entries_cache_timestamp:.*}")]
+pub(super) async fn fetch_with_timestamp(session: Session, pool: Data<Pool<Postgres>>, data: Path<(i32, String)>) -> impl Responder {
     auth_user_session!(session);
 
-    match Domain::is_cache_valid(&pool, fetch_domain_entries_query.domain_id, fetch_domain_entries_query.entries_cache_timestamp).await {
+    let entries_cache_timestamp = data.1.parse::<DateTime<Utc>>().ok();
+
+    match Domain::is_cache_valid(&pool, data.0, entries_cache_timestamp).await {
         Err(_) => return HttpResponse::InternalServerError().finish(),
         Ok(true) => return HttpResponse::NotModified().finish(),
         _ => {}
     }
     
     // If the cache is not valid, then fetch the entry structure from the database.
-    match EntryStructure::fetch(&pool, fetch_domain_entries_query.domain_id).await {
-        Err(_) => HttpResponse::InternalServerError().finish(),
-        Ok(entry_structure) => HttpResponse::Ok().json(entry_structure)
-    }
+    fetch_entry_structure!(pool, data.0, entry_structure)
 }

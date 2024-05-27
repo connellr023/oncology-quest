@@ -16,6 +16,7 @@ pub fn config(cfg: &mut ServiceConfig) {
     cfg.service(reset_password::allow_reset);
     cfg.service(delete_user::delete_user);
     cfg.service(delete_user::delete_self);
+    cfg.service(domain_entries::fetch_with_timestamp);
     cfg.service(edit_entry_structure::create_supertask);
     cfg.service(edit_entry_structure::update_supertask);
     cfg.service(edit_entry_structure::delete_supertask);

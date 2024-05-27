@@ -26,8 +26,11 @@ export interface Subtask {
     domainId: number
 }
 
-export interface EntryStructure {
-    supertasks: Supertask[],
-    tasks: Task[],
-    subtasks: Subtask[]
+type PossibleEntry = Supertask | Task | Subtask
+export interface EntryLevel<T = PossibleEntry, U = any> {
+    entry: T,
+    children: U[]
 }
+
+type EntryHierarchy = EntryLevel<Supertask, EntryLevel<Task, Subtask>>
+export type EntryStructure = EntryHierarchy[]

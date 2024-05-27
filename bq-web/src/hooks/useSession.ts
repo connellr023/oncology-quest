@@ -1,7 +1,7 @@
 import { Ref, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
 import { User, Session } from "../models/user"
-import { UserTask } from "../models/task"
+import { UserTask } from "../models/tasks"
 import { Domain } from "../models/domain"
 import useCache from "./useCache"
 
@@ -20,7 +20,7 @@ const useSession = () => {
     
         let recordedTasks: Record<number, UserTask> | undefined = {}
         data.tasks?.forEach((task: UserTask) => {
-            recordedTasks![task.id] = task
+            recordedTasks![task.subtaskId] = task
         })
 
         let recordedDomains: Record<number, Domain> = {}
@@ -28,14 +28,14 @@ const useSession = () => {
             recordedDomains[domain.id] = domain
         })
 
-        tasks.value = retrieveOrCacheUserTasks(recordedTasks)
+        tasks.value = retrieveOrCacheUserTasks(data.user.id, recordedTasks)
         domains.value = recordedDomains
     }
 
     const fetchSession = async () => {
         try {
-            const [taskCacheTimestamp] = retrieveUserTasks()
-            const endpoint = taskCacheTimestamp ? `/${taskCacheTimestamp}` : ""
+            const [_, taskCacheTimestamp] = retrieveUserTasks()
+            const endpoint = taskCacheTimestamp ? `${taskCacheTimestamp}` : ""
 
             const response = await fetch(`${API_ENDPOINT}/api/user/session/${endpoint}`, {
                 credentials: "include",
@@ -43,13 +43,14 @@ const useSession = () => {
                     "Content-Type": "application/json"
                 }
             })
-    
+            
             if (response.ok) {
                 const sessionData: Session = await response.json()
                 updateSessionData(sessionData, session, tasks, domains)
             }
         }
-        catch (_) {
+        catch (err) {
+            console.log(err)
             connectionError.value = true
         }
 

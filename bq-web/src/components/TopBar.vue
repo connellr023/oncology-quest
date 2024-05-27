@@ -6,6 +6,7 @@ import { Domain } from "../models/domain";
 import useLogout from "../hooks/useLogout"
 import useValidateName from "../hooks/validation/useValidateName";
 import useDomains from "../hooks/useDomains";
+import useEntries from "../hooks/useEntries";
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
@@ -19,6 +20,7 @@ const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 const { logout } = useLogout()
 const { name, nameError } = useValidateName()
 const { createDomain, deleteDomain } = useDomains()
+const { fetchEntriesWithCaching } = useEntries()
 
 const showProfileOptions = ref(false)
 const showCreateDomainModal = ref(false)
@@ -50,7 +52,12 @@ const hideDropdowns = () => {
   visibleDomainDropdowns[focusedDomainId] = false
 }
 
-const selectDomain = (domain: Domain) => {
+const selectDomain = async (domain: Domain) => {
+  if (!await fetchEntriesWithCaching(domain.id)) {
+    console.error("Failed to fetch entries.")
+    return
+  }
+  
   selectedDomain.value = domain
   visibleDomainDropdowns[focusedDomainId] = false
 }

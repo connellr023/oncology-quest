@@ -1,5 +1,5 @@
 import { Domain } from "./domain"
-import { UserTask } from "./task"
+import { UserTask } from "./tasks"
 
 export interface User {
     id: number,

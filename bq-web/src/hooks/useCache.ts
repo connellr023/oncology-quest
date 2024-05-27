@@ -1,17 +1,19 @@
-import { EntryStructure, UserTask } from "../models/task"
+import { EntryStructure, UserTask } from "../models/tasks"
 
 type RetrieveCacheResponse<T> = [T | null, string | null]
 
 const useCache = () => {
     const timestamp = () => new Date().toISOString()
 
-    const cacheUserTasks = (tasks: Record<number, UserTask>) => {
+    const cacheUserTasks = (userId: number, tasks: Record<number, UserTask>) => {
         sessionStorage.setItem("tasks", JSON.stringify(tasks))
+        sessionStorage.setItem("tasksOwner", userId.toString())
         sessionStorage.setItem("taskCacheTimestamp", timestamp())
     }
 
     const retrieveUserTasks = (): RetrieveCacheResponse<Record<number, UserTask>> => {
         const cachedTasks = sessionStorage.getItem("tasks")
+
         return [
             cachedTasks ? JSON.parse(cachedTasks) : null,
             sessionStorage.getItem("taskCacheTimestamp")
@@ -33,9 +35,9 @@ const useCache = () => {
         ]
     }
 
-    const retrieveOrCacheUserTasks = (tasks?: Record<number, UserTask>): Record<number, UserTask> => {
+    const retrieveOrCacheUserTasks = (userId: number, tasks?: Record<number, UserTask>): Record<number, UserTask> => {
         if (tasks) {
-            cacheUserTasks(tasks)
+            cacheUserTasks(userId, tasks)
             return tasks
         }
 

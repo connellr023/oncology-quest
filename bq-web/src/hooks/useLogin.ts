@@ -1,6 +1,6 @@
 import { Ref, inject, ref } from "vue"
 import { User, Session } from "../models/user"
-import { UserTask } from "../models/task"
+import { UserTask } from "../models/tasks"
 import { Domain } from "../models/domain"
 import { API_ENDPOINT } from "../utilities"
 
@@ -19,8 +19,8 @@ const useLogin = () => {
     const loginError = ref("")
 
     const session = inject<Ref<User | null>>("session")!
-    const tasks = inject<Ref<Map<number, UserTask>>>("tasks")!
-    const domains = inject<Ref<Map<number, Domain>>>("domains")!
+    const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
+    const domains = inject<Ref<Record<number, Domain>>>("domains")!
 
     const login = async () => {
         loading.value = true

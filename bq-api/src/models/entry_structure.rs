@@ -42,9 +42,7 @@ type EntryHierarchy = EntryLevel<Supertask, EntryLevel<Task, Subtask>>;
 
 /// Represents the hierarchal structure of entries, with supertasks at the top level, tasks at the second level, and subtasks at the third level.
 #[derive(Serialize)]
-pub struct EntryStructure {
-    supertasks: Vec<EntryHierarchy>
-}
+pub struct EntryStructure(Vec<EntryHierarchy>);
 
 macro_rules! fetch_all {
     ($struct_name:ident, $table_name:literal) => {
@@ -266,17 +264,15 @@ impl Mappable for Task {
 
 impl EntryStructure {
     pub fn new(supertask_count: usize) -> Self {
-        EntryStructure {
-            supertasks: Vec::with_capacity(supertask_count)
-        }
+        EntryStructure(Vec::with_capacity(supertask_count))
     }
 
     pub fn supertasks_mut(&mut self) -> &mut Vec<EntryHierarchy> {
-        &mut self.supertasks
+        &mut self.0
     }
 
     pub fn tasks_mut(&mut self, supertask_index: usize) -> &mut Vec<EntryLevel<Task, Subtask>> {
-        let supertask = &mut self.supertasks[supertask_index];
+        let supertask = &mut self.0[supertask_index];
         supertask.children_mut()
     }
 
@@ -378,7 +374,7 @@ mod tests {
         assert!(result.is_ok());
 
         let mut entry_structure = result.unwrap();
-        assert_eq!(entry_structure.supertasks.len(), 1);
+        assert_eq!(entry_structure.supertasks_mut().len(), 1);
         assert_eq!(entry_structure.tasks_mut(0).len(), 1);
         assert_eq!(entry_structure.subtasks_mut(0, 0).len(), 1);
     }

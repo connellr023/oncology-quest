@@ -2,11 +2,12 @@
 import { onMounted, provide, ref } from "vue"
 import { UserWithTasks } from "./models/user"
 import { Domain } from "./models/domain"
+import { EntryStructure } from "./models/tasks"
 
 import useSession from "./hooks/useSession"
 
-// import DashboardView from "./views/DashboardView.vue"
-// import AdminDashboardView from "./views/AdminDashboardView.vue"
+import DashboardView from "./views/DashboardView.vue"
+import AdminDashboardView from "./views/AdminDashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
 import ManageUsersBar from "./components/ManageUsersBar.vue"
@@ -26,6 +27,9 @@ provide("domains", domains)
 
 onMounted(fetchSession)
 
+const entries = ref<Record<number, EntryStructure>>({})
+provide("entries", entries)
+
 const selectedUser = ref<UserWithTasks | null>(null)
 provide("selectedUser", selectedUser)
 
@@ -41,15 +45,14 @@ provide("isEditing", isEditing)
     <div class="flex-wrapper">
       <MainLogo :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
       <div v-if="connectionError" class="connect-error"><b><i>bq</i></b> is currently under maintenance.</div>
-      <div v-if="!connectionError && !loading">
+      <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
         <div class="dash-container" v-else>
           <ManageUsersBar v-if="session.isAdmin" />
           <div class="dash">
             <TopBar />
-            <!-- <AdminDashboardView v-if="session.isAdmin" /> -->
-            <!-- <DashboardView v-else /> -->
-            <p class="note" v-if="!selectedDomain">Select a domain from the list in the top right corner to get started.</p>
+            <AdminDashboardView v-if="session.isAdmin" />
+            <DashboardView v-else />
           </div>
         </div>
       </div>
@@ -59,16 +62,6 @@ provide("isEditing", isEditing)
 
 <style scoped lang="scss">
 @import "main.scss";
-
-p.note {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  font-size: clamp(18px, 1.3lvw, 23px);
-  text-wrap: wrap;
-  height: 100%;
-}
 
 div.dash-container {
   opacity: 0;

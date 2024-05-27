@@ -1,5 +1,5 @@
 import { Ref, inject } from "vue"
-import { Task, UserTaskEntries } from "../models/task"
+import { Task, UserTaskEntries } from "../models/tasks"
 
 const useTaskProgress = (userTasks: UserTaskEntries) => {
     const entries = inject<Ref<Task[]>>("entries")!.value
