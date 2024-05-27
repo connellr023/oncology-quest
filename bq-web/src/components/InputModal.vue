@@ -39,11 +39,15 @@ div.modal {
   justify-content: center;
   align-items: center;
   text-align: center;
+  z-index: 1;
 
   div.modal-content {
     padding: 10px;
     border-radius: 14px;
     background-color: $secondary-bg-color;
+    width: 40lvw;
+    min-width: 290px;
+    max-width: 400px;
 
     h3 {
       font-weight: normal;

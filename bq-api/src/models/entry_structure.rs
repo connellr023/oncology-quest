@@ -1,3 +1,5 @@
+use crate::domain_query_many;
+use crate::utilities::parsable::EntryTitle;
 use sqlx::{FromRow, Pool, Postgres};
 use std::collections::HashMap;
 use serde::Serialize;
@@ -6,7 +8,7 @@ use anyhow::anyhow;
 #[derive(Debug, FromRow, Serialize)]
 pub struct Supertask {
     id: i32,
-    title: String,
+    title: EntryTitle,
     domain_id: i32,
 }
 
@@ -14,7 +16,7 @@ pub struct Supertask {
 pub struct Task {
     id: i32,
     supertask_id: i32,
-    title: String,
+    title: EntryTitle,
     domain_id: i32
 }
 
@@ -22,7 +24,7 @@ pub struct Task {
 pub struct Subtask {
     id: i32,
     task_id: i32,
-    title: String,
+    title: EntryTitle,
     domain_id: i32
 }
 
@@ -91,40 +93,42 @@ impl Supertask {
     fetch_all!(Supertask, "supertasks");
     update_title!(Supertask, "supertasks");
 
-    pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32) -> anyhow::Result<()> {
+    pub async fn insert_from(pool: &Pool<Postgres>, title: &str, domain_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query(
+        sqlx::query!(
             r#"
-            INSERT INTO supertasks (title, domain_id) VALUES ($1, $2);
-            UPDATE domain SET last_updated = NOW() WHERE id = $2;
+            UPDATE domains SET last_updated = NOW() WHERE id = $1;
             "#,
+            domain_id
         )
-        .bind(title)
-        .bind(domain_id)
         .execute(&mut *transaction)
+        .await?;
+
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO supertasks (title, domain_id) VALUES ($1, $2) RETURNING id;
+            "#,
+            title,
+            domain_id
+        )
+        .fetch_one(&mut *transaction)
         .await?;
 
         transaction.commit().await?;
 
-        Ok(())
+        Ok(row.id)
     }
 
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query(
-            r#"
-            DELETE FROM supertasks WHERE id = $1;
-            DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE supertask_id = $1);
-            DELETE FROM tasks WHERE supertask_id = $1;
-            UPDATE domain SET last_updated = NOW()
-            WHERE id = (SELECT domain_id FROM supertasks WHERE id = $1);
-            "#,
-        )
-        .bind(id)
-        .execute(&mut *transaction)
-        .await?;
+        domain_query_many!(&mut *transaction, id,
+            "DELETE FROM supertasks WHERE id = $1",
+            "DELETE FROM tasks WHERE supertask_id = $1",
+            "DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE supertask_id = $1)",
+            "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM supertasks WHERE id = $1);"
+        );
 
         transaction.commit().await?;
 
@@ -136,41 +140,44 @@ impl Task {
     fetch_all!(Task, "tasks");
     update_title!(Task, "tasks");
 
-    pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32, supertask_id: i32) -> anyhow::Result<()> {
+    pub async fn insert_from(pool: &Pool<Postgres>, title: &str, domain_id: i32, supertask_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query(
+        sqlx::query!(
             r#"
-            INSERT INTO tasks (title, domain_id, supertask_id) VALUES ($1, $2, $3);
-            UPDATE domain SET last_updated = NOW()
-            WHERE id = $2;
+            UPDATE domains SET last_updated = NOW()
+            WHERE id = $1;
             "#,
+            domain_id
         )
-        .bind(title)
-        .bind(domain_id)
-        .bind(supertask_id)
         .execute(&mut *transaction)
+        .await?;
+
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO tasks (title, domain_id, supertask_id) VALUES ($1, $2, $3)
+            RETURNING id;
+            "#,
+            title,
+            domain_id,
+            supertask_id
+        )
+        .fetch_one(&mut *transaction)
         .await?;
 
         transaction.commit().await?;
 
-        Ok(())
+        Ok(row.id)
     }
 
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query(
-            r#"
-            DELETE FROM tasks WHERE id = $1;
-            DELETE FROM subtasks WHERE task_id = $1;
-            UPDATE domain SET last_updated = NOW()
-            WHERE id = (SELECT domain_id FROM tasks WHERE id = $1);
-            "#,
-        )
-        .bind(id)
-        .execute(&mut *transaction)
-        .await?;
+        domain_query_many!(&mut *transaction, id,
+            "DELETE FROM tasks WHERE id = $1",
+            "DELETE FROM subtasks WHERE task_id = $1",
+            "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM tasks WHERE id = $1);"
+        );
 
         transaction.commit().await?;
 
@@ -182,40 +189,43 @@ impl Subtask {
     fetch_all!(Subtask, "subtasks");
     update_title!(Subtask, "subtasks");
 
-    pub async fn insert(pool: &Pool<Postgres>, title: &str, domain_id: i32, task_id: i32) -> anyhow::Result<()> {
+    pub async fn insert_from(pool: &Pool<Postgres>, title: &str, domain_id: i32, task_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query(
+        sqlx::query!(
             r#"
-            INSERT INTO subtasks (title, domain_id, task_id) VALUES ($1, $2, $3);
-            UPDATE domain SET last_updated = NOW()
-            WHERE id = $2;
+            UPDATE domains SET last_updated = NOW()
+            WHERE id = $1;
             "#,
+            domain_id
         )
-        .bind(title)
-        .bind(domain_id)
-        .bind(task_id)
         .execute(&mut *transaction)
+        .await?;
+
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO subtasks (title, domain_id, task_id) VALUES ($1, $2, $3)
+            RETURNING id;
+            "#,
+            title,
+            domain_id,
+            task_id
+        )
+        .fetch_one(&mut *transaction)
         .await?;
 
         transaction.commit().await?;
 
-        Ok(())
+        Ok(row.id)
     }
 
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query(
-            r#"
-            DELETE FROM subtasks WHERE id = $1;
-            UPDATE domain SET last_updated = NOW()
-            WHERE id = (SELECT domain_id FROM subtasks WHERE id = $1);
-            "#,
-        )
-        .bind(id)
-        .execute(&mut *transaction)
-        .await?;
+        domain_query_many!(&mut *transaction, id,
+            "DELETE FROM subtasks WHERE id = $1",
+            "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM subtasks WHERE id = $1);"
+        );
 
         transaction.commit().await?;
 
@@ -352,21 +362,21 @@ mod tests {
     fn test_build() {
         let supertasks = Box::new([Supertask {
             id: 1,
-            title: "Supertask 1".to_string(),
+            title: EntryTitle::parse("Supertask 1".to_string()).unwrap(),
             domain_id: 1
         }]);
 
         let tasks = Box::new([Task {
             id: 1,
             supertask_id: 1,
-            title: "Task 1".to_string(),
+            title: EntryTitle::parse("Task 1".to_string()).unwrap(),
             domain_id: 1
         }]);
 
         let subtasks = Box::new([Subtask {
             id: 1,
             task_id: 1,
-            title: "Subtask 1".to_string(),
+            title: EntryTitle::parse("Subtask 1".to_string()).unwrap(),
             domain_id: 1
         }]);
 

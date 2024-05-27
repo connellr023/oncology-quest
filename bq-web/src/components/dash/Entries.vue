@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, reactive } from "vue"
+import { Ref, inject, reactive, ref } from "vue"
 import { User } from "../../models/user"
 import { EntryStructure, UserTask } from "../../models/tasks"
 import { Domain } from "../../models/domain"
@@ -7,8 +7,11 @@ import { Domain } from "../../models/domain"
 // import useTaskProgress from "../../hooks/useTaskProgress"
 
 import EditTask from "./EditTask.vue"
-import EditSupertaskHeading from "./EditSupertaskHeading.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
+import PushStackIcon from "../vector/PushStackIcon.vue"
+import InputModal from "../InputModal.vue"
+import useValidateTitle from "../../hooks/validation/useValidateTitle"
+import useEntries from "../../hooks/useEntries"
 // import EditTaskHeading from "./EditTaskHeading.vue"
 // import EditSubtaskEntry from "./EditSubtaskEntry.vue"
 
@@ -18,6 +21,11 @@ const session = inject<Ref<User>>("session")!
 const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
+const { title, titleError } = useValidateTitle()
+
+let createEntryCallback = ref<() => any>(() => {})
+const isCreateEntryModalVisible = ref(false)
+
 let visibility = reactive<Record<string, boolean>>({})
 
 const toggleVisibility = (key: string) => {
@@ -26,12 +34,35 @@ const toggleVisibility = (key: string) => {
 
 const computeKey = (...values: number[]) => values.join("-")
 
-// const { calculateTaskProgress, calculateSupertaskProgress } = useTaskProgress(props.tasks)
+const showCreateEntryModal = (onConfirm: (confirmTitle: string) => Promise<Boolean>) => {
+  isCreateEntryModalVisible.value = true
+  createEntryCallback.value = async () => {
+    if (await onConfirm(title.value)) {
+      isCreateEntryModalVisible.value = false
+    }
+  }
+}
+
+const {
+  createSupertask,
+  updateSupertask,
+  deleteSupertask
+} = useEntries()
 </script>
 
 <template>
+  <InputModal
+    v-if="session.isAdmin"
+    v-model="title"
+    :error="titleError"
+    :visible="isCreateEntryModalVisible"
+    :title="'Create New Entry'"
+    :placeholder="'Entry entry title...'"
+    :onConfirm="createEntryCallback"
+    :onCancel="() => { isCreateEntryModalVisible = false }"
+  />
   <div id="entries-container" v-if="selectedDomain">
-    <div :class="`supertask focusable ${visibility[computeKey(domainId)] ? 'focused': ''}`" v-for="(supertask, domainId) in entries[selectedDomain.id]" :key="computeKey(domainId)">
+    <div :class="`supertask focusable ${visibility[computeKey(domainId)] ? 'focused': ''}`" v-for="(supertask, domainId, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(domainId)">
       <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(domainId)] || false" :index="[-1]" :title="supertask.entry.title" @click="toggleVisibility(computeKey(domainId))" />
       <ul v-show="visibility[computeKey(domainId)]" :key="computeKey(domainId, -1)">
         <li :class="`task focusable layer-2 ${visibility[computeKey(domainId, taskIndex)] ? 'focused': ''}`" v-for="(task, taskIndex) in supertask.children" :key="computeKey(domainId, taskIndex)">
@@ -44,14 +75,23 @@ const computeKey = (...values: number[]) => values.join("-")
                 :index="[-1, -1, -1]"
               />
             </li>
-            <!-- <EditSubtaskEntry v-if="session.isAdmin" :index="[superIndex, index]" /> -->
+            <button class="bubble highlight" v-if="session.isAdmin">
+              <PushStackIcon />
+              Push New Subtask
+            </button>
           </ul>
         </li>
-        <!-- <EditTaskHeading v-if="session.isAdmin" :index="superIndex" /> -->
+        <button class="bubble highlight" v-if="session.isAdmin">
+          <PushStackIcon />
+          Push New Task
+        </button>
       </ul>
     </div>
     <p class="empty-domainn note" v-if="entries[selectedDomain.id] ? entries[selectedDomain.id].length === 0 : true">This domain is looking sparse.</p>
-    <EditSupertaskHeading v-if="session.isAdmin" />
+    <button @click="showCreateEntryModal((confirmTitle: string) => createSupertask(confirmTitle, selectedDomain!.id))" class="bubble highlight" v-if="session.isAdmin">
+      <PushStackIcon />
+      Push New Supertask
+    </button>
   </div>
   <p class="note" v-else>Select a domain from the list in the top right corner to get started.</p>
 </template>

@@ -1,4 +1,4 @@
-use crate::query_many;
+use crate::domain_query_many;
 use crate::utilities::parsable::Name;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
@@ -41,7 +41,7 @@ impl Domain {
     pub async fn delete(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        query_many!(&mut *transaction, domain_id,
+        domain_query_many!(&mut *transaction, domain_id,
             "DELETE FROM subtasks WHERE domain_id = $1",
             "DELETE FROM tasks WHERE domain_id = $1",
             "DELETE FROM supertasks WHERE domain_id = $1",

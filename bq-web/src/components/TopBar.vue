@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Ref, inject, onMounted, onUnmounted, reactive, ref } from "vue";
+import { Ref, inject, onMounted, onUnmounted, reactive, ref } from "vue"
 import { User } from "../models/user"
-import { Domain } from "../models/domain";
+import { Domain } from "../models/domain"
 
 import useLogout from "../hooks/useLogout"
-import useValidateName from "../hooks/validation/useValidateName";
-import useDomains from "../hooks/useDomains";
-import useEntries from "../hooks/useEntries";
+import useValidateName from "../hooks/validation/useValidateName"
+import useDomains from "../hooks/useDomains"
+import useEntries from "../hooks/useEntries"
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
@@ -57,7 +57,7 @@ const selectDomain = async (domain: Domain) => {
     console.error("Failed to fetch entries.")
     return
   }
-  
+
   selectedDomain.value = domain
   visibleDomainDropdowns[focusedDomainId] = false
 }
@@ -163,6 +163,7 @@ div.dropdown-container {
   z-index: 1;
   background-color: $tertiary-bg-color;
   border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 
   &.profile-options {
     top: 55px;
