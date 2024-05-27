@@ -13,7 +13,8 @@ import PushStackIcon from "./vector/PushStackIcon.vue"
 import InputModal from "./InputModal.vue"
 
 const session = inject<Ref<User>>("session")!
-const domains = inject<Ref<Map<number, Domain>>>("domains")!
+const domains = inject<Ref<Record<number, Domain>>>("domains")!
+const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 
 const { logout } = useLogout()
 const { name, nameError } = useValidateName()
@@ -22,21 +23,21 @@ const { createDomain, deleteDomain } = useDomains()
 const showProfileOptions = ref(false)
 const showCreateDomainModal = ref(false)
 
-let selectedDomainId = -1
+let focusedDomainId = -1
 const visibleDomainDropdowns = reactive<boolean[]>([])
 
 const toggleDomainDropdown = (id: number) => {
   visibleDomainDropdowns[id] = !visibleDomainDropdowns[id]
 
-  if (id !== selectedDomainId) {
-    visibleDomainDropdowns[selectedDomainId] = false
+  if (id !== focusedDomainId) {
+    visibleDomainDropdowns[focusedDomainId] = false
   }
 
   if (visibleDomainDropdowns[id]) {
-    selectedDomainId = id
+    focusedDomainId = id
   }
   else {
-    selectedDomainId = -1
+    focusedDomainId = -1
   }
 }
 
@@ -46,7 +47,12 @@ const toggleProfileOptions = () => {
 
 const hideDropdowns = () => {
   showProfileOptions.value = false
-  visibleDomainDropdowns[selectedDomainId] = false
+  visibleDomainDropdowns[focusedDomainId] = false
+}
+
+const selectDomain = (domain: Domain) => {
+  selectedDomain.value = domain
+  visibleDomainDropdowns[focusedDomainId] = false
 }
 
 const confirmNewDomain = () => {
@@ -63,12 +69,16 @@ const confirmNewDomain = () => {
 }
 
 const confirmDeleteDomain = () => {
-  if (!deleteDomain(selectedDomainId)) {
+  if (!deleteDomain(focusedDomainId)) {
     console.error("Failed to delete domain.")
   }
   else {
-    visibleDomainDropdowns[selectedDomainId] = false
+    visibleDomainDropdowns[focusedDomainId] = false
   }
+}
+
+const shouldAppearFocused = (id: number) => {
+  return visibleDomainDropdowns[id] || selectedDomain.value?.id === id
 }
 
 onMounted(() => {
@@ -92,12 +102,12 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
-    <div class="domain-select-container" :key="domains.size">
+    <div class="domain-select-container" :key="Object.keys(domains).length">
       <template v-if="session.isAdmin">
         <div v-for="domain in domains">
-          <button @click.stop="toggleDomainDropdown(domain[0])" :class="`bubble domain-option ${visibleDomainDropdowns[domain[0]] ? 'focused' : ''}`" :key="domain[0]">{{ domain[1].name }}</button>
-          <div class="dropdown-container" v-show="visibleDomainDropdowns[domain[0]]" @click.stop>
-            <button class="bubble green">Select</button>
+          <button @click.stop="toggleDomainDropdown(domain.id)" :class="`bubble domain-option ${shouldAppearFocused(domain.id) ? 'focused' : ''}`" :key="domain.id">{{ domain.name }}</button>
+          <div class="dropdown-container" v-show="visibleDomainDropdowns[domain.id]" @click.stop>
+            <button @click="selectDomain(domain)" class="bubble green">Select</button>
             <button class="bubble red" @click="confirmDeleteDomain">Delete</button>
           </div>
         </div>
@@ -106,8 +116,8 @@ onUnmounted(() => {
           New Domain
         </button>
       </template>
-      <p v-else-if="domains.size === 0">Currently no domains to select.</p>
-      <button v-else v-for="domain in domains" class="bubble domain-option" :key="domain[0]">{{ domain[1].name }}</button>
+      <p v-else-if="Object.keys(domains).length === 0">Currently no domains to select.</p>
+      <button v-else @click="selectDomain(domain)" v-for="domain in domains" :class="`bubble domain-option ${shouldAppearFocused(domain.id) ? 'focused' : ''}`" :key="domain.id">{{ domain.name }}</button>
     </div>
   </div>
   <InputModal

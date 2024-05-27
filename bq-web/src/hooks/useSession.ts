@@ -2,36 +2,42 @@ import { Ref, ref } from "vue"
 import { API_ENDPOINT } from "../utilities"
 import { User, Session } from "../models/user"
 import { UserTask } from "../models/task"
-import useCache from "./useCache"
 import { Domain } from "../models/domain"
+import useCache from "./useCache"
 
 const useSession = () => {
     const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
 
     const session = ref<User | null>(null)
-    const tasks = ref<Map<number, UserTask>>(new Map())
-    const domains = ref<Map<number, Domain>>(new Map())
+    const tasks = ref<Record<number, UserTask>>({})
+    const domains = ref<Record<number, Domain>>({})
 
     const loading = ref(true)
     const connectionError = ref(false)
 
-    const updateSessionData = async (data: Session, session: Ref<User | null>, tasks: Ref<Map<number, UserTask>>, domains: Ref<Map<number, Domain>>) => {
+    const updateSessionData = async (data: Session, session: Ref<User | null>, tasks: Ref<Record<number, UserTask>>, domains: Ref<Record<number, Domain>>) => {
         session.value = data.user;
+    
+        let recordedTasks: Record<number, UserTask> | undefined = {}
+        data.tasks?.forEach((task: UserTask) => {
+            recordedTasks![task.id] = task
+        })
 
-        tasks.value = retrieveOrCacheUserTasks(
-            data.tasks?.reduce((map, task) => map.set(task.id, task), new Map())
-        );
-        
-        domains.value = data.domains.reduce(
-            (map, domain) => map.set(domain.id, domain), new Map()
-        );
+        let recordedDomains: Record<number, Domain> = {}
+        data.domains.forEach((domain: Domain) => {
+            recordedDomains[domain.id] = domain
+        })
+
+        tasks.value = retrieveOrCacheUserTasks(recordedTasks)
+        domains.value = recordedDomains
     }
 
     const fetchSession = async () => {
         try {
-            const [cachedTasks, taskCacheTimestamp] = retrieveUserTasks()
-            const query_param = cachedTasks ? taskCacheTimestamp : ""
-            const response = await fetch(`${API_ENDPOINT}/api/user/session/${query_param}`, {
+            const [taskCacheTimestamp] = retrieveUserTasks()
+            const endpoint = taskCacheTimestamp ? `/${taskCacheTimestamp}` : ""
+
+            const response = await fetch(`${API_ENDPOINT}/api/user/session/${endpoint}`, {
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json"

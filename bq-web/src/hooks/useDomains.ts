@@ -8,7 +8,7 @@ interface CreateDomainResponse {
 }
 
 export const useDomains = () => {
-    const domains = inject<Ref<Map<number, Domain>>>("domains")!
+    const domains = inject<Ref<Record<number, Domain>>>("domains")!
 
     const createDomain = async (name: string): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/domains/create`, {
@@ -28,7 +28,7 @@ export const useDomains = () => {
                 lastUpdated: data.lastUpdated
             }
 
-            domains.value.set(data.domainId, domain)
+            domains.value[data.domainId] = domain;
             return true
         }
 
@@ -46,7 +46,7 @@ export const useDomains = () => {
         })
 
         if (response.ok) {
-            domains.value.delete(domainId)
+            delete domains.value[domainId]
             return true
         }
 
