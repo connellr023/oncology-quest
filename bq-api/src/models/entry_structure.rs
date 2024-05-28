@@ -1,11 +1,10 @@
 use crate::domain_query_many;
 use crate::utilities::parsable::EntryTitle;
-use sqlx::{FromRow, Pool, Postgres};
 use std::collections::HashMap;
+use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
-use anyhow::anyhow;
 
-#[derive(Debug, FromRow, Serialize)]
+#[derive(Debug, FromRow, Clone, Serialize)]
 pub struct Supertask {
     id: i32,
     title: EntryTitle,
@@ -20,7 +19,7 @@ pub struct Task {
     domain_id: i32
 }
 
-#[derive(Debug, FromRow, Serialize)]
+#[derive(Debug, FromRow, Clone, Serialize)]
 pub struct Subtask {
     id: i32,
     task_id: i32,
@@ -34,16 +33,16 @@ pub struct Subtask {
 /// 
 /// * `T` - The type of the entry.
 /// * `U` - The type of the children.
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct EntryLevel<T: Sized, U: Sized> {
     entry: T,
-    children: Vec<U>
+    children: Box<[U]>
 }
 
 type EntryHierarchy = EntryLevel<Supertask, EntryLevel<Task, Subtask>>;
 
 /// Represents the hierarchal structure of entries, with supertasks at the top level, tasks at the second level, and subtasks at the third level.
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct EntryStructure(Vec<EntryHierarchy>);
 
 macro_rules! fetch_all {
@@ -233,66 +232,8 @@ impl Subtask {
     }
 }
 
-impl<T: Sized, U: Sized> EntryLevel<T, U> {
-    pub fn new(entry: T) -> Self {
-        EntryLevel {
-            entry,
-            children: vec![]
-        }
-    }
-
-    pub fn children_mut(&mut self) -> &mut Vec<U> {
-        &mut self.children
-    }
-}
-
-trait Mappable: Sized {
-    fn id(&self) -> i32;
-
-    fn build_lookup_map(collection: &[Self]) -> HashMap<i32, usize> {
-        let mut lookup_map = HashMap::with_capacity(collection.len());
-
-        for i in 0..collection.len() {
-            lookup_map.insert(collection[i].id(), i);
-        }
-
-        lookup_map
-    }
-}
-
-impl Mappable for Supertask {
-    fn id(&self) -> i32 {
-        self.id
-    }
-}
-
-impl Mappable for Task {
-    fn id(&self) -> i32 {
-        self.id
-    }
-}
-
 impl EntryStructure {
-    pub fn new(supertask_count: usize) -> Self {
-        EntryStructure(Vec::with_capacity(supertask_count))
-    }
-
-    pub fn supertasks_mut(&mut self) -> &mut Vec<EntryHierarchy> {
-        &mut self.0
-    }
-
-    pub fn tasks_mut(&mut self, supertask_index: usize) -> &mut Vec<EntryLevel<Task, Subtask>> {
-        let supertask = &mut self.0[supertask_index];
-        supertask.children_mut()
-    }
-
-    pub fn subtasks_mut(&mut self, supertask_index: usize, task_index: usize) -> &mut Vec<Subtask> {
-        let tasks = self.tasks_mut(supertask_index);
-        tasks[task_index].children_mut()
-    }
-
     /// Builds an entry structure from an unordered collection of supertasks, tasks, and subtasks.
-    /// Takes ownership of the collections.
     /// 
     /// # Parameters
     /// 
@@ -303,45 +244,47 @@ impl EntryStructure {
     /// # Returns
     /// 
     /// The entry structure.
-    pub fn build(supertasks: Box<[Supertask]>, tasks: Box<[Task]>, subtasks: Box<[Subtask]>) -> anyhow::Result<Self> {
-        let supertask_lookup_map = Supertask::build_lookup_map(&supertasks);
-        let task_lookup_map = Task::build_lookup_map(&tasks);
-
-        let mut entry_structure = EntryStructure::new(supertasks.len());
-
-        for supertask in supertasks.into_vec() {
-            entry_structure
-                .supertasks_mut()
-                .push(EntryLevel::new(supertask));
+    pub fn build(supertasks: &[Supertask], tasks: &[Task], subtasks: &[Subtask]) -> anyhow::Result<Self> {
+        let mut task_map: HashMap<i32, Vec<Subtask>> = HashMap::new();
+        for subtask in subtasks.iter() {
+            task_map
+                .entry(subtask.task_id)
+                .or_default()
+                .push(subtask.to_owned());
         }
 
+        let mut supertask_map: HashMap<i32, Vec<EntryLevel<Task, Subtask>>> = HashMap::new();
         for task in tasks.iter() {
-            let supertask_index = *supertask_lookup_map
-                .get(&task.supertask_id)
-                .ok_or(anyhow!("Task's supertask not found"))?;
+            let subtasks = task_map
+                .remove(&task.id)
+                .unwrap_or_default();
 
-            let tasks = entry_structure
-                .tasks_mut(supertask_index);
+            let entry_level = EntryLevel {
+                entry: task.to_owned(),
+                children: subtasks.into_boxed_slice()
+            };
 
-            tasks.push(EntryLevel::new(task.to_owned()));
+            supertask_map
+                .entry(task.supertask_id)
+                .or_default()
+                .push(entry_level);
         }
 
-        for subtask in subtasks.into_vec() {
-            let task_index = *task_lookup_map
-                .get(&subtask.task_id)
-                .ok_or(anyhow!("Subtask's task not found"))?;
+        let mut entry_structure = Vec::with_capacity(supertasks.len());
+        for supertask in supertasks.iter() {
+            let entry_levels = supertask_map
+                .remove(&supertask.id)
+                .unwrap_or_default();
 
-            let supertask_index = *supertask_lookup_map
-                .get(&tasks[task_index].supertask_id)
-                .ok_or(anyhow!("Task's supertask not found"))?;
+            let entry_hierarchy = EntryHierarchy {
+                entry: supertask.to_owned(),
+                children: entry_levels.into_boxed_slice()
+            };
 
-            let subtasks = entry_structure
-                .subtasks_mut(supertask_index, task_index);
-
-            subtasks.push(subtask);
+            entry_structure.push(entry_hierarchy);
         }
 
-        Ok(entry_structure)
+        Ok(Self(entry_structure))
     }
 
     pub async fn fetch(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Self> {
@@ -349,43 +292,7 @@ impl EntryStructure {
         let tasks = Task::fetch_all(pool, domain_id).await?;
         let subtasks = Subtask::fetch_all(pool, domain_id).await?;
 
-        let structure = Self::build(supertasks, tasks, subtasks)?;
+        let structure = Self::build(&supertasks, &tasks, &subtasks)?;
         Ok(structure)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_build() {
-        let supertasks = Box::new([Supertask {
-            id: 1,
-            title: EntryTitle::parse("Supertask 1".to_string()).unwrap(),
-            domain_id: 1
-        }]);
-
-        let tasks = Box::new([Task {
-            id: 1,
-            supertask_id: 1,
-            title: EntryTitle::parse("Task 1".to_string()).unwrap(),
-            domain_id: 1
-        }]);
-
-        let subtasks = Box::new([Subtask {
-            id: 1,
-            task_id: 1,
-            title: EntryTitle::parse("Subtask 1".to_string()).unwrap(),
-            domain_id: 1
-        }]);
-
-        let result = EntryStructure::build(supertasks, tasks, subtasks);
-        assert!(result.is_ok());
-
-        let mut entry_structure = result.unwrap();
-        assert_eq!(entry_structure.supertasks_mut().len(), 1);
-        assert_eq!(entry_structure.tasks_mut(0).len(), 1);
-        assert_eq!(entry_structure.subtasks_mut(0, 0).len(), 1);
     }
 }

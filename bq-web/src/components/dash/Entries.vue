@@ -39,14 +39,16 @@ const showCreateEntryModal = (onConfirm: (confirmTitle: string) => Promise<Boole
   createEntryCallback.value = async () => {
     if (await onConfirm(title.value)) {
       isCreateEntryModalVisible.value = false
+      title.value = ""
+      titleError.value = ""
     }
   }
 }
 
 const {
   createSupertask,
-  updateSupertask,
-  deleteSupertask
+  createTask,
+  createSubtask
 } = useEntries()
 </script>
 
@@ -62,33 +64,33 @@ const {
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
   <div id="entries-container" v-if="selectedDomain">
-    <div :class="`supertask focusable ${visibility[computeKey(domainId)] ? 'focused': ''}`" v-for="(supertask, domainId, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(domainId)">
-      <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(domainId)] || false" :index="[-1]" :title="supertask.entry.title" @click="toggleVisibility(computeKey(domainId))" />
-      <ul v-show="visibility[computeKey(domainId)]" :key="computeKey(domainId, -1)">
-        <li :class="`task focusable layer-2 ${visibility[computeKey(domainId, taskIndex)] ? 'focused': ''}`" v-for="(task, taskIndex) in supertask.children" :key="computeKey(domainId, taskIndex)">
-          <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(domainId, taskIndex)] || false" :index="[-1, -1]" :title="task.entry.title" @click="toggleVisibility(computeKey(domainId, taskIndex))" />
-          <ul v-show="visibility[computeKey(domainId, taskIndex)]" :key="computeKey(domainId, taskIndex, -1)">
-            <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(domainId, taskIndex, subtaskIndex)">
+    <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(supertaskIndex)">
+      <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(supertaskIndex)] || false" :index="[-1]" :title="supertask.entry.title" @click="toggleVisibility(computeKey(supertaskIndex))" />
+      <ul v-show="visibility[computeKey(supertaskIndex)]" :key="computeKey(supertaskIndex, -1)">
+        <li :class="`task focusable layer-2 ${visibility[computeKey(supertaskIndex, taskIndex)] ? 'focused': ''}`" v-for="(task, taskIndex) in supertask.children" :key="computeKey(supertaskIndex, taskIndex)">
+          <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(supertaskIndex, taskIndex)] || false" :index="[-1, -1]" :title="task.entry.title" @click="toggleVisibility(computeKey(supertaskIndex, taskIndex))" />
+          <ul v-show="visibility[computeKey(supertaskIndex, taskIndex)]" :key="computeKey(supertaskIndex, taskIndex, -1)">
+            <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(supertaskIndex, taskIndex, subtaskIndex)">
               <EditTask
                 :task="tasks[subtask.id] ?? null"
                 :value="subtask.title"
                 :index="[-1, -1, -1]"
               />
             </li>
-            <button class="bubble highlight" v-if="session.isAdmin">
+            <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createSubtask(confirmTitle, selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex))">
               <PushStackIcon />
               Push New Subtask
             </button>
           </ul>
         </li>
-        <button class="bubble highlight" v-if="session.isAdmin">
+        <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createTask(confirmTitle, selectedDomain!.id, supertask.entry.id, supertaskIndex))">
           <PushStackIcon />
           Push New Task
         </button>
       </ul>
     </div>
-    <p class="empty-domainn note" v-if="entries[selectedDomain.id] ? entries[selectedDomain.id].length === 0 : true">This domain is looking sparse.</p>
-    <button @click="showCreateEntryModal((confirmTitle: string) => createSupertask(confirmTitle, selectedDomain!.id))" class="bubble highlight" v-if="session.isAdmin">
+    <p class="empty-domain note" v-if="entries[selectedDomain.id].length === 0">This domain is looking sparse.</p>
+    <button @click="showCreateEntryModal((confirmTitle: string) => createSupertask(confirmTitle, selectedDomain!.id))" class="bubble push highlight" v-if="session.isAdmin">
       <PushStackIcon />
       Push New Supertask
     </button>
@@ -98,6 +100,10 @@ const {
 
 <style scoped lang="scss">
 @import "../../main.scss";
+
+button.push {
+  width: 100%;
+}
 
 p.note {
   display: flex;
@@ -137,12 +143,13 @@ div#entries-container {
 
 .task {
   &.focused {
-    padding-bottom: 20px;
+    padding-bottom: 15px;
   }
 }
 
 ul {
   list-style-type: none;
   padding-top: 10px;
+  padding-left: 0;
 }
 </style>
