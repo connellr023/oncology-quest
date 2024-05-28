@@ -4,7 +4,14 @@ import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
 
 import useSaveTask from "../../hooks/useSaveTask"
+
 import EntryHeading from "./EntryHeading.vue"
+
+const props = defineProps<{
+  saveTitle: (title: string) => Promise<boolean>,
+  task?: UserTask,
+  value: string
+}>()
 
 const user = inject<Ref<User>>("session")!.value
 
@@ -16,12 +23,6 @@ const {
   save
 } = useSaveTask()
 
-const props = defineProps<{
-  task?: UserTask,
-  value: string,
-  index: [number, number, number]
-}>()
-
 onMounted(() => {
   if (props.task) {
     completed.value = props.task.isComplete
@@ -32,9 +33,9 @@ onMounted(() => {
 const toggleCompleted = async () => {
   completed.value = !completed.value
 
-  if (!await save(props.index)) {
-    completed.value = !completed.value
-  }
+  // if (!await save(props.index)) {
+  //   completed.value = !completed.value
+  // }
 }
 
 const textArea = ref<VNodeRef | null>(null)
@@ -50,8 +51,8 @@ onMounted(adjustHeight)
 <template>
   <div class="container">
     <div class="task-heading-container">
-      <EntryHeading class="subtask-entry" :index="index" :title="value"/>
-      <button v-if="!user.isAdmin" class="minimal" @click="save(index)">Save</button>
+      <EntryHeading :save="saveTitle" class="subtask-entry" :title="value"/>
+      <button v-if="!user.isAdmin" class="minimal" @click="">Save</button>
       <div class="check-container" @click.stop="toggleCompleted">
         <div :class="`completed ${completed ? 'active' : ''}`" />
         <div :class="`${!completed ? 'active' : ''}`" />

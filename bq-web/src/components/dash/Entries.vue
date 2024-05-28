@@ -4,7 +4,7 @@ import { User } from "../../models/user"
 import { EntryStructure, UserTask } from "../../models/tasks"
 import { Domain } from "../../models/domain"
 
-// import useTaskProgress from "../../hooks/useTaskProgress"
+import useProgress from "../../hooks/useProgress"
 
 import EditTask from "./EditTask.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
@@ -12,10 +12,8 @@ import PushStackIcon from "../vector/PushStackIcon.vue"
 import InputModal from "../InputModal.vue"
 import useValidateTitle from "../../hooks/validation/useValidateTitle"
 import useEntries from "../../hooks/useEntries"
-// import EditTaskHeading from "./EditTaskHeading.vue"
-// import EditSubtaskEntry from "./EditSubtaskEntry.vue"
 
-defineProps<{ tasks: Record<number, UserTask> }>()
+const props = defineProps<{ tasks: Record<number, UserTask> }>()
 
 const session = inject<Ref<User>>("session")!
 const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
@@ -47,9 +45,15 @@ const showCreateEntryModal = (onConfirm: (confirmTitle: string) => Promise<Boole
 
 const {
   createSupertask,
+  updateSupertask,
   createTask,
   createSubtask
 } = useEntries()
+
+const {
+  calculateSupertaskProgress,
+  calculateTaskProgress
+} = useProgress(props.tasks)
 </script>
 
 <template>
@@ -63,18 +67,30 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div id="entries-container" v-if="selectedDomain">
+  <div id="entries-container" v-if="selectedDomain" :key="selectedDomain.id">
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(supertaskIndex)">
-      <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(supertaskIndex)] || false" :index="[-1]" :title="supertask.entry.title" @click="toggleVisibility(computeKey(supertaskIndex))" />
+      <ProgressableEntryHeading
+        :progress="calculateSupertaskProgress(selectedDomain!.id, supertask.entry.id, supertaskIndex)"
+        :isActive="visibility[computeKey(supertaskIndex)] || false"
+        :title="supertask.entry.title"
+        :save="(saveTitle: string) => updateSupertask(selectedDomain!.id, supertaskIndex, supertask.entry.id, saveTitle)"
+        @click="toggleVisibility(computeKey(supertaskIndex))"
+      />
       <ul v-show="visibility[computeKey(supertaskIndex)]" :key="computeKey(supertaskIndex, -1)">
         <li :class="`task focusable layer-2 ${visibility[computeKey(supertaskIndex, taskIndex)] ? 'focused': ''}`" v-for="(task, taskIndex) in supertask.children" :key="computeKey(supertaskIndex, taskIndex)">
-          <ProgressableEntryHeading :progress="0" :isActive="visibility[computeKey(supertaskIndex, taskIndex)] || false" :index="[-1, -1]" :title="task.entry.title" @click="toggleVisibility(computeKey(supertaskIndex, taskIndex))" />
+          <ProgressableEntryHeading
+            :progress="calculateTaskProgress(selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex)"
+            :isActive="visibility[computeKey(supertaskIndex, taskIndex)] || false"
+            :title="task.entry.title"
+            :save="() => async () => false"
+            @click="toggleVisibility(computeKey(supertaskIndex, taskIndex))"
+          />
           <ul v-show="visibility[computeKey(supertaskIndex, taskIndex)]" :key="computeKey(supertaskIndex, taskIndex, -1)">
             <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(supertaskIndex, taskIndex, subtaskIndex)">
               <EditTask
                 :task="tasks[subtask.id] ?? null"
                 :value="subtask.title"
-                :index="[-1, -1, -1]"
+                :saveTitle="() => async () => false"
               />
             </li>
             <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createSubtask(confirmTitle, selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex))">

@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
-
-import useSaveEntryTitle from "../../hooks/useSaveEntryTitle"
+import useValidateTitle from "../../hooks/validation/useValidateTitle";
 
 defineEmits(["click"])
 const props = defineProps<{
-  title: string,
-  index: number[]
+  save: (saveTitle: string) => Promise<boolean>,
+  title: string
 }>()
 
 const session = inject<Ref<User>>("session")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
-const { title, titleError, message, save } = useSaveEntryTitle()
+const { title, titleError } = useValidateTitle()
 
 title.value = props.title
 
@@ -37,7 +36,11 @@ const cancelEdit = () => {
 }
 
 const saveEdit = async () => {
-  if (await save(props.index)) {
+  if (titleError.value) {
+    return
+  }
+
+  if (await props.save(title.value)) {
     toggleEditMode()
   }
 }
@@ -53,8 +56,8 @@ const saveEdit = async () => {
       <template v-if="inEditMode">
         <button class="minimal" @click.stop="cancelEdit">Cancel</button>
         <button class="minimal" @click.stop="saveEdit">Save</button>
+        <button class="minimal" @click.stop="">Delete</button>
         <span v-if="titleError">{{ titleError }}</span>
-        <span v-if="message">{{ message }}</span>
       </template>
       <button class="edit minimal" v-else :disabled="isEditing" @click.stop="toggleEditMode">Edit</button>
     </div>
