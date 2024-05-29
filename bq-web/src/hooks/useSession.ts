@@ -18,10 +18,15 @@ const useSession = () => {
     const updateSessionData = async (data: Session, session: Ref<User | null>, tasks: Ref<Record<number, UserTask>>, domains: Ref<Record<number, Domain>>) => {
         session.value = data.user;
     
-        let recordedTasks: Record<number, UserTask> | undefined = {}
-        data.tasks?.forEach((task: UserTask) => {
-            recordedTasks![task.subtaskId] = task
-        })
+        let recordedTasks: Record<number, UserTask> | undefined = undefined;
+
+        if (data.tasks) {
+            recordedTasks = {}
+
+            data.tasks.forEach((task: UserTask) => {
+                recordedTasks![task.subtaskId] = task
+            })
+        }
 
         let recordedDomains: Record<number, Domain> = {}
         data.domains.forEach((domain: Domain) => {

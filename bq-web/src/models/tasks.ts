@@ -2,7 +2,7 @@ export interface UserTask {
     id: number,
     userId: number,
     subtaskId: number,
-    isComplete: boolean,
+    isCompleted: boolean,
     comment: string
 }
 

@@ -3,39 +3,39 @@ import { Ref, VNodeRef, inject, onMounted, ref } from "vue"
 import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
 
-import useSaveTask from "../../hooks/useSaveTask"
-
 import EntryHeading from "./EntryHeading.vue"
+import useUserTasks from "../../hooks/useUserTasks";
 
 const props = defineProps<{
   saveTask: (title: string) => Promise<boolean>,
   deleteTask: () => Promise<boolean>,
-  task?: UserTask,
+  subtaskId: number,
   value: string
 }>()
 
-const user = inject<Ref<User>>("session")!.value
+const session = inject<Ref<User>>("session")!
+const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
 
-const {
-  completed,
-  comment,
-  message,
-  //loading,
-} = useSaveTask()
+const isComplete = ref(false)
+const comment = ref("")
+
+const { updateTask } = useUserTasks(tasks, session.value.id)
 
 onMounted(() => {
-  if (props.task) {
-    completed.value = props.task.isComplete
-    comment.value = props.task.comment
+  const task = tasks.value[props.subtaskId]
+  
+  if (task) {
+    isComplete.value = task.isCompleted
+    comment.value = task.comment
   }
 })
 
 const toggleCompleted = async () => {
-  completed.value = !completed.value
+  isComplete.value = !isComplete.value
 
-  // if (!await save(props.index)) {
-  //   completed.value = !completed.value
-  // }
+  if (!await updateTask(props.subtaskId, isComplete.value, comment.value)) {
+    isComplete.value = !isComplete.value
+  }
 }
 
 const textArea = ref<VNodeRef | null>(null)
@@ -52,14 +52,13 @@ onMounted(adjustHeight)
   <div class="container">
     <div class="task-heading-container">
       <EntryHeading :saveHeading="saveTask" :deleteHeading="deleteTask" class="subtask-entry" :title="value"/>
-      <button v-if="!user.isAdmin" class="minimal" @click="">Save</button>
+      <button v-if="!session.isAdmin" class="minimal" @click="">Save</button>
       <div class="check-container" @click.stop="toggleCompleted">
-        <div :class="`completed ${completed ? 'active' : ''}`" />
-        <div :class="`${!completed ? 'active' : ''}`" />
+        <div :class="`completed ${isComplete ? 'active' : ''}`" />
+        <div :class="`${!isComplete ? 'active' : ''}`" />
       </div>
     </div>
-    <textarea class="bubble" v-show="(user.isAdmin && comment) || !user.isAdmin" :disabled="user.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="user.isAdmin"></textarea>
-    <span v-if="message">{{ message }}</span>
+    <textarea class="bubble" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
   </div>
 </template>
 

@@ -5,6 +5,7 @@ use serde::Serialize;
 use anyhow::anyhow;
 
 #[derive(Debug, FromRow, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserTask {
     id: i32,
     user_id: i32,
@@ -22,6 +23,24 @@ impl UserTask {
             is_completed,
             comment
         }
+    }
+
+    pub async fn exists(&self, pool: &Pool<Postgres>) -> anyhow::Result<bool> {
+        let record = sqlx::query!(
+            r#"
+            SELECT EXISTS(
+                SELECT 1
+                FROM user_tasks
+                WHERE subtask_id = $1 AND user_id = $2
+            ) AS "exists!";
+            "#,
+            self.subtask_id,
+            self.user_id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(record.exists)
     }
 
     pub async fn fetch_all(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Box<[Self]>> {
@@ -46,12 +65,12 @@ impl UserTask {
     /// 
     /// * `pool` - A connection pool to the database.
     /// * `user_id` - The ID of the user to fetch the tasks for.
-    /// * `task_cache_timestamp` - An optional timestamp for validating the user's task cache.
+    /// * `task_cache_timestamp` - A timestamp for validating the user's task cache.
     /// 
     /// # Returns
     /// 
     /// A list of user tasks if the user's task cache is outdated, otherwise `None`.
-    pub async fn fetch_all_if_updated(pool: &Pool<Postgres>, user_id: i32, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Option<Box<[Self]>>> {
+    pub async fn fetch_all_if_updated(pool: &Pool<Postgres>, user_id: i32, task_cache_timestamp: DateTime<Utc>) -> anyhow::Result<Option<Box<[Self]>>> {
         let records = sqlx::query_as!(
             UserTask,
             r#"
@@ -73,6 +92,19 @@ impl UserTask {
     }
 
     pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+        let mut transaction = pool.begin().await?;
+        
+        sqlx::query!(
+            r#"
+            UPDATE users
+            SET last_task_update = NOW()
+            WHERE id = $1;
+            "#,
+            self.user_id
+        )
+        .execute(&mut *transaction)
+        .await?;
+
         let row = sqlx::query!(
             r#"
             INSERT INTO user_tasks (user_id, subtask_id, is_completed, comment)
@@ -84,8 +116,10 @@ impl UserTask {
             self.is_completed,
             self.comment.as_str()
         )
-        .fetch_one(pool)
+        .fetch_one(&mut *transaction)
         .await?;
+
+        transaction.commit().await?;
 
         self.id = row.id;
 
@@ -93,6 +127,19 @@ impl UserTask {
     }
 
     pub async fn update(pool: &Pool<Postgres>, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
+        let mut transaction = pool.begin().await?;
+        
+        sqlx::query!(
+            r#"
+            UPDATE users
+            SET last_task_update = NOW()
+            WHERE id = $1;
+            "#,
+            user_id
+        )
+        .execute(&mut *transaction)
+        .await?;
+        
         let update_query = sqlx::query!(
             r#"
             UPDATE user_tasks
@@ -104,13 +151,19 @@ impl UserTask {
             id,
             user_id
         )
-        .execute(pool)
+        .execute(&mut *transaction)
         .await?;
+
+        transaction.commit().await?;
 
         if update_query.rows_affected() == 0 {
             return Err(anyhow!("User task does not exist."));
         }
 
         Ok(())
+    }
+
+    pub fn id(&self) -> i32 {
+        self.id
     }
 }

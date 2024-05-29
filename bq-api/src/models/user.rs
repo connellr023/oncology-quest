@@ -210,17 +210,18 @@ impl User {
         Ok(())
     }
 
-    pub async fn exists(&self, pool: &Pool<Postgres>) -> bool {
-        let exists_query = sqlx::query!(
+    pub async fn exists(&self, pool: &Pool<Postgres>) -> anyhow::Result<bool> {
+        let record = sqlx::query!(
             r#"
             SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)
+            AS "exists!";
             "#,
             self.username.as_str(), self.email.as_str()
         )
         .fetch_one(pool)
-        .await;
+        .await?;
 
-        exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
+        Ok(record.exists)
     }
 
     pub async fn delete(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<()> {

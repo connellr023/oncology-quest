@@ -48,7 +48,11 @@ const {
   updateSupertask,
   deleteSupertask,
   createTask,
-  createSubtask
+  updateTask,
+  deleteTask,
+  createSubtask,
+  updateSubtask,
+  deleteSubtask
 } = useEntries()
 
 const {
@@ -84,17 +88,17 @@ const {
             :progress="calculateTaskProgress(selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex)"
             :isActive="visibility[computeKey(supertaskIndex, taskIndex)] || false"
             :title="task.entry.title"
-            :saveHeading="() => async () => false"
-            :deleteHeading="() => async () => false"
+            :saveHeading="(saveTitle: string) => updateTask(selectedDomain!.id, supertaskIndex, taskIndex, task.entry.id, saveTitle)"
+            :deleteHeading="() => deleteTask(selectedDomain!.id, supertaskIndex, taskIndex, task.entry.id)"
             @click="toggleVisibility(computeKey(supertaskIndex, taskIndex))"
           />
           <ul v-show="visibility[computeKey(supertaskIndex, taskIndex)]" :key="computeKey(supertaskIndex, taskIndex, -1)">
             <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(supertaskIndex, taskIndex, subtaskIndex)">
               <EditTask
-                :task="tasks[subtask.id] ?? null"
+                :subtaskId="subtask.id"
                 :value="subtask.title"
-                :saveTask="() => async () => false"
-                :deleteTask="() => async () => false"
+                :saveTask="(saveTitle: string) => updateSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"
+                :deleteTask="() => deleteSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id)"
               />
             </li>
             <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createSubtask(confirmTitle, selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex))">

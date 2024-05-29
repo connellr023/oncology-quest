@@ -43,7 +43,7 @@ const useEntries = () => {
         return false
     }
 
-    const updateSupertask = async (domainId: number, entryIndex: number, entryId: number, title: string): Promise<boolean> => {
+    const updateSupertask = async (domainId: number, supertaskIndex: number, supertaskId: number, title: string): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/supertasks/update`, {
             credentials: "include",
             headers: {
@@ -51,13 +51,13 @@ const useEntries = () => {
             },
             method: "PATCH",
             body: JSON.stringify({
-                entryId,
+                entryId: supertaskId,
                 title
             })
         })
 
         if (response.ok) {
-            entries.value[domainId][entryIndex].entry.title = title
+            entries.value[domainId][supertaskIndex].entry.title = title
             cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
@@ -65,7 +65,7 @@ const useEntries = () => {
         return false
     }
 
-    const deleteSupertask = async (domainId: number, entryIndex: number, entryId: number): Promise<boolean> => {
+    const deleteSupertask = async (domainId: number, supertaskIndex: number, supertaskId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/supertasks/delete`, {
             credentials: "include",
             headers: {
@@ -73,12 +73,12 @@ const useEntries = () => {
             },
             method: "DELETE",
             body: JSON.stringify({
-                entryId
+                entryId: supertaskId
             })
         })
 
         if (response.ok) {
-            entries.value[domainId].splice(entryIndex, 1);
+            entries.value[domainId].splice(supertaskIndex, 1);
             cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
@@ -120,6 +120,49 @@ const useEntries = () => {
         return false
     }
 
+    const updateTask = async (domainId: number, supertaskIndex: number, taskIndex: number, taskId: number, title: string): Promise<boolean> => {
+        const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: "PATCH",
+            body: JSON.stringify({
+                entryId: taskId,
+                title
+            })
+        })
+
+        if (response.ok) {
+            entries.value[domainId][supertaskIndex].children[taskIndex].entry.title = title
+            cacheDomainEntries(domainId, entries.value[domainId])
+            return true
+        }
+
+        return false
+    }
+
+    const deleteTask = async (domainId: number, supertaskIndex: number, taskIndex: number, taskId: number): Promise<boolean> => {
+        const response = await fetch(`${API_ENDPOINT}/api/tasks/delete`, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: "DELETE",
+            body: JSON.stringify({
+                entryId: taskId
+            })
+        })
+
+        if (response.ok) {
+            entries.value[domainId][supertaskIndex].children.splice(taskIndex, 1);
+            cacheDomainEntries(domainId, entries.value[domainId])
+            return true
+        }
+
+        return false
+    }
+
     const createSubtask = async (title: string, domainId: number, taskId: number, supertaskIndex: number, taskIndex: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/subtasks/create`, {
             credentials: "include",
@@ -144,6 +187,49 @@ const useEntries = () => {
                 taskId
             })
 
+            cacheDomainEntries(domainId, entries.value[domainId])
+            return true
+        }
+
+        return false
+    }
+
+    const updateSubtask = async (domainId: number, supertaskIndex: number, taskIndex: number, subtaskIndex: number, subtaskId: number, title: string): Promise<boolean> => {
+        const response = await fetch(`${API_ENDPOINT}/api/subtasks/update`, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: "PATCH",
+            body: JSON.stringify({
+                entryId: subtaskId,
+                title
+            })
+        })
+
+        if (response.ok) {
+            entries.value[domainId][supertaskIndex].children[taskIndex].children[subtaskIndex].title = title
+            cacheDomainEntries(domainId, entries.value[domainId])
+            return true
+        }
+
+        return false
+    }
+
+    const deleteSubtask = async (domainId: number, supertaskIndex: number, taskIndex: number, subtaskIndex: number, subtaskId: number): Promise<boolean> => {
+        const response = await fetch(`${API_ENDPOINT}/api/subtasks/delete`, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: "DELETE",
+            body: JSON.stringify({
+                entryId: subtaskId
+            })
+        })
+
+        if (response.ok) {
+            entries.value[domainId][supertaskIndex].children[taskIndex].children.splice(subtaskIndex, 1);
             cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
@@ -188,7 +274,11 @@ const useEntries = () => {
         updateSupertask,
         deleteSupertask,
         createTask,
+        updateTask,
+        deleteTask,
         createSubtask,
+        updateSubtask,
+        deleteSubtask,
         fetchEntriesWithCaching
     }
 }

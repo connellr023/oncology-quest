@@ -27,8 +27,11 @@ pub(super) async fn register(pool: Data<Pool<Postgres>>, register_user_query: Js
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
 
-    if user.exists(&pool).await {
-        return HttpResponse::Conflict().finish();
+    match user.exists(&pool).await {
+        Ok(exists) => if exists {
+            return HttpResponse::Conflict().finish();
+        },
+        Err(_) => return HttpResponse::InternalServerError().finish()
     }
 
     if user.insert(&pool).await.is_err() {

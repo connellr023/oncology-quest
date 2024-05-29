@@ -27,14 +27,14 @@ const useProgress = (userTasks: Record<number, UserTask>) => {
                 return
             }
 
-            if (userTask.isComplete) {
+            if (userTask.isCompleted) {
                 completedTasks++
             }
 
             totalTasks++
         })
 
-        const progress = (completedTasks / totalTasks) || 0
+        const progress = ((completedTasks / totalTasks) * 100) || 0
         memoizedTaskProgress.set(taskId, progress)
 
         return progress
@@ -45,20 +45,17 @@ const useProgress = (userTasks: Record<number, UserTask>) => {
             return memoizedSupertaskProgress.get(supertaskId)!
         }
         
-        let completedTasks = 0
+        let totalProgress = 0
         let totalTasks = 0
 
         entries.value[domainId][supertaskIndex].children.forEach((task, taskIndex) => {
             const progress = calculateTaskProgress(domainId, task.entry.id, supertaskIndex, taskIndex)
 
-            if (progress === 1) {
-                completedTasks++
-            }
-
+            totalProgress += progress
             totalTasks++
         })
 
-        const progress = (completedTasks / totalTasks) || 0
+        const progress = (totalProgress / totalTasks) || 0
         memoizedSupertaskProgress.set(supertaskId, progress)
 
         return progress

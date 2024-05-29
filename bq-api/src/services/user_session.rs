@@ -30,7 +30,11 @@ impl UserSessionResponse {
     pub async fn build(pool: &Pool<Postgres>, user: User, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Self> {        
         let domains = Domain::fetch_all(pool).await?;
         let user = ClientUser::from(user);
-        let tasks = UserTask::fetch_all_if_updated(pool, user.id, task_cache_timestamp).await?;
+
+        let tasks = match task_cache_timestamp {
+            Some(task_cache_timestamp) => UserTask::fetch_all_if_updated(pool, user.id, task_cache_timestamp).await?,
+            None => Some(UserTask::fetch_all(pool, user.id).await?)
+        };
 
         let response = Self {
             user,
