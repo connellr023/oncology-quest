@@ -7,8 +7,8 @@ import EntryHeading from "./EntryHeading.vue"
 import useUserTasks from "../../hooks/useUserTasks";
 
 const props = defineProps<{
-  saveTask: (title: string) => Promise<boolean>,
-  deleteTask: () => Promise<boolean>,
+  saveHeading: (title: string) => Promise<boolean>,
+  deleteHeading: () => Promise<boolean>,
   subtaskId: number,
   value: string
 }>()
@@ -23,17 +23,21 @@ const { updateTask } = useUserTasks(tasks, session.value.id)
 
 onMounted(() => {
   const task = tasks.value[props.subtaskId]
-  
+
   if (task) {
     isComplete.value = task.isCompleted
     comment.value = task.comment
   }
 })
 
+const saveTask = async (): Promise<boolean> => {
+  return await updateTask(props.subtaskId, isComplete.value, comment.value)
+}
+
 const toggleCompleted = async () => {
   isComplete.value = !isComplete.value
 
-  if (!await updateTask(props.subtaskId, isComplete.value, comment.value)) {
+  if (!await saveTask()) {
     isComplete.value = !isComplete.value
   }
 }
@@ -51,8 +55,8 @@ onMounted(adjustHeight)
 <template>
   <div class="container">
     <div class="task-heading-container">
-      <EntryHeading :saveHeading="saveTask" :deleteHeading="deleteTask" class="subtask-entry" :title="value"/>
-      <button v-if="!session.isAdmin" class="minimal" @click="">Save</button>
+      <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
+      <button v-if="!session.isAdmin" class="minimal" @click="saveTask">Save</button>
       <div class="check-container" @click.stop="toggleCompleted">
         <div :class="`completed ${isComplete ? 'active' : ''}`" />
         <div :class="`${!isComplete ? 'active' : ''}`" />

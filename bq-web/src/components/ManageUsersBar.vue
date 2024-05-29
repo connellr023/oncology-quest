@@ -26,7 +26,7 @@ const searchUser = () => {
 }
 
 const setSelectedUser = (selection: UserWithTasks) => {
-  selectedUser.value = selection;
+  selectedUser.value = selection
 }
 </script>
 

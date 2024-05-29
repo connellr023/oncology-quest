@@ -16,8 +16,8 @@ import useEntries from "../../hooks/useEntries"
 const props = defineProps<{ tasks: Record<number, UserTask> }>()
 
 const session = inject<Ref<User>>("session")!
-const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
+const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 
 const { title, titleError } = useValidateTitle()
 
@@ -59,6 +59,8 @@ const {
   calculateSupertaskProgress,
   calculateTaskProgress
 } = useProgress(props.tasks)
+
+console.log(props.tasks)
 </script>
 
 <template>
@@ -75,7 +77,7 @@ const {
   <div id="entries-container" v-if="selectedDomain" :key="selectedDomain.id">
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(supertaskIndex)">
       <ProgressableEntryHeading
-        :progress="calculateSupertaskProgress(selectedDomain!.id, supertask.entry.id, supertaskIndex)"
+        :progress="calculateSupertaskProgress(selectedDomain!.id, supertaskIndex)"
         :isActive="visibility[computeKey(supertaskIndex)] || false"
         :title="supertask.entry.title"
         :saveHeading="(saveTitle: string) => updateSupertask(selectedDomain!.id, supertaskIndex, supertask.entry.id, saveTitle)"
@@ -85,7 +87,7 @@ const {
       <ul v-show="visibility[computeKey(supertaskIndex)]" :key="computeKey(supertaskIndex, -1)">
         <li :class="`task focusable layer-2 ${visibility[computeKey(supertaskIndex, taskIndex)] ? 'focused': ''}`" v-for="(task, taskIndex) in supertask.children" :key="computeKey(supertaskIndex, taskIndex)">
           <ProgressableEntryHeading
-            :progress="calculateTaskProgress(selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex)"
+            :progress="calculateTaskProgress(selectedDomain!.id, supertaskIndex, taskIndex)"
             :isActive="visibility[computeKey(supertaskIndex, taskIndex)] || false"
             :title="task.entry.title"
             :saveHeading="(saveTitle: string) => updateTask(selectedDomain!.id, supertaskIndex, taskIndex, task.entry.id, saveTitle)"
@@ -97,8 +99,8 @@ const {
               <EditTask
                 :subtaskId="subtask.id"
                 :value="subtask.title"
-                :saveTask="(saveTitle: string) => updateSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"
-                :deleteTask="() => deleteSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id)"
+                :saveHeading="(saveTitle: string) => updateSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"
+                :deleteHeading="() => deleteSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id)"
               />
             </li>
             <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createSubtask(confirmTitle, selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex))">

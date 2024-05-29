@@ -1,22 +1,10 @@
-import { Ref, inject, watch } from "vue"
+import { Ref, inject } from "vue"
 import { EntryStructure, UserTask } from "../models/tasks"
 
 const useProgress = (userTasks: Record<number, UserTask>) => {
     const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
-    const memoizedTaskProgress = new Map<number, number>()
-    const memoizedSupertaskProgress = new Map<number, number>()
-
-    watch(() => userTasks, () => {
-        memoizedTaskProgress.clear()
-        memoizedSupertaskProgress.clear()
-    })
-
-    const calculateTaskProgress = (domainId: number, taskId: number, supertaskIndex: number, taskIndex: number): number => {
-        if (memoizedTaskProgress.has(taskId)) {
-            return memoizedTaskProgress.get(taskId)!
-        }
-        
+    const calculateTaskProgress = (domainId: number, supertaskIndex: number, taskIndex: number): number => {
         let completedTasks = 0
         let totalTasks = 0
 
@@ -35,29 +23,21 @@ const useProgress = (userTasks: Record<number, UserTask>) => {
         })
 
         const progress = ((completedTasks / totalTasks) * 100) || 0
-        memoizedTaskProgress.set(taskId, progress)
-
         return progress
     }
 
-    const calculateSupertaskProgress = (domainId: number, supertaskId: number, supertaskIndex: number): number => {
-        if (memoizedSupertaskProgress.has(supertaskId)) {
-            return memoizedSupertaskProgress.get(supertaskId)!
-        }
-        
+    const calculateSupertaskProgress = (domainId: number, supertaskIndex: number): number => {
         let totalProgress = 0
         let totalTasks = 0
 
-        entries.value[domainId][supertaskIndex].children.forEach((task, taskIndex) => {
-            const progress = calculateTaskProgress(domainId, task.entry.id, supertaskIndex, taskIndex)
-
+        entries.value[domainId][supertaskIndex].children.forEach((_, taskIndex) => {
+            const progress = calculateTaskProgress(domainId, supertaskIndex, taskIndex)
+            
             totalProgress += progress
             totalTasks++
         })
 
         const progress = (totalProgress / totalTasks) || 0
-        memoizedSupertaskProgress.set(supertaskId, progress)
-
         return progress
     }
 
