@@ -8,7 +8,8 @@ import useSaveTask from "../../hooks/useSaveTask"
 import EntryHeading from "./EntryHeading.vue"
 
 const props = defineProps<{
-  saveTitle: (title: string) => Promise<boolean>,
+  saveTask: (title: string) => Promise<boolean>,
+  deleteTask: () => Promise<boolean>,
   task?: UserTask,
   value: string
 }>()
@@ -20,7 +21,6 @@ const {
   comment,
   message,
   //loading,
-  save
 } = useSaveTask()
 
 onMounted(() => {
@@ -51,7 +51,7 @@ onMounted(adjustHeight)
 <template>
   <div class="container">
     <div class="task-heading-container">
-      <EntryHeading :save="saveTitle" class="subtask-entry" :title="value"/>
+      <EntryHeading :saveHeading="saveTask" :deleteHeading="deleteTask" class="subtask-entry" :title="value"/>
       <button v-if="!user.isAdmin" class="minimal" @click="">Save</button>
       <div class="check-container" @click.stop="toggleCompleted">
         <div :class="`completed ${completed ? 'active' : ''}`" />

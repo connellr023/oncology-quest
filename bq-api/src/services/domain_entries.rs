@@ -23,10 +23,7 @@ pub(super) async fn fetch_with_timestamp(session: Session, pool: Data<Pool<Postg
     
     // If the cache is not valid, then fetch the entry structure from the database.
     match EntryStructure::fetch(&pool, *domain_id).await {
-        Err(e) => {
-            eprintln!("{:?}", e);
-            HttpResponse::InternalServerError().finish()
-        },
-        Ok(entry_structure) => HttpResponse::Ok().json(entry_structure)
+        Ok(entry_structure) => HttpResponse::Ok().json(entry_structure),
+        Err(_) => HttpResponse::InternalServerError().finish()
     }
 }

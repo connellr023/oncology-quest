@@ -1,4 +1,4 @@
-use crate::domain_query_many;
+use crate::query_many;
 use crate::utilities::parsable::EntryTitle;
 use std::collections::HashMap;
 use sqlx::{FromRow, Pool, Postgres};
@@ -50,7 +50,7 @@ macro_rules! fetch_all {
         pub async fn fetch_all(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Box<[Self]>> {
             let records = sqlx::query_as!(
                 $struct_name,
-                "SELECT * FROM " + $table_name + " WHERE domain_id = $1;",
+                "SELECT * FROM " + $table_name + " WHERE domain_id = $1 ORDER BY id;",
                 domain_id
             )
             .fetch_all(pool)
@@ -66,18 +66,18 @@ macro_rules! update_title {
         pub async fn update_title(pool: &Pool<Postgres>, id: i32, title: &str) -> anyhow::Result<()> {
             let mut transaction = pool.begin().await?;
             
-            sqlx::query(
-                format!(
-                    r#"
-                    UPDATE {} SET title = $1 WHERE id = $2;
-                    UPDATE domain SET last_updated = NOW()
-                    WHERE id = (SELECT domain_id FROM {} WHERE id = $2);
-                    "#,
-                    $table_name, $table_name
-                ).as_str(),
+            sqlx::query!(
+                "UPDATE " + $table_name + " SET title = $1 WHERE id = $2;",
+                title,
+                id
             )
-            .bind(title)
-            .bind(id)
+            .execute(&mut *transaction)
+            .await?;
+
+            sqlx::query!(
+                "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM " + $table_name + " WHERE id = $1);",
+                id
+            )
             .execute(&mut *transaction)
             .await?;
 
@@ -122,10 +122,10 @@ impl Supertask {
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        domain_query_many!(&mut *transaction, id,
-            "DELETE FROM supertasks WHERE id = $1",
-            "DELETE FROM tasks WHERE supertask_id = $1",
+        query_many!(&mut *transaction, id,
             "DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE supertask_id = $1)",
+            "DELETE FROM tasks WHERE supertask_id = $1",
+            "DELETE FROM supertasks WHERE id = $1",
             "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM supertasks WHERE id = $1);"
         );
 
@@ -172,9 +172,9 @@ impl Task {
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        domain_query_many!(&mut *transaction, id,
-            "DELETE FROM tasks WHERE id = $1",
+        query_many!(&mut *transaction, id,
             "DELETE FROM subtasks WHERE task_id = $1",
+            "DELETE FROM tasks WHERE id = $1",
             "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM tasks WHERE id = $1);"
         );
 
@@ -221,7 +221,7 @@ impl Subtask {
     pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        domain_query_many!(&mut *transaction, id,
+        query_many!(&mut *transaction, id,
             "DELETE FROM subtasks WHERE id = $1",
             "UPDATE domains SET last_updated = NOW() WHERE id = (SELECT domain_id FROM subtasks WHERE id = $1);"
         );

@@ -36,6 +36,7 @@ const useEntries = () => {
                 children: []
             })
 
+            cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
 
@@ -57,6 +58,8 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[domainId][entryIndex].entry.title = title
+            cacheDomainEntries(domainId, entries.value[domainId])
+            return true
         }
 
         return false
@@ -75,7 +78,8 @@ const useEntries = () => {
         })
 
         if (response.ok) {
-            delete entries.value[domainId][entryIndex]
+            entries.value[domainId].splice(entryIndex, 1);
+            cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
 
@@ -109,6 +113,7 @@ const useEntries = () => {
                 children: []
             })
 
+            cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
 
@@ -139,6 +144,7 @@ const useEntries = () => {
                 taskId
             })
 
+            cacheDomainEntries(domainId, entries.value[domainId])
             return true
         }
 

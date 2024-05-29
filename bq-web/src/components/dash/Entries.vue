@@ -46,6 +46,7 @@ const showCreateEntryModal = (onConfirm: (confirmTitle: string) => Promise<Boole
 const {
   createSupertask,
   updateSupertask,
+  deleteSupertask,
   createTask,
   createSubtask
 } = useEntries()
@@ -73,7 +74,8 @@ const {
         :progress="calculateSupertaskProgress(selectedDomain!.id, supertask.entry.id, supertaskIndex)"
         :isActive="visibility[computeKey(supertaskIndex)] || false"
         :title="supertask.entry.title"
-        :save="(saveTitle: string) => updateSupertask(selectedDomain!.id, supertaskIndex, supertask.entry.id, saveTitle)"
+        :saveHeading="(saveTitle: string) => updateSupertask(selectedDomain!.id, supertaskIndex, supertask.entry.id, saveTitle)"
+        :deleteHeading="() => deleteSupertask(selectedDomain!.id, supertaskIndex, supertask.entry.id)"
         @click="toggleVisibility(computeKey(supertaskIndex))"
       />
       <ul v-show="visibility[computeKey(supertaskIndex)]" :key="computeKey(supertaskIndex, -1)">
@@ -82,7 +84,8 @@ const {
             :progress="calculateTaskProgress(selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex)"
             :isActive="visibility[computeKey(supertaskIndex, taskIndex)] || false"
             :title="task.entry.title"
-            :save="() => async () => false"
+            :saveHeading="() => async () => false"
+            :deleteHeading="() => async () => false"
             @click="toggleVisibility(computeKey(supertaskIndex, taskIndex))"
           />
           <ul v-show="visibility[computeKey(supertaskIndex, taskIndex)]" :key="computeKey(supertaskIndex, taskIndex, -1)">
@@ -90,7 +93,8 @@ const {
               <EditTask
                 :task="tasks[subtask.id] ?? null"
                 :value="subtask.title"
-                :saveTitle="() => async () => false"
+                :saveTask="() => async () => false"
+                :deleteTask="() => async () => false"
               />
             </li>
             <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createSubtask(confirmTitle, selectedDomain!.id, task.entry.id, supertaskIndex, taskIndex))">

@@ -5,7 +5,8 @@ import useValidateTitle from "../../hooks/validation/useValidateTitle";
 
 defineEmits(["click"])
 const props = defineProps<{
-  save: (saveTitle: string) => Promise<boolean>,
+  saveHeading: (saveTitle: string) => Promise<boolean>,
+  deleteHeading: () => Promise<boolean>,
   title: string
 }>()
 
@@ -40,8 +41,14 @@ const saveEdit = async () => {
     return
   }
 
-  if (await props.save(title.value)) {
+  if (await props.saveHeading(title.value)) {
     toggleEditMode()
+  }
+}
+
+const deleteTaskHeading = async () => {
+  if (!await props.deleteHeading()) {
+    console.error("Failed to delete task")
   }
 }
 </script>
@@ -56,7 +63,7 @@ const saveEdit = async () => {
       <template v-if="inEditMode">
         <button class="minimal" @click.stop="cancelEdit">Cancel</button>
         <button class="minimal" @click.stop="saveEdit">Save</button>
-        <button class="minimal" @click.stop="">Delete</button>
+        <button class="minimal" @click.stop="deleteTaskHeading">Delete</button>
         <span v-if="titleError">{{ titleError }}</span>
       </template>
       <button class="edit minimal" v-else :disabled="isEditing" @click.stop="toggleEditMode">Edit</button>

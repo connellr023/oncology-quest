@@ -5,7 +5,8 @@ import Arrow from "../vector/Arrow.vue"
 
 defineEmits(["click"])
 defineProps<{
-  save: (saveTitle: string) => Promise<boolean>,
+  saveHeading: (saveTitle: string) => Promise<boolean>,
+  deleteHeading: () => Promise<boolean>,
   isActive: boolean,
   title: string,
   progress: number
@@ -15,7 +16,7 @@ defineProps<{
 <template>
   <div class="progressable-entry-container" @click="$emit('click')">
     <Arrow :class="`arrow ${isActive ? 'focused' : ''}`" />
-    <EntryHeading :save="save" :is-active="isActive" :title="title" />
+    <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" :is-active="isActive" :title="title" />
     <EntryProgress :progress="progress" />
   </div>
 </template>
