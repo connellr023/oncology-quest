@@ -9,32 +9,16 @@ const useSession = () => {
     const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
 
     const session = ref<User | null>(null)
-    const tasks = ref<Record<number, UserTask>>({})
-    const domains = ref<Record<number, Domain>>({})
+    const tasks = ref<Record<number, UserTask>>({}) // Maps subtask ID to UserTask
+    const domains = ref<Record<number, Domain>>({}) // Maps domain ID to Domain
 
     const loading = ref(true)
     const connectionError = ref(false)
 
     const updateSessionData = async (data: Session, session: Ref<User | null>, tasks: Ref<Record<number, UserTask>>, domains: Ref<Record<number, Domain>>) => {
         session.value = data.user;
-    
-        let recordedTasks: Record<number, UserTask> | undefined = undefined;
-
-        if (data.tasks) {
-            recordedTasks = {}
-
-            data.tasks.forEach((task: UserTask) => {
-                recordedTasks![task.subtaskId] = task
-            })
-        }
-
-        let recordedDomains: Record<number, Domain> = {}
-        data.domains.forEach((domain: Domain) => {
-            recordedDomains[domain.id] = domain
-        })
-
-        tasks.value = retrieveOrCacheUserTasks(data.user.id, recordedTasks)
-        domains.value = recordedDomains
+        domains.value = data.domains
+        tasks.value = retrieveOrCacheUserTasks(data.user.id, data.tasks)
     }
 
     const fetchSession = async () => {

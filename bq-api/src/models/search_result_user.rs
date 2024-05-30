@@ -1,12 +1,12 @@
+use super::{client_user::ClientUser, user_task::UserTask};
 use sqlx::{Pool, Postgres};
 use serde::Serialize;
-
-use super::{client_user::ClientUser, user_task::UserTask};
+use std::collections::HashMap;
 
 #[derive(Serialize)]
 pub struct SearchResultUser {
     user: ClientUser,
-    tasks: Box<[UserTask]>
+    tasks: HashMap<i32, UserTask>
 }
 
 impl SearchResultUser {
@@ -29,7 +29,7 @@ impl SearchResultUser {
         let mut results = Vec::with_capacity(users.len());
 
         for user in users {
-            let tasks = UserTask::fetch_all(pool, user.id).await?;
+            let tasks = UserTask::fetch_all_as_map(pool, user.id).await?;
 
             results.push(Self {
                 user,

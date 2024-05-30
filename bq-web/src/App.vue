@@ -7,7 +7,6 @@ import { EntryStructure } from "./models/tasks"
 import useSession from "./hooks/useSession"
 
 import DashboardView from "./views/DashboardView.vue"
-import AdminDashboardView from "./views/AdminDashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
 import ManageUsersBar from "./components/ManageUsersBar.vue"
@@ -51,8 +50,7 @@ provide("isEditing", isEditing)
           <ManageUsersBar v-if="session.isAdmin" />
           <div class="dash">
             <TopBar />
-            <AdminDashboardView v-if="session.isAdmin" />
-            <DashboardView v-else />
+            <DashboardView />
           </div>
         </div>
       </div>

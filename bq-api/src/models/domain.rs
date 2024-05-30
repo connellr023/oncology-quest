@@ -3,6 +3,7 @@ use crate::utilities::parsable::Name;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct Domain {
@@ -84,7 +85,7 @@ impl Domain {
         Ok(cache_timestamp >= last_updated)
     }
 
-    pub async fn fetch_all(pool: &Pool<Postgres>) -> anyhow::Result<Box<[Self]>> {
+    pub async fn fetch_all_as_map(pool: &Pool<Postgres>) -> anyhow::Result<HashMap<i32, Self>> {
         let domains = sqlx::query_as!(
             Domain,
             r#"
@@ -94,7 +95,12 @@ impl Domain {
         .fetch_all(pool)
         .await?;
 
-        Ok(domains.into_boxed_slice())
+        let map = domains
+            .into_iter()
+            .map(|domain| { (domain.id, domain) })
+            .collect::<HashMap<_, _>>();
+
+        Ok(map)
     }
 
     pub async fn exists(pool: &Pool<Postgres>, domain_id: i32) -> bool {

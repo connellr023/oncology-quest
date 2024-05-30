@@ -2,6 +2,7 @@ use crate::utilities::parsable::Comment;
 use chrono::{DateTime, Utc};
 use sqlx::{FromRow, Pool, Postgres};
 use serde::Serialize;
+use std::collections::HashMap;
 use anyhow::anyhow;
 
 #[derive(Debug, FromRow, Serialize)]
@@ -43,7 +44,24 @@ impl UserTask {
         Ok(record.exists)
     }
 
-    pub async fn fetch_all(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Box<[Self]>> {
+    fn map_subtask_id_to_self(user_tasks: Vec<Self>) -> HashMap<i32, Self> {
+        user_tasks
+            .into_iter()
+            .map(|task| { (task.subtask_id(), task) })
+            .collect::<HashMap<_, _>>()
+    }
+
+    /// Fetches all user tasks for a user from the database.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - A connection pool to the database.
+    /// * `user_id` - The ID of the user to fetch the tasks for.
+    /// 
+    /// # Returns
+    /// 
+    /// A map of subtask ID to user task.
+    pub async fn fetch_all_as_map(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<HashMap<i32, Self>> {
         let records = sqlx::query_as!(
             UserTask,
             r#"
@@ -56,7 +74,7 @@ impl UserTask {
         .fetch_all(pool)
         .await?;
 
-        Ok(records.into_boxed_slice())
+        Ok(Self::map_subtask_id_to_self(records))
     }
 
     /// Fetches all user tasks for a user from the database if the user's task cache is outdated.
@@ -69,8 +87,8 @@ impl UserTask {
     /// 
     /// # Returns
     /// 
-    /// A list of user tasks if the user's task cache is outdated, otherwise `None`.
-    pub async fn fetch_all_if_updated(pool: &Pool<Postgres>, user_id: i32, task_cache_timestamp: DateTime<Utc>) -> anyhow::Result<Option<Box<[Self]>>> {
+    /// A map of subtask ID to user task if the cache is outdated, otherwise None.
+    pub async fn fetch_all_as_map_if_updated(pool: &Pool<Postgres>, user_id: i32, task_cache_timestamp: DateTime<Utc>) -> anyhow::Result<Option<HashMap<i32, Self>>> {
         let records = sqlx::query_as!(
             UserTask,
             r#"
@@ -87,7 +105,7 @@ impl UserTask {
 
         match records.is_empty() {
             true => Ok(None),
-            false => Ok(Some(records.into_boxed_slice()))
+            false => Ok(Some(Self::map_subtask_id_to_self(records)))
         }
     }
 
@@ -165,5 +183,9 @@ impl UserTask {
 
     pub fn id(&self) -> i32 {
         self.id
+    }
+
+    pub fn subtask_id(&self) -> i32 {
+        self.subtask_id
     }
 }

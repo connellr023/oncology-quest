@@ -7,12 +7,13 @@ use actix_session::Session;
 use chrono::{DateTime, Utc};
 use sqlx::{Pool, Postgres};
 use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Serialize)]
 pub struct UserSessionResponse {
     pub user: ClientUser,
-    pub domains: Box<[Domain]>,
-    pub tasks: Option<Box<[UserTask]>>
+    pub domains: HashMap<i32, Domain>,
+    pub tasks: Option<HashMap<i32, UserTask>>
 }
 
 impl UserSessionResponse {
@@ -26,14 +27,13 @@ impl UserSessionResponse {
     /// 
     /// # Returns
     /// 
-    /// A user session response containing the user and the list of domains.
+    /// A user session response if successful, otherwise an error.
     pub async fn build(pool: &Pool<Postgres>, user: User, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Self> {        
-        let domains = Domain::fetch_all(pool).await?;
         let user = ClientUser::from(user);
-
+        let domains = Domain::fetch_all_as_map(pool).await?;
         let tasks = match task_cache_timestamp {
-            Some(task_cache_timestamp) => UserTask::fetch_all_if_updated(pool, user.id, task_cache_timestamp).await?,
-            None => Some(UserTask::fetch_all(pool, user.id).await?)
+            Some(task_cache_timestamp) => UserTask::fetch_all_as_map_if_updated(pool, user.id, task_cache_timestamp).await?,
+            None => Some(UserTask::fetch_all_as_map(pool, user.id).await?)
         };
 
         let response = Self {

@@ -12,11 +12,11 @@ export interface User {
 
 export interface Session {
     user: User,
-    domains: Domain[],
-    tasks?: UserTask[]
+    domains: Record<number, Domain>,
+    tasks?: Record<number, UserTask>
 }
 
 export interface UserWithTasks {
     user: User,
-    tasks: UserTask[]
+    tasks: Record<number, UserTask>
 }
