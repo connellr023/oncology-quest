@@ -37,6 +37,13 @@ provide("selectedDomain", selectedDomain)
 
 const isEditing = ref(false)
 provide("isEditing", isEditing)
+
+const resetAll = () => {
+  selectedUser.value = null
+  selectedDomain.value = null
+  isEditing.value = false
+  entries.value = {}
+}
 </script>
 
 <template>
@@ -49,7 +56,7 @@ provide("isEditing", isEditing)
         <div class="dash-container" v-else>
           <ManageUsersBar v-if="session.isAdmin" />
           <div class="dash">
-            <TopBar />
+            <TopBar :onLogout="resetAll" />
             <DashboardView />
           </div>
         </div>

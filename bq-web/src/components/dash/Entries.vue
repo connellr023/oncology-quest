@@ -97,6 +97,7 @@ console.log(props.tasks)
           <ul v-show="visibility[computeKey(supertaskIndex, taskIndex)]" :key="computeKey(supertaskIndex, taskIndex, -1)">
             <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(supertaskIndex, taskIndex, subtaskIndex)">
               <EditTask
+                :tasks="props.tasks"
                 :subtaskId="subtask.id"
                 :value="subtask.title"
                 :saveHeading="(saveTitle: string) => updateSubtask(selectedDomain!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"

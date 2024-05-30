@@ -1,13 +1,17 @@
-import { Ref } from "vue"
+import { Ref, inject } from "vue"
 import { UserTask } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
 import useCache from "./useCache"
+import { User } from "../models/user"
 
 interface CreateUserTaskResponse {
     id: number
 }
 
-const useUserTasks = (tasks: Ref<Record<number, UserTask>>, userId: number) => {
+const useUserTasks = () => {
+    const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
+    const session = inject<Ref<User>>("session")!
+
     const { cacheUserTasks } = useCache()
 
     const updateTask = async (subtaskId: number, isCompleted: boolean, comment: string): Promise<boolean> => {
@@ -29,7 +33,7 @@ const useUserTasks = (tasks: Ref<Record<number, UserTask>>, userId: number) => {
                 tasks.value[subtaskId].isCompleted = isCompleted
                 tasks.value[subtaskId].comment = comment
 
-                cacheUserTasks(userId, tasks.value)
+                cacheUserTasks(session.value.id, tasks.value)
                 return true
             }
         }
@@ -52,13 +56,13 @@ const useUserTasks = (tasks: Ref<Record<number, UserTask>>, userId: number) => {
 
                 tasks.value[subtaskId] = {
                     id: data.id,
-                    userId,
+                    userId: session.value.id,
                     subtaskId,
                     isCompleted,
                     comment
                 }
 
-                cacheUserTasks(userId, tasks.value)
+                cacheUserTasks(session.value.id, tasks.value)
                 return true
             }
         }

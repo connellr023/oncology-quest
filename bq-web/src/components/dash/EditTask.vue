@@ -10,19 +10,19 @@ const props = defineProps<{
   saveHeading: (title: string) => Promise<boolean>,
   deleteHeading: () => Promise<boolean>,
   subtaskId: number,
-  value: string
+  value: string,
+  tasks: Record<number, UserTask>
 }>()
 
 const session = inject<Ref<User>>("session")!
-const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
 
 const isComplete = ref(false)
 const comment = ref("")
 
-const { updateTask } = useUserTasks(tasks, session.value.id)
+const { updateTask } = useUserTasks()
 
 onMounted(() => {
-  const task = tasks.value[props.subtaskId]
+  const task = props.tasks[props.subtaskId]
 
   if (task) {
     isComplete.value = task.isCompleted
@@ -57,10 +57,7 @@ onMounted(adjustHeight)
     <div class="task-heading-container">
       <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
       <button v-if="!session.isAdmin" class="minimal" @click="saveTask">Save</button>
-      <div class="check-container" @click.stop="toggleCompleted">
-        <div :class="`completed ${isComplete ? 'active' : ''}`" />
-        <div :class="`${!isComplete ? 'active' : ''}`" />
-      </div>
+      <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
     </div>
     <textarea class="bubble" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
   </div>
@@ -68,6 +65,35 @@ onMounted(adjustHeight)
 
 <style scoped lang="scss">
 @import "../../main.scss";
+
+button.check {
+  $size: 13px;
+
+  cursor: pointer;
+  width: $size;
+  height: $size;
+  border: 3px solid $theme-color-green;
+  border-radius: 100px;
+  background-color: transparent;
+  margin-left: auto;
+  margin-top: 6px;
+  transition: all 0.07s ease;
+  opacity: 0.7;
+
+  &.active,
+  &:hover {
+    opacity: 1;
+  }
+
+  &.active {
+    background-color: $theme-color-green;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
 
 div.subtask-entry {
   &::before {

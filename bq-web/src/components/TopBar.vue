@@ -13,6 +13,8 @@ import LogoutIcon from "./vector/LogoutIcon.vue"
 import PushStackIcon from "./vector/PushStackIcon.vue"
 import InputModal from "./InputModal.vue"
 
+const props = defineProps<{ onLogout: () => void }>()
+
 const session = inject<Ref<User>>("session")!
 const domains = inject<Ref<Record<number, Domain>>>("domains")!
 const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
@@ -88,6 +90,11 @@ const shouldAppearFocused = (id: number) => {
   return visibleDomainDropdowns[id] || selectedDomain.value?.id === id
 }
 
+const onLogoutClick = () => {
+  props.onLogout()
+  logout()
+}
+
 onMounted(() => {
   window.addEventListener("click", hideDropdowns)
 });
@@ -102,7 +109,7 @@ onUnmounted(() => {
     <div class="profile-container">
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <div v-show="showProfileOptions" class="dropdown-container profile-options" @click.stop>
-        <button class="logout bubble highlight" @click="logout">
+        <button class="logout bubble highlight" @click="onLogoutClick">
           <LogoutIcon />
           Logout
         </button>
