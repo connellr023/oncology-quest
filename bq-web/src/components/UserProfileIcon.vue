@@ -14,7 +14,11 @@ div.icon {
 
   user-select: none;
   width: $size;
+  min-width: $size;
+  max-width: $size;
   height: $size;
+  min-height: $size;
+  max-height: $size;
   background-color: $theme-color-1;
   border-radius: $size;
   display: flex;

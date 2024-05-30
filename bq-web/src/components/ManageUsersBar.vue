@@ -45,7 +45,14 @@ const setSelectedUser = (selection: UserWithTasks) => {
         <div v-else>
           <div v-for="result in results" :key="result.user.username" class="user-option" :class="`${selectedUser?.user.name === result.user.name ? 'selected' : ''}`" @click="setSelectedUser(result)">
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
-            <span><b>{{ result.user.name }}</b> ({{ result.user.username }})</span>
+            <div class="user-info">
+              <span class="name"><b>{{ result.user.name }}</b> ({{ result.user.username }})</span>
+              <span class="login-count">{{ result.user.loginCount }}</span>
+              <div class="user-management">
+                <button class="bubble">Enable Password Reset</button>
+                <button class="bubble red">Delete</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -103,10 +110,41 @@ div.collapse-indicator-container {
 
 div.results-container {
   margin-top: 25px;
+  position: relative;
 
   div.status {
     text-align: center;
     font-size: 1.1rem;
+  }
+
+  span.name {
+    margin-right: 25px;
+  }
+
+  span.login-count {
+    position: absolute;
+    right: 10px;
+    opacity: 0.7;
+    font-size: 13px;
+  }
+
+  div.user-management {
+    display: none;
+    margin-top: 7px;
+
+    & > button {
+      padding: 4px;
+      font-size: 14px;
+    }
+
+    & > button:nth-last-child(1) {
+      margin-left: 5px;
+      margin-right: 3px;
+    }
+  }
+
+  div.user-info {
+    margin-left: 12px;
   }
 
   div.user-option {
@@ -120,13 +158,17 @@ div.results-container {
     display: flex;
     align-items: center;
 
-    span {
-      margin-left: 10px;
-    }
-
     &.selected,
     &:hover {
       background-color: $tertiary-bg-color;
+    }
+
+    &.selected {
+      cursor: auto;
+
+      div.user-management {
+        display: flex;
+      }
     }
   }
 }
@@ -165,7 +207,7 @@ div.search-container {
 div.content-container {
   width: 30lvw;
   min-width: 180px;
-  max-width: 265px;
+  max-width: 325px;
   transition: all 0.25s ease;
   text-align: center;
   overflow: hidden;

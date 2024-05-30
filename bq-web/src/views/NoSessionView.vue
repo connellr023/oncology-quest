@@ -3,12 +3,14 @@ import { onMounted, ref } from "vue"
 
 import LoginForm from "../components/form/LoginForm.vue"
 import RegisterForm from "../components/form/RegisterForm.vue"
+import ResetPasswordForm from "../components/form/ResetPasswordForm.vue"
 import CreditLabel from "../components/CreditLabel.vue"
 
 enum Views {
   SELECT,
   LOGIN,
-  REGISTER
+  REGISTER,
+  RESET_PASSWORD
 }
 
 const view = ref(Views.SELECT)
@@ -31,16 +33,12 @@ onMounted(() => {
       <h1>Get started with <b><i>bq</i></b> below.</h1>
       <button @click="setView(Views.LOGIN)" class="std">Login</button>
       <button @click="setView(Views.REGISTER)" class="std">Register</button>
-      <button disabled class="std-1">Reset Password</button>
+      <button @click="setView(Views.RESET_PASSWORD)" class="std">Reset Password</button>
     </div>
-    <template v-else-if="view === Views.LOGIN">
-      <LoginForm />
-      <button @click="setView(Views.SELECT)" class="back">Back</button>
-    </template>
-    <template v-else-if="view === Views.REGISTER">
-      <RegisterForm />
-      <button @click="setView(Views.SELECT)" class="back">Back</button>
-    </template>
+    <LoginForm v-else-if="view === Views.LOGIN" />
+    <RegisterForm v-else-if="view === Views.REGISTER" />
+    <ResetPasswordForm v-else-if="view === Views.RESET_PASSWORD" />
+    <button v-if="view !== Views.SELECT" @click="setView(Views.SELECT)" class="back">Back</button>
     <CreditLabel />
   </div>
 </template>
