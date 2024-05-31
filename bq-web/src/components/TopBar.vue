@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, onMounted, onUnmounted, reactive, ref } from "vue"
+import { Ref, inject, reactive, ref } from "vue"
 import { User } from "../models/user"
 import { Domain } from "../models/domain"
 
@@ -10,8 +10,11 @@ import useEntries from "../hooks/useEntries"
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
-import PushStackIcon from "./vector/PushStackIcon.vue"
 import InputModal from "./InputModal.vue"
+import NewDomainIcon from "./vector/NewDomainIcon.vue"
+import DeleteIcon from "./vector/DeleteIcon.vue"
+import CheckIcon from "./vector/CheckIcon.vue"
+import Dropdown from "./Dropdown.vue"
 
 const props = defineProps<{ onLogout: () => void }>()
 
@@ -47,11 +50,6 @@ const toggleDomainDropdown = (id: number) => {
 
 const toggleProfileOptions = () => {
   showProfileOptions.value = !showProfileOptions.value
-}
-
-const hideDropdowns = () => {
-  showProfileOptions.value = false
-  visibleDomainDropdowns[focusedDomainId] = false
 }
 
 const selectDomain = async (domain: Domain) => {
@@ -94,39 +92,37 @@ const onLogoutClick = () => {
   props.onLogout()
   logout()
 }
-
-onMounted(() => {
-  window.addEventListener("click", hideDropdowns)
-});
-
-onUnmounted(() => {
-  window.removeEventListener("click", hideDropdowns)
-});
 </script>
 
 <template>
   <div class="topbar-container">
-    <div class="profile-container">
+    <div>
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
-      <div v-show="showProfileOptions" class="dropdown-container profile-options" @click.stop>
-        <button class="logout bubble highlight" @click="onLogoutClick">
+      <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
+        <button class="logout bubble" @click="onLogoutClick">
           <LogoutIcon />
           Logout
         </button>
-      </div>
+      </Dropdown>
     </div>
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
     <div class="domain-select-container" :key="Object.keys(domains).length">
       <template v-if="session.isAdmin">
         <div v-for="domain in domains">
           <button @click.stop="toggleDomainDropdown(domain.id)" :class="`bubble domain-option ${shouldAppearFocused(domain.id) ? 'focused' : ''}`" :key="domain.id">{{ domain.name }}</button>
-          <div class="dropdown-container" v-show="visibleDomainDropdowns[domain.id]" @click.stop>
-            <button @click="selectDomain(domain)" class="bubble green">Select</button>
-            <button class="bubble red" @click="confirmDeleteDomain">Delete</button>
-          </div>
+          <Dropdown class="domain-option-dropdown" :isVisible="visibleDomainDropdowns[domain.id]" @change="visibleDomainDropdowns[domain.id] = $event">
+            <button @click="selectDomain(domain)" class="bubble green">
+              <CheckIcon />
+              Select
+            </button>
+            <button class="bubble red" @click="confirmDeleteDomain">
+              <DeleteIcon />
+              Delete
+            </button>
+          </Dropdown>
         </div>
         <button @click="() => { showCreateDomainModal = true }" class="bubble highlight new-domain">
-          <PushStackIcon />
+          <NewDomainIcon />
           New Domain
         </button>
       </template>
@@ -149,6 +145,11 @@ onUnmounted(() => {
 <style scoped lang="scss">
 @import "../main.scss";
 
+div.domain-option-dropdown {
+  top: 50px;
+  margin-left: 2px;
+}
+
 button.new-domain {
   margin-left: 10px;
 }
@@ -158,23 +159,6 @@ button.domain-option {
 
   margin-left: $side-margin;
   margin-right: $side-margin;
-}
-
-div.dropdown-container {
-  position: absolute;
-  top: 50px;
-  background-color: $main-bg-color;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 1;
-  background-color: $tertiary-bg-color;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-
-  &.profile-options {
-    top: 55px;
-  }
 }
 
 div.profile-icon {

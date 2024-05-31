@@ -59,8 +59,6 @@ const {
   calculateSupertaskProgress,
   calculateTaskProgress
 } = useProgress(props.tasks)
-
-console.log(props.tasks)
 </script>
 
 <template>

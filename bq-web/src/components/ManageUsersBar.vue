@@ -5,8 +5,11 @@ import { UserWithTasks, User } from "../models/user"
 import useUserSearch from "../hooks/useUserSearch"
 
 import Spinner from "../components/vector/Spinner.vue"
-import SearchIcon from "../components/vector/SearchIcon.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
+import Dropdown from "./Dropdown.vue"
+import SearchIcon from "../components/vector/SearchIcon.vue"
+import DeleteIcon from "../components/vector/DeleteIcon.vue"
+import UnlockIcon from "./vector/UnlockIcon.vue"
 
 const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
@@ -14,6 +17,7 @@ const session = inject<Ref<User | null>>("session")!
 const { search, results, loading, searchError } = useUserSearch()
 const query = ref("")
 const isCollapsed = ref(true)
+const userOptionsVisible = ref(false)
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
@@ -21,12 +25,18 @@ const toggleCollapse = () => {
   
 const searchUser = () => {
   if (query.value.length > 0 && !loading.value) {
+    userOptionsVisible.value = false
     search(query.value)
   }
 }
 
 const setSelectedUser = (selection: UserWithTasks) => {
   selectedUser.value = selection
+  userOptionsVisible.value = false
+}
+
+const toggleUserOptions = () => {
+  userOptionsVisible.value = !userOptionsVisible.value
 }
 </script>
 
@@ -36,22 +46,29 @@ const setSelectedUser = (selection: UserWithTasks) => {
       <h3>Manage Users</h3>
       <div class="search-container">
         <input @keyup.enter="searchUser" v-model="query" type="text" placeholder="Search users..." class="bubble" />
-        <Spinner class="spinner" v-if="loading" />
-        <SearchIcon class="search" v-else @click="searchUser" />
+        <button class="icon-button" @click="searchUser">
+          <Spinner class="spinner" v-if="loading" />
+          <SearchIcon v-else />
+        </button>
       </div>
       <div class="results-container">
         <div v-if="searchError" class="status">An error occurred while searching for users.</div>
         <div v-else-if="results.length === 0" class="status">No results found.</div>
         <div v-else>
-          <div v-for="result in results" :key="result.user.username" class="user-option" :class="`${selectedUser?.user.name === result.user.name ? 'selected' : ''}`" @click="setSelectedUser(result)">
+          <div v-for="result in results" :key="result.user.username" class="user-option" :class="`${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }">
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
+            <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
+              <button class="bubble">
+                <UnlockIcon />
+                Enable Password Reset
+              </button>
+              <button class="bubble red">
+                <DeleteIcon />
+                Delete
+              </button>
+            </Dropdown>
             <div class="user-info">
               <span class="name"><b>{{ result.user.name }}</b> ({{ result.user.username }})</span>
-              <span class="login-count">{{ result.user.loginCount }}</span>
-              <div class="user-management">
-                <button class="bubble">Enable Password Reset</button>
-                <button class="bubble red">Delete</button>
-              </div>
             </div>
           </div>
         </div>
@@ -110,7 +127,6 @@ div.collapse-indicator-container {
 
 div.results-container {
   margin-top: 25px;
-  position: relative;
 
   div.status {
     text-align: center;
@@ -121,34 +137,13 @@ div.results-container {
     margin-right: 25px;
   }
 
-  span.login-count {
-    position: absolute;
-    right: 10px;
-    opacity: 0.7;
-    font-size: 13px;
-  }
-
-  div.user-management {
-    display: none;
-    margin-top: 7px;
-
-    & > button {
-      padding: 4px;
-      font-size: 14px;
-    }
-
-    & > button:nth-last-child(1) {
-      margin-left: 5px;
-      margin-right: 3px;
-    }
-  }
-
   div.user-info {
     margin-left: 12px;
   }
 
   div.user-option {
     cursor: pointer;
+    position: relative;
     padding: 10px;
     border-radius: 10px;
     background-color: transparent;
@@ -160,15 +155,7 @@ div.results-container {
 
     &.selected,
     &:hover {
-      background-color: $tertiary-bg-color;
-    }
-
-    &.selected {
-      cursor: auto;
-
-      div.user-management {
-        display: flex;
-      }
+      background-color: $main-bg-color;
     }
   }
 }
@@ -184,23 +171,13 @@ div.search-container {
     padding-right: 38px;
   }
 
-  svg {
+  button {
     position: absolute;
     min-width: 17px;
     width: 8%;
-    right: 10px;
-    top: 10px;
-    opacity: 0.6;
+    right: 13px;
+    top: 8px;
     transition: all 0.12s ease;
-    
-    &.search {
-      cursor: pointer;
-
-      &:hover {
-        opacity: 1;
-        fill: $theme-color-1;
-      }
-    }
   }
 }
 
@@ -208,6 +185,7 @@ div.content-container {
   width: 30lvw;
   min-width: 180px;
   max-width: 325px;
+  height: 100%;
   transition: all 0.25s ease;
   text-align: center;
   overflow: hidden;

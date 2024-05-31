@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
+
 import useValidateTitle from "../../hooks/validation/useValidateTitle";
+
+import EditIcon from "../vector/EditIcon.vue"
 
 defineEmits(["click"])
 const props = defineProps<{
@@ -66,7 +69,9 @@ const deleteTaskHeading = async () => {
         <button class="minimal" @click.stop="deleteTaskHeading">Delete</button>
         <span v-if="titleError">{{ titleError }}</span>
       </template>
-      <button class="edit minimal" v-else :disabled="isEditing" @click.stop="toggleEditMode">Edit</button>
+      <button class="edit icon-button" v-else :disabled="isEditing" @click.stop="toggleEditMode">
+        <EditIcon @click.stop="toggleEditMode" />
+      </button>
     </div>
   </div>
 </template>
@@ -96,6 +101,8 @@ div.entry-heading-container {
 }
 
 div.edit-buttons-container {
+  margin-right: 15px;
+
   span {
     margin-left: 15px;
   }
