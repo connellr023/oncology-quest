@@ -10,6 +10,7 @@ const useProgress = (userTasks: Record<number, UserTask>) => {
 
         entries.value[domainId][supertaskIndex].children[taskIndex].children.forEach((subtask) => {
             const userTask = userTasks[subtask.id]
+            totalTasks++
 
             if (!userTask) {
                 return
@@ -18,8 +19,6 @@ const useProgress = (userTasks: Record<number, UserTask>) => {
             if (userTask.isCompleted) {
                 completedTasks++
             }
-
-            totalTasks++
         })
 
         const progress = ((completedTasks / totalTasks) * 100) || 0

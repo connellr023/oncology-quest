@@ -5,6 +5,9 @@ import { User } from "../../models/user"
 import useValidateTitle from "../../hooks/validation/useValidateTitle";
 
 import EditIcon from "../vector/EditIcon.vue"
+import SaveIcon from "../vector/SaveIcon.vue"
+import CancelIcon from "../vector/CancelIcon.vue"
+import DeleteIcon from "../vector/DeleteIcon.vue"
 
 defineEmits(["click"])
 const props = defineProps<{
@@ -64,9 +67,15 @@ const deleteTaskHeading = async () => {
     </div>
     <div class="edit-buttons-container" v-if="session.isAdmin">
       <template v-if="inEditMode">
-        <button class="minimal" @click.stop="cancelEdit">Cancel</button>
-        <button class="minimal" @click.stop="saveEdit">Save</button>
-        <button class="minimal" @click.stop="deleteTaskHeading">Delete</button>
+        <button class="icon-button" @click.stop="cancelEdit">
+          <CancelIcon />
+        </button>
+        <button class="icon-button green" @click.stop="saveEdit">
+          <SaveIcon />
+        </button>
+        <button class="icon-button red" @click.stop="deleteTaskHeading">
+          <DeleteIcon />
+        </button>
         <span v-if="titleError">{{ titleError }}</span>
       </template>
       <button class="edit icon-button" v-else :disabled="isEditing" @click.stop="toggleEditMode">
@@ -109,7 +118,7 @@ div.edit-buttons-container {
 
   button {
     margin: auto;
-    margin-left: 10px;
+    margin-left: 5px;
 
     &.edit {
       margin-right: 15px;

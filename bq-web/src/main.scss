@@ -9,31 +9,9 @@ $main-font: "Inter", "sans-serif";
 $theme-color-1: #331bbf;
 $theme-color-2: #1b8ebf;
 $theme-color-red: #e60a1c;
-$theme-color-red-2: #86082c; // Remove later
 $theme-color-yellow: #d7a51b;
 $theme-color-green: #11b814;
 $theme-color-disabled: #9494a0;
-
-@mixin gradient-button($c1, $c2) {
-  $darken-amount: 12%;
-  $direction: to top;
-
-  background: linear-gradient($direction, $c1, $c2);
-  border: none;
-  color: $main-txt-color;
-
-  &:active:enabled, &:disabled {
-    background: linear-gradient($direction, darken($c1, $darken-amount), darken($c2, $darken-amount));
-  }
-
-  &:hover {
-    color: darken($main-txt-color, 15%)
-  }
-
-  &:disabled {
-    filter: grayscale(1);
-  }
-}
 
 @keyframes fade-in {
   from {
@@ -50,47 +28,6 @@ $theme-color-disabled: #9494a0;
   }
   to {
     opacity: 0;
-  }
-}
-
-@mixin glow($c, $alpha-initial, $alpha-final, $s1: 10px, $s2: 14px) {
-  transition: filter 0.3s ease-in-out;
-
-  &.glow {
-    filter: drop-shadow(0 0 $s1 rgba($c, $alpha-initial));
-
-    &:hover,
-    &:focus {
-      filter: drop-shadow(0 0 $s2 rgba($c, $alpha-final));
-    }
-
-    &:disabled {
-      filter: drop-shadow(0 0 $s1 rgba($c, $alpha-initial)) grayscale(1);
-    }
-  }
-}
-
-@mixin glow-button($c) {
-  $a1: 0.05;
-  $a2: 0.08;
-
-  @include glow($c, $a1, $a2);
-}
-
-@mixin glow-input($c) {
-  $a1: 0.26;
-  $a2: 0.33;
-
-  @include glow($c, $a1, $a2);
-
-  &.error {
-    @include glow($theme-color-red, $a1 * 0.5, $a2 * 0.5);
-
-    border-color: darken($theme-color-red, 10%);
-
-    &:focus {
-      border-color: darken($theme-color-red, 30%);
-    }
   }
 }
 
@@ -119,23 +56,6 @@ $theme-color-disabled: #9494a0;
       animation-delay: (($i - 1) * $delay-step) + $anim-delay;
     }
   }
-}
-
-button.gradient-button-0 {
-  @include gradient-button($theme-color-1, $theme-color-2);
-  @include glow-button($theme-color-1);
-}
-
-button.gradient-button-1 {
-  $main-color: #168aad;
-
-  @include gradient-button($main-color, #52b69a);
-  @include glow-button($main-color);
-}
-
-button.gradient-button-2 {
-  @include gradient-button($theme-color-red-2, $theme-color-red);
-  @include glow-button($theme-color-red-2);
 }
 
 input {
@@ -356,8 +276,12 @@ input {
   }
 
   &.minimal {
-    padding: 8px;
-    font-size: clamp(13px, 1.1lvw, 17px);
+    $side-padding: 8px;
+
+    padding: 4px;
+    padding-left: $side-padding;
+    padding-right: $side-padding;
+    font-size: clamp(15px, 1.1lvw, 18px);
   }
 }
 

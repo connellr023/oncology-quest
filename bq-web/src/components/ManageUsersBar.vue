@@ -58,13 +58,14 @@ const toggleUserOptions = () => {
           <div v-for="result in results" :key="result.user.username" class="user-option" :class="`${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }">
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
             <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
+              <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
               <button class="bubble">
                 <UnlockIcon />
                 Enable Password Reset
               </button>
               <button class="bubble red">
                 <DeleteIcon />
-                Delete
+                Delete User
               </button>
             </Dropdown>
             <div class="user-info">
@@ -83,6 +84,17 @@ const toggleUserOptions = () => {
 
 <style scoped lang="scss">
 @import "../main.scss";
+
+span.login-count {
+  cursor: auto;
+  padding: 10px;
+  padding-top: 15px;
+  margin-left: 20px;
+
+  b {
+    margin-right: 10px;
+  }
+}
 
 div.account-bar-container {
   position: relative;

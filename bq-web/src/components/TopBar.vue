@@ -99,9 +99,13 @@ const onLogoutClick = () => {
     <div>
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
-        <button class="logout bubble" @click="onLogoutClick">
+        <button class="bubble" @click="onLogoutClick">
           <LogoutIcon />
           Logout
+        </button>
+        <button class="bubble red">
+          <DeleteIcon />
+          Delete Account
         </button>
       </Dropdown>
     </div>

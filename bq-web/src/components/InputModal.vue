@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import CheckIcon from "./vector/CheckIcon.vue"
+import CancelIcon from "./vector/CancelIcon.vue"
+
 const model = defineModel()
 
 defineProps<{
@@ -18,8 +21,14 @@ defineProps<{
       <input :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
-        <button class="bubble green" @click="onConfirm">Create</button>
-        <button class="bubble red" @click="onCancel">Cancel</button>
+        <button class="bubble green" @click="onConfirm">
+          <CheckIcon />
+          Create
+        </button>
+        <button class="bubble red" @click="onCancel">
+          <CancelIcon />
+          Cancel
+        </button>
       </div>
     </div>
   </div>
