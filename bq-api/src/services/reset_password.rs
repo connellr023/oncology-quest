@@ -6,6 +6,8 @@ use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
+const PASSWORD_RESET_EXPIRATION_HOURS: i32 = 8;
+
 #[derive(Deserialize)]
 struct ResetPasswordQuery {
     pub username: Username,
@@ -22,15 +24,14 @@ pub(super) async fn reset(pool: Data<Pool<Postgres>>, reset_password_query: Json
 
 #[derive(Deserialize)]
 struct AllowResetPasswordQuery {
-    user_id: i32,
-    allow_reset: bool
+    user_id: i32
 }
 
 #[actix_web::patch("/api/user/allow-reset-password")]
 pub(super) async fn allow_reset(session: Session, pool: Data<Pool<Postgres>>, allow_reset_password_query: Json<AllowResetPasswordQuery>) -> impl Responder {
     auth_admin_session!(user_id, session, pool);
 
-    match User::update_allow_reset_password(&pool, allow_reset_password_query.user_id, allow_reset_password_query.allow_reset).await {
+    match User::allow_reset_password(&pool, allow_reset_password_query.user_id, PASSWORD_RESET_EXPIRATION_HOURS).await {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_) => HttpResponse::Forbidden().finish()
     }

@@ -5,18 +5,19 @@ use sqlx::{prelude::FromRow, Pool, Postgres};
 use anyhow::anyhow;
 
 #[derive(Debug, FromRow, Clone)]
+#[allow(dead_code)]
 pub struct User {
     id: i32,
     username: Username,
     name: Name,
     email: Email,
-    can_reset_password: bool,
     is_admin: bool,
     salt: i64,
     password: String,
     login_count: i32,
-
-    #[allow(dead_code)] // This field is used in the database but not in the code.
+    
+    // These fields are used in the database but not in the code.
+    password_reset_timestamp: DateTime<Utc>,
     last_task_update: DateTime<Utc>
 }
 
@@ -47,7 +48,7 @@ impl User {
             password,
             salt,
             is_admin,
-            can_reset_password: false,
+            password_reset_timestamp: Utc::now(),
             login_count: 0,
             last_task_update: Utc::now()
         })
@@ -67,14 +68,15 @@ impl User {
         Ok(result)
     }
 
-    pub async fn update_allow_reset_password(pool: &Pool<Postgres>, user_id: i32, allow_reset: bool) -> anyhow::Result<()> {
+    pub async fn allow_reset_password(pool: &Pool<Postgres>, user_id: i32, expiration_hours: i32) -> anyhow::Result<()> {
         let rows_affected = sqlx::query!(
             r#"
             UPDATE users
-            SET can_reset_password = $1
+            SET password_reset_timestamp = NOW() + make_interval(hours => $1)
             WHERE id = $2;
             "#,
-            allow_reset, user_id
+            expiration_hours,
+            user_id
         )
         .execute(pool)
         .await?
@@ -92,7 +94,7 @@ impl User {
             r#"
             SELECT password, salt
             FROM users
-            WHERE username = $1 AND can_reset_password = TRUE;
+            WHERE username = $1 AND password_reset_timestamp > NOW();
             "#,
             username
         )
@@ -106,7 +108,7 @@ impl User {
         let rows_affected = sqlx::query!(
             r#"
             UPDATE users
-            SET password = $1, can_reset_password = FALSE
+            SET password = $1, password_reset_timestamp = NOW()
             WHERE username = $2;
             "#,
             new_hashed_password, username
@@ -190,14 +192,13 @@ impl User {
     pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
         let row = sqlx::query!(
             r#"
-            INSERT INTO users (username, name, email, can_reset_password, is_admin, salt, password)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO users (username, name, email, is_admin, salt, password)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING id
             "#,
             self.username.as_str(),
             self.name.as_str(),
             self.email.as_str(),
-            self.can_reset_password,
             self.is_admin,
             self.salt,
             self.password.as_str()
