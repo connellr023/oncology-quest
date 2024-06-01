@@ -11,6 +11,11 @@ const useCache = () => {
         sessionStorage.setItem("taskCacheTimestamp", timestamp())
     }
 
+    const retrieveTasksOwner = (): number | null => {
+        const owner = sessionStorage.getItem("tasksOwner")
+        return owner ? parseInt(owner) : null
+    }
+
     const retrieveUserTasks = (): RetrieveCacheResponse<Record<number, UserTask>> => {
         const cachedTasks = sessionStorage.getItem("tasks")
 
@@ -39,6 +44,11 @@ const useCache = () => {
         if (tasks) {
             cacheUserTasks(userId, tasks)
             return tasks
+        }
+
+        if (userId !== retrieveTasksOwner()) {
+            cacheUserTasks(userId, {})
+            return {}
         }
 
         const [cachedTasks] = retrieveUserTasks()

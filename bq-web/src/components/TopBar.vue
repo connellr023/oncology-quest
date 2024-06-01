@@ -13,6 +13,7 @@ import useDeleteUser from "../hooks/useDeleteUser"
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
 import InputModal from "./InputModal.vue"
+import ConfirmationModal from "./ConfirmationModal.vue"
 import NewDomainIcon from "./vector/NewDomainIcon.vue"
 import DeleteIcon from "./vector/DeleteIcon.vue"
 import CheckIcon from "./vector/CheckIcon.vue"
@@ -34,6 +35,9 @@ const { deleteSelf } = useDeleteUser()
 const showProfileOptions = ref(false)
 const showCreateDomainModal = ref(false)
 const showDeleteAccountModal = ref(false)
+const showDeleteDomainModal = ref(false)
+
+const deleteDomainError = ref("")
 
 let focusedDomainId = -1
 const visibleDomainDropdowns = reactive<boolean[]>([])
@@ -82,9 +86,10 @@ const confirmNewDomain = () => {
 
 const confirmDeleteDomain = () => {
   if (!deleteDomain(focusedDomainId)) {
-    console.error("Failed to delete domain.")
+    deleteDomainError.value = "Failed to delete domain."
   }
   else {
+    showDeleteDomainModal.value = false
     visibleDomainDropdowns[focusedDomainId] = false
   }
 }
@@ -96,6 +101,11 @@ const shouldAppearFocused = (id: number) => {
 const onLogoutClick = async () => {
   props.onLogout()
   await logout()
+}
+
+const onDeleteDomainClick = () => {
+  visibleDomainDropdowns[focusedDomainId] = false
+  showDeleteDomainModal.value = true
 }
 
 const onDeleteAccountClick = () => {
@@ -144,7 +154,7 @@ const deleteAccount = async () => {
               <CheckIcon />
               Select
             </button>
-            <button class="bubble red" @click="confirmDeleteDomain">
+            <button class="bubble red" @click="onDeleteDomainClick">
               <DeleteIcon />
               Delete
             </button>
@@ -159,17 +169,26 @@ const deleteAccount = async () => {
       <button v-else @click="selectDomain(domain)" v-for="domain in domains" :class="`bubble domain-option ${shouldAppearFocused(domain.id) ? 'focused' : ''}`" :key="domain.id">{{ domain.name }}</button>
     </div>
   </div>
-  <InputModal
-    v-if="session.isAdmin"
-    v-model="name"
-    title="New Domain"
-    placeholder="Enter domain name..."
-    :error="nameError"
-    :visible="showCreateDomainModal"
-    :isPassword="false"
-    :onConfirm="confirmNewDomain"
-    :onCancel="() => { showCreateDomainModal = false }"
-  />
+  <template v-if="session.isAdmin">
+    <InputModal
+      v-model="name"
+      title="New Domain"
+      placeholder="Enter domain name..."
+      :error="nameError"
+      :visible="showCreateDomainModal"
+      :isPassword="false"
+      :onConfirm="confirmNewDomain"
+      :onCancel="() => { showCreateDomainModal = false }"
+    />
+    <ConfirmationModal
+      title="Delete Domain"
+      description="Are you sure you want to delete this domain?"
+      :error="deleteDomainError"
+      :visible="showDeleteDomainModal"
+      :onConfirm="confirmDeleteDomain"
+      :onCancel="() => { showDeleteDomainModal = false }"
+    />
+  </template>
   <InputModal
     v-model="password"
     title="Delete Account"
