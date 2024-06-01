@@ -160,6 +160,8 @@ impl User {
     /// 
     /// Returns the user if the login was successful, an error otherwise.
     pub async fn validate_login(pool: &Pool<Postgres>, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
+        let mut transaction = pool.begin().await?;
+        
         let result_user = sqlx::query_as!(
             User,
             r#"
@@ -170,12 +172,15 @@ impl User {
             "#,
             username
         )
-        .fetch_one(pool)
+        .fetch_one(&mut *transaction)
         .await?;
 
         if !result_user.validate_password(plain_text_password) {
+            transaction.rollback().await?;
             return Err(anyhow!("Invalid password"));
         }
+
+        transaction.commit().await?;
 
         Ok(result_user)
     }

@@ -9,8 +9,6 @@ import useSession from "./hooks/useSession"
 import DashboardView from "./views/DashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
-import ManageUsersBar from "./components/ManageUsersBar.vue"
-import TopBar from "./components/TopBar.vue"
 
 const {
   fetchSession,
@@ -53,13 +51,7 @@ const resetAll = () => {
       <div v-if="connectionError" class="connect-error"><b><i>bq</i></b> is currently under maintenance.</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
-        <div class="dash-container" v-else>
-          <ManageUsersBar v-if="session.isAdmin" />
-          <div class="dash">
-            <TopBar :onLogout="resetAll" />
-            <DashboardView />
-          </div>
-        </div>
+        <DashboardView :resetAll="resetAll" v-else />
       </div>
     </div>
   </main>
@@ -67,21 +59,6 @@ const resetAll = () => {
 
 <style scoped lang="scss">
 @import "main.scss";
-
-div.dash-container {
-  opacity: 0;
-  animation: fade-in 1s forwards;
-  animation-delay: 0.5s;
-  display: flex;
-  width: 100lvw;
-  height: 100lvh;
-
-  div.dash {
-    flex-grow: 1;
-    background-color: $main-bg-color;
-    padding: 12px 25px 20px 35px;
-  }
-}
 
 div.connect-error {
   margin-top: 20px;

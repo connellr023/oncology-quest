@@ -2,24 +2,21 @@
 import CheckIcon from "./vector/CheckIcon.vue"
 import CancelIcon from "./vector/CancelIcon.vue"
 
-const model = defineModel()
-
 defineProps<{
   title: string,
-  placeholder: string,
   visible: boolean,
+  description: string,
   error: string,
-  isPassword: boolean,
   onConfirm: () => void,
   onCancel: () => void
 }>()
 </script>
 
 <template>
-  <div class="modal" v-if="visible">
+ <div class="modal" v-if="visible">
     <div class="modal-content">
       <h3>{{ title }}</h3>
-      <input :type="`${isPassword ? 'password' : 'text'}`" :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
+      <p>{{ description }}</p>
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
         <button class="bubble green" @click="onConfirm">

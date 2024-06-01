@@ -11,6 +11,7 @@ import Dropdown from "./Dropdown.vue"
 import SearchIcon from "../components/vector/SearchIcon.vue"
 import DeleteIcon from "../components/vector/DeleteIcon.vue"
 import UnlockIcon from "./vector/UnlockIcon.vue"
+import ConfirmationModal from "./ConfirmationModal.vue"
 
 const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
@@ -19,8 +20,11 @@ const { search, results, loading, searchError } = useUserSearch()
 const { deleteUser } = useDeleteUser()
 
 const query = ref("")
+const deleteUserError = ref("")
+
 const isCollapsed = ref(true)
 const userOptionsVisible = ref(false)
+const showConfirmationModal = ref(false)
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
@@ -42,11 +46,27 @@ const toggleUserOptions = () => {
   userOptionsVisible.value = !userOptionsVisible.value
 }
 
-const onDeleteUser = async (userId: number) => {
-  if (await deleteUser(userId)) {
-    delete results.value[userId]
-    selectedUser.value = null
+const onDeleteUserClicked = () => {
+  deleteUserError.value = ""
+  userOptionsVisible.value = false
+  showConfirmationModal.value = true
+}
+
+const confirmDeleteUser = () => {
+  const confirm = async () => {
+    if (!selectedUser.value) return
+
+    if (await deleteUser(selectedUser.value.user.id)) {
+      delete results.value[selectedUser.value.user.id]
+      selectedUser.value = null
+      showConfirmationModal.value = false
+    }
+    else {
+      deleteUserError.value = "Failed to delete user."
+    }
   }
+
+  confirm()
 }
 </script>
 
@@ -73,7 +93,7 @@ const onDeleteUser = async (userId: number) => {
                 <UnlockIcon />
                 Enable Password Reset
               </button>
-              <button class="bubble red" @click="onDeleteUser(result.user.id)">
+              <button class="bubble red" @click="onDeleteUserClicked">
                 <DeleteIcon />
                 Delete User
               </button>
@@ -90,21 +110,18 @@ const onDeleteUser = async (userId: number) => {
       <div :class="`${!isCollapsed ? 'active' : ''}`" />
     </div>
   </div>
+  <ConfirmationModal
+    title="Delete User"
+    description="Are you sure you want to delete this user?"
+    :error="deleteUserError"
+    :visible="showConfirmationModal"
+    :onConfirm="confirmDeleteUser"
+    :onCancel="() => { showConfirmationModal = false }"
+  />
 </template>
 
 <style scoped lang="scss">
 @import "../main.scss";
-
-span.login-count {
-  cursor: auto;
-  padding: 10px;
-  padding-top: 15px;
-  margin-left: 20px;
-
-  b {
-    margin-right: 10px;
-  }
-}
 
 div.account-bar-container {
   position: relative;

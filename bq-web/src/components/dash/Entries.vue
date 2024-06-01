@@ -65,6 +65,7 @@ const {
   <InputModal
     v-if="session.isAdmin"
     v-model="title"
+    :isPassword="false"
     :error="titleError"
     :visible="isCreateEntryModalVisible"
     :title="'Create New Entry'"

@@ -104,6 +104,10 @@ const onDeleteAccountClick = () => {
 }
 
 const deleteAccount = async () => {
+  if (passwordError.value || password.value.length === 0) {
+    return
+  }
+
   if (await deleteSelf(password.value)) {
     showDeleteAccountModal.value = false
     await onLogoutClick()
@@ -119,6 +123,7 @@ const deleteAccount = async () => {
     <div>
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
+        <span class="login-count"><b>{{ session.loginCount }}</b>Login(s)</span>
         <button class="bubble" @click="onLogoutClick">
           <LogoutIcon />
           Logout
