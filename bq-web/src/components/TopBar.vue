@@ -5,8 +5,10 @@ import { Domain } from "../models/domain"
 
 import useLogout from "../hooks/useLogout"
 import useValidateName from "../hooks/validation/useValidateName"
+import useValidatePassword from "../hooks/validation/useValidatePassword"
 import useDomains from "../hooks/useDomains"
 import useEntries from "../hooks/useEntries"
+import useDeleteUser from "../hooks/useDeleteUser"
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
@@ -24,11 +26,14 @@ const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 
 const { logout } = useLogout()
 const { name, nameError } = useValidateName()
+const { password, passwordError } = useValidatePassword()
 const { createDomain, deleteDomain } = useDomains()
 const { fetchEntriesWithCaching } = useEntries()
+const { deleteSelf } = useDeleteUser()
 
 const showProfileOptions = ref(false)
 const showCreateDomainModal = ref(false)
+const showDeleteAccountModal = ref(false)
 
 let focusedDomainId = -1
 const visibleDomainDropdowns = reactive<boolean[]>([])
@@ -88,9 +93,24 @@ const shouldAppearFocused = (id: number) => {
   return visibleDomainDropdowns[id] || selectedDomain.value?.id === id
 }
 
-const onLogoutClick = () => {
+const onLogoutClick = async () => {
   props.onLogout()
-  logout()
+  await logout()
+}
+
+const onDeleteAccountClick = () => {
+  showDeleteAccountModal.value = true
+  showProfileOptions.value = false
+}
+
+const deleteAccount = async () => {
+  if (await deleteSelf(password.value)) {
+    showDeleteAccountModal.value = false
+    await onLogoutClick()
+  }
+  else {
+    passwordError.value = "Failed to delete account. Check your password."
+  }
 }
 </script>
 
@@ -103,7 +123,7 @@ const onLogoutClick = () => {
           <LogoutIcon />
           Logout
         </button>
-        <button class="bubble red">
+        <button class="bubble red" @click="onDeleteAccountClick">
           <DeleteIcon />
           Delete Account
         </button>
@@ -141,8 +161,19 @@ const onLogoutClick = () => {
     placeholder="Enter domain name..."
     :error="nameError"
     :visible="showCreateDomainModal"
+    :isPassword="false"
     :onConfirm="confirmNewDomain"
     :onCancel="() => { showCreateDomainModal = false }"
+  />
+  <InputModal
+    v-model="password"
+    title="Delete Account"
+    placeholder="Enter password..."
+    :error="passwordError"
+    :visible="showDeleteAccountModal"
+    :isPassword="true"
+    :onConfirm="deleteAccount"
+    :onCancel="() => { showDeleteAccountModal = false }"
   />
 </template>
 

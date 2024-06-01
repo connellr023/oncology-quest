@@ -9,6 +9,7 @@ defineProps<{
   placeholder: string,
   visible: boolean,
   error: string,
+  isPassword: boolean,
   onConfirm: () => void,
   onCancel: () => void
 }>()
@@ -18,12 +19,12 @@ defineProps<{
   <div class="modal" v-if="visible">
     <div class="modal-content">
       <h3>{{ title }}</h3>
-      <input :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
+      <input :type="`${isPassword ? 'password' : 'text'}`" :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
         <button class="bubble green" @click="onConfirm">
           <CheckIcon />
-          Create
+          Confirm
         </button>
         <button class="bubble red" @click="onCancel">
           <CancelIcon />

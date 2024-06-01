@@ -3,6 +3,7 @@ import { Ref, inject, ref } from "vue"
 import { UserWithTasks, User } from "../models/user"
 
 import useUserSearch from "../hooks/useUserSearch"
+import useDeleteUser from "../hooks/useDeleteUser"
 
 import Spinner from "../components/vector/Spinner.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
@@ -15,6 +16,8 @@ const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
   
 const { search, results, loading, searchError } = useUserSearch()
+const { deleteUser } = useDeleteUser()
+
 const query = ref("")
 const isCollapsed = ref(true)
 const userOptionsVisible = ref(false)
@@ -38,6 +41,13 @@ const setSelectedUser = (selection: UserWithTasks) => {
 const toggleUserOptions = () => {
   userOptionsVisible.value = !userOptionsVisible.value
 }
+
+const onDeleteUser = async (userId: number) => {
+  if (await deleteUser(userId)) {
+    delete results.value[userId]
+    selectedUser.value = null
+  }
+}
 </script>
 
 <template>
@@ -53,9 +63,9 @@ const toggleUserOptions = () => {
       </div>
       <div class="results-container">
         <div v-if="searchError" class="status">An error occurred while searching for users.</div>
-        <div v-else-if="results.length === 0" class="status">No results found.</div>
+        <div v-else-if="Object.keys(results).length === 0" class="status">No results found.</div>
         <div v-else>
-          <div v-for="result in results" :key="result.user.username" class="user-option" :class="`${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }">
+          <div v-for="result in results" :key="result.user.id" :class="`user-option ${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }">
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
             <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
               <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
@@ -63,7 +73,7 @@ const toggleUserOptions = () => {
                 <UnlockIcon />
                 Enable Password Reset
               </button>
-              <button class="bubble red">
+              <button class="bubble red" @click="onDeleteUser(result.user.id)">
                 <DeleteIcon />
                 Delete User
               </button>

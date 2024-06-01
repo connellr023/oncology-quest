@@ -1,9 +1,9 @@
-import { reactive, ref } from "vue"
+import { ref } from "vue"
 import { UserWithTasks } from "../models/user"
 import { API_ENDPOINT } from "../utilities"
 
 const useUserSearch = () => {
-    const results = reactive<UserWithTasks[]>([])
+    const results = ref<Record<number, UserWithTasks>>({})
     const loading = ref(false)
     const searchError = ref(false)
 
@@ -25,8 +25,8 @@ const useUserSearch = () => {
             }
             else {
                 try {
-                    const users: UserWithTasks[] = await response.json()
-                    results.splice(0, results.length, ...users)
+                    const users: Record<number, UserWithTasks> = await response.json()
+                    results.value = users
                 }
                 catch (_) {
                     searchError.value = true

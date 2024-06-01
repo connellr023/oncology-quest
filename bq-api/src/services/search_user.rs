@@ -10,7 +10,7 @@ const SEARCH_LIMIT: i64 = 10;
 pub(super) async fn search(session: Session, pool: Data<Pool<Postgres>>, query: Path<String>) -> impl Responder {
     auth_admin_session!(user_id, session, pool);
 
-    let users = match SearchResultUser::text_search(&pool, query.as_str(), SEARCH_LIMIT).await {
+    let users = match SearchResultUser::text_search_as_map(&pool, query.as_str(), SEARCH_LIMIT).await {
         Ok(users) => users,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };

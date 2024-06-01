@@ -214,7 +214,8 @@ impl User {
     pub async fn exists(&self, pool: &Pool<Postgres>) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"
-            SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)
+            SELECT
+            EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)
             AS "exists!";
             "#,
             self.username.as_str(), self.email.as_str()
@@ -225,24 +226,32 @@ impl User {
         Ok(record.exists)
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &Pool<Postgres>, user_id: i32, include_admins: bool) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
-        let delete_query = sqlx::query(
-            r#"
-            DELETE FROM user_tasks WHERE user_id = $1;
-            DELETE FROM users WHERE id = $1;
-            "#,
+        sqlx::query!(
+            "DELETE FROM user_tasks WHERE user_id = $1;",
+            user_id
         )
-        .bind(user_id)
         .execute(&mut *transaction)
         .await?;
 
-        transaction.commit().await?;
+        let query = match include_admins {
+            true => sqlx::query!(
+                "DELETE FROM users WHERE id = $1;",
+                user_id
+            ),
+            false => sqlx::query!(
+                "DELETE FROM users WHERE id = $1 AND is_admin = FALSE;",
+                user_id
+            )
+        };
 
-        if delete_query.rows_affected() == 0 {
-            return Err(anyhow!("User does not exist"));
-        }
+        query
+            .execute(&mut *transaction)
+            .await?;
+
+        transaction.commit().await?;
     
         Ok(())
     }

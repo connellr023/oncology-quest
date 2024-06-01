@@ -10,7 +10,7 @@ pub struct SearchResultUser {
 }
 
 impl SearchResultUser {
-    pub async fn text_search(pool: &Pool<Postgres>, query: &str, limit: i64) -> anyhow::Result<Box<[Self]>> {
+    pub async fn text_search_as_map(pool: &Pool<Postgres>, query: &str, limit: i64) -> anyhow::Result<HashMap<i32, Self>> {
         let users = sqlx::query_as!(
             ClientUser,
             r#"
@@ -37,6 +37,11 @@ impl SearchResultUser {
             });
         }
 
-        Ok(results.into_boxed_slice())
+        let map = results
+            .into_iter()
+            .map(|result| { (result.user.id, result) })
+            .collect::<HashMap<_, _>>();
+
+        Ok(map)
     }
 }
