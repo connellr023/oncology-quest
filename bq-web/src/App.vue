@@ -47,7 +47,7 @@ const resetAll = () => {
 <template>
   <main>
     <div class="flex-wrapper">
-      <MainLogo :class="`${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
+      <MainLogo :class="`logo ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
       <div v-if="connectionError" class="connect-error"><b><i>bq</i></b> is currently under maintenance.</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
@@ -78,6 +78,10 @@ svg {
   display: block;
   animation: pulse 4s infinite ease-out;
   
+  &.logo {
+    fill: $theme-color-1;
+  }
+
   &.fade-up {
     transform: translateY($logo-vert-offset);
     animation: move-up 0.8s;

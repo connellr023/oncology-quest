@@ -58,6 +58,11 @@ $theme-color-disabled: #9494a0;
   }
 }
 
+svg {
+  fill: #ffffff;
+  stroke-width: 0px;
+}
+
 input {
   padding: 9px;
   border: 2px solid $theme-color-1;

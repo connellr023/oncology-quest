@@ -5,10 +5,3 @@
     <rect class="cls-1" x="37.14" y="33.9" width="7.25" height="49.11" rx="3.63" ry="3.63"/>
   </svg>
 </template>
-
-<style scoped lang="scss">
-svg {
-  fill: #ffffff;
-  stroke-width: 0px;
-}
-</style>

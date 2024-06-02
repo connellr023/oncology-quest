@@ -17,7 +17,6 @@ const useRegister = () => {
         confirmedPasswordError,
     } = useValidateConfirmedPassword()
 
-    const message = ref("")
     const serverError = ref("")
     const loading = ref(false)
 
@@ -43,10 +42,7 @@ const useRegister = () => {
                     }),
                 })
 
-                if (response.ok) {
-                    message.value = "Registration successful."
-                }
-                else {
+                if (!response.ok) {
                     switch (response.status) {
                         case 400:
                             serverError.value = "Invalid registration data. Please check your inputs."
@@ -79,7 +75,6 @@ const useRegister = () => {
         passwordError,
         confirmedPassword,
         confirmedPasswordError,
-        message,
         serverError,
         register,
         loading

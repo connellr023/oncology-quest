@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { Ref, VNodeRef, inject, onMounted, ref } from "vue"
+import { Ref, VNodeRef, inject, onMounted, ref, watch } from "vue"
 import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
 
-import EntryHeading from "./EntryHeading.vue"
 import useUserTasks from "../../hooks/useUserTasks";
+
+import CheckIcon from "../vector/CheckIcon.vue"
+import EntryHeading from "./EntryHeading.vue"
 
 const props = defineProps<{
   saveHeading: (title: string) => Promise<boolean>,
@@ -17,6 +19,8 @@ const props = defineProps<{
 const session = inject<Ref<User>>("session")!
 
 const isComplete = ref(false)
+const isSaved = ref(true)
+
 const comment = ref("")
 
 const { updateTask } = useUserTasks()
@@ -31,7 +35,12 @@ onMounted(() => {
 })
 
 const saveTask = async (): Promise<boolean> => {
-  return await updateTask(props.subtaskId, isComplete.value, comment.value)
+  if (await updateTask(props.subtaskId, isComplete.value, comment.value)) {
+    isSaved.value = true
+    return true
+  }
+
+  return false
 }
 
 const toggleCompleted = async () => {
@@ -50,13 +59,20 @@ const adjustHeight = () => {
 }
 
 onMounted(adjustHeight)
+
+watch(() => comment.value, () => {
+  isSaved.value = false
+})
 </script>
 
 <template>
   <div class="container">
     <div class="task-heading-container">
       <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
-      <button v-if="!session.isAdmin" class="minimal" @click="saveTask">Save</button>
+      <button v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
+        <CheckIcon />
+        {{ isSaved ? "Saved" : "Not Saved" }}
+      </button>
       <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
     </div>
     <textarea class="bubble" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>

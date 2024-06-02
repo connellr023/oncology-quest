@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref } from "vue"
+
 import useRegister from "../../hooks/useRegister"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
 import LoadingButton from "../LoadingButton.vue"
+
+const props = defineProps<{ onRegister: () => void }>()
 
 const {
   username,
@@ -17,7 +20,6 @@ const {
   passwordError,
   confirmedPasswordError,
   serverError,
-  message,
   register,
   loading
 } = useRegister()
@@ -34,9 +36,13 @@ const canGotoStageTwo = computed(() => {
   return (!isStageOneErrors.value && username.value && name.value && email.value) ? true : false
 })
 
-const handleSubmit = (_: Event) => {
+const handleSubmit = async () => {
   if (!isStageTwoErrors.value) {
-    register()
+    await register()
+
+    if (!serverError.value) {
+      props.onRegister()
+    }
   }
 }
 
@@ -95,7 +101,6 @@ const switchStage = () => {
       />
       <div>
         <div class="error-label" v-if="serverError">{{ serverError }}</div>
-        <div class="success-label" v-else-if="message">{{ message }}</div>
       </div>
       <LoadingButton :loading="loading" text="Register" />
       <button class="prev std" @click="switchStage">Previous Step</button>

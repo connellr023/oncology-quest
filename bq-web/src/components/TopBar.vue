@@ -37,6 +37,9 @@ const showCreateDomainModal = ref(false)
 const showDeleteAccountModal = ref(false)
 const showDeleteDomainModal = ref(false)
 
+const isCreateDomainLoading = ref(false)
+const isDeleteAccountLoading = ref(false)
+
 const deleteDomainError = ref("")
 
 let focusedDomainId = -1
@@ -71,17 +74,22 @@ const selectDomain = async (domain: Domain) => {
   visibleDomainDropdowns[focusedDomainId] = false
 }
 
-const confirmNewDomain = () => {
+const confirmNewDomain = async () => {
   if (nameError.value || name.value.length === 0) {
     return
   }
 
-  if (!createDomain(name.value)) {
+  isCreateDomainLoading.value = true
+
+  if (await createDomain(name.value)) {
+    showCreateDomainModal.value = false
+    name.value = ""
+  }
+  else {
     nameError.value = "Failed to create domain."
-    return
   }
 
-  showCreateDomainModal.value = false
+  isCreateDomainLoading.value = false
 }
 
 const confirmDeleteDomain = () => {
@@ -118,6 +126,8 @@ const deleteAccount = async () => {
     return
   }
 
+  isDeleteAccountLoading.value = true
+
   if (await deleteSelf(password.value)) {
     showDeleteAccountModal.value = false
     await onLogoutClick()
@@ -125,6 +135,8 @@ const deleteAccount = async () => {
   else {
     passwordError.value = "Failed to delete account. Check your password."
   }
+
+  isDeleteAccountLoading.value = false
 }
 </script>
 
@@ -174,6 +186,7 @@ const deleteAccount = async () => {
       v-model="name"
       title="New Domain"
       placeholder="Enter domain name..."
+      :loading="isCreateDomainLoading"
       :error="nameError"
       :visible="showCreateDomainModal"
       :isPassword="false"
@@ -193,6 +206,7 @@ const deleteAccount = async () => {
     v-model="password"
     title="Delete Account"
     placeholder="Enter password..."
+    :loading="isDeleteAccountLoading"
     :error="passwordError"
     :visible="showDeleteAccountModal"
     :isPassword="true"

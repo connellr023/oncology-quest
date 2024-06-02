@@ -5,7 +5,7 @@ import { User } from "../../models/user"
 import useValidateTitle from "../../hooks/validation/useValidateTitle";
 
 import EditIcon from "../vector/EditIcon.vue"
-import SaveIcon from "../vector/SaveIcon.vue"
+import CheckIcon from "../vector/CheckIcon.vue"
 import CancelIcon from "../vector/CancelIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
 
@@ -67,11 +67,11 @@ const deleteTaskHeading = async () => {
     </div>
     <div class="edit-buttons-container" v-if="session.isAdmin">
       <template v-if="inEditMode">
-        <button class="icon-button" @click.stop="cancelEdit">
+        <button class="cancel icon-button red" @click.stop="cancelEdit">
           <CancelIcon />
         </button>
         <button class="icon-button green" @click.stop="saveEdit">
-          <SaveIcon />
+          <CheckIcon />
         </button>
         <button class="icon-button red" @click.stop="deleteTaskHeading">
           <DeleteIcon />
@@ -123,6 +123,16 @@ div.edit-buttons-container {
     &.edit {
       margin-right: 15px;
       margin-left: auto;
+
+      &:disabled {
+        opacity: 0.1;
+
+        &:hover {
+          svg {
+            fill: white;
+          }
+        }
+      }
     }
   }
 }

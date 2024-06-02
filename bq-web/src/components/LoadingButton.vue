@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <button :disabled="loading" class="form-button std" type="submit" @click="$emit('click')">
     {{ text }}
-    <Spinner class="spinner" v-if="loading" />
+    <Spinner class="spinner" v-show="loading" />
   </button>
 </template>
 

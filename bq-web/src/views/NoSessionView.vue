@@ -36,7 +36,7 @@ onMounted(() => {
       <button @click="setView(Views.RESET_PASSWORD)" class="std">Reset Password</button>
     </div>
     <LoginForm v-else-if="view === Views.LOGIN" />
-    <RegisterForm v-else-if="view === Views.REGISTER" />
+    <RegisterForm :onRegister="() => setView(Views.LOGIN)" v-else-if="view === Views.REGISTER" />
     <ResetPasswordForm v-else-if="view === Views.RESET_PASSWORD" />
     <button v-if="view !== Views.SELECT" @click="setView(Views.SELECT)" class="back">Back</button>
     <CreditLabel />

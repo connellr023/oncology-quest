@@ -21,8 +21,9 @@ const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 
 const { title, titleError } = useValidateTitle()
 
-let createEntryCallback = ref<() => any>(() => {})
+const createEntryCallback = ref<() => any>(() => {})
 const isCreateEntryModalVisible = ref(false)
+const isCreateEntryLoading = ref(false)
 
 let visibility = reactive<Record<string, boolean>>({})
 
@@ -35,11 +36,15 @@ const computeKey = (...values: number[]) => values.join("-")
 const showCreateEntryModal = (onConfirm: (confirmTitle: string) => Promise<Boolean>) => {
   isCreateEntryModalVisible.value = true
   createEntryCallback.value = async () => {
+    isCreateEntryLoading.value = true
+
     if (await onConfirm(title.value)) {
       isCreateEntryModalVisible.value = false
       title.value = ""
       titleError.value = ""
     }
+
+    isCreateEntryLoading.value = false
   }
 }
 
@@ -67,6 +72,7 @@ const {
     v-model="title"
     :isPassword="false"
     :error="titleError"
+    :loading="isCreateEntryLoading"
     :visible="isCreateEntryModalVisible"
     :title="'Create New Entry'"
     :placeholder="'Entry entry title...'"
