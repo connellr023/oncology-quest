@@ -1,21 +1,39 @@
 <script setup lang="ts">
-import useValidateConfirmedPassword from "../../hooks/validation/useValidateConfirmedPassword"
-import useValidateUsername from "../../hooks/validation/useValidateUsername";
+import { computed } from "vue"
+
+import useResetPassword from "../../hooks/useResetPassword"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
 import LoadingButton from "../LoadingButton.vue"
 
-const { username, usernameError } = useValidateUsername()
+const props = defineProps<{ onReset: () => void }>()
 
 const {
+  username,
   password,
   confirmedPassword,
+  usernameError,
   passwordError,
-  confirmedPasswordError
-} = useValidateConfirmedPassword()
+  confirmedPasswordError,
+  requestResetPassword,
+  resetError,
+  loading
+} = useResetPassword()
 
-const handleSubmit = () => {
-  console.log("Submitted")
+const isFormError = computed(() => {
+  return (usernameError.value || passwordError.value || confirmedPasswordError.value) ? true : false
+})
+
+const handleSubmit = async () => {
+  if (isFormError.value) {
+    return
+  }
+
+  await requestResetPassword()
+
+  if (!resetError.value) {
+    props.onReset()
+  }
 }
 </script>
 
@@ -43,7 +61,7 @@ const handleSubmit = () => {
       :error="confirmedPasswordError"
       v-model="confirmedPassword"
     />
-    <!-- <div class="form-error error-label" v-if="loginError">{{ loginError }}</div> -->
-    <LoadingButton :loading="false" text="Confirm" />
+    <div class="form-error error-label" v-if="resetError">{{ resetError }}</div>
+    <LoadingButton :loading="loading" text="Confirm" />
   </form>
 </template>

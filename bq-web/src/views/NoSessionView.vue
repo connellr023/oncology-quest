@@ -20,6 +20,10 @@ const setView = (newView: Views) => {
   view.value = newView;
 }
 
+const gotoLogin = () => {
+  setView(Views.LOGIN)
+}
+
 onMounted(() => {
   setTimeout(() => {
     shouldAnimate.value = false;
@@ -31,13 +35,13 @@ onMounted(() => {
   <div class="container flex-wrapper">
     <div v-if="view === Views.SELECT" :class="`button-container ${shouldAnimate ? 'animate' : ''}`">
       <h1>Get started with <b><i>bq</i></b> below.</h1>
-      <button @click="setView(Views.LOGIN)" class="std">Login</button>
+      <button @click="gotoLogin" class="std">Login</button>
       <button @click="setView(Views.REGISTER)" class="std">Register</button>
       <button @click="setView(Views.RESET_PASSWORD)" class="std">Reset Password</button>
     </div>
     <LoginForm v-else-if="view === Views.LOGIN" />
-    <RegisterForm :onRegister="() => setView(Views.LOGIN)" v-else-if="view === Views.REGISTER" />
-    <ResetPasswordForm v-else-if="view === Views.RESET_PASSWORD" />
+    <RegisterForm :onRegister="gotoLogin" v-else-if="view === Views.REGISTER" />
+    <ResetPasswordForm :onReset="gotoLogin" v-else-if="view === Views.RESET_PASSWORD" />
     <button v-if="view !== Views.SELECT" @click="setView(Views.SELECT)" class="back">Back</button>
     <CreditLabel />
   </div>
