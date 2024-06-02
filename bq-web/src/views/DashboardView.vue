@@ -1,26 +1,31 @@
 <script setup lang="ts">
-import { Ref, inject } from "vue"
+import { Ref, inject, watch } from "vue"
 import { UserTask } from "../models/tasks"
 import { User, UserWithTasks } from "../models/user";
+import { Domain } from "../models/domain";
 
 import ManageUsersBar from "../components/ManageUsersBar.vue"
 import TopBar from "../components/TopBar.vue"
 import Entries from "../components/dash/Entries.vue"
 
-defineProps<{ resetAll: () => void }>()
-
 const session = inject<Ref<User>>("session")!
 const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
 const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
+const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
+const isEditing = inject<Ref<boolean>>("isEditing")!
+
+watch(() => [selectedUser.value, selectedDomain.value], () => {
+  isEditing.value = false
+})
 </script>
 
 <template>
   <div class="dash-container">
     <ManageUsersBar v-if="session.isAdmin" />
     <div class="dash">
-      <TopBar :onLogout="resetAll" />
-      <Entries v-if="session.isAdmin" :key="selectedUser?.user.id" :tasks="selectedUser?.tasks || {}" />
-      <Entries v-else :tasks="tasks" />
+      <TopBar />
+      <Entries v-if="session.isAdmin" :selectedDomain="selectedDomain" :key="`${selectedUser?.user.id}.${selectedDomain?.id}`" :tasks="selectedUser?.tasks || {}" />
+      <Entries v-else :tasks="tasks" :selectedDomain="selectedDomain" />
     </div>
   </div>
 </template>

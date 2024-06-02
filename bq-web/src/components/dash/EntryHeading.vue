@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, ref } from "vue"
+import { Ref, inject, onUnmounted, ref } from "vue"
 import { User } from "../../models/user"
 
 import useValidateTitle from "../../hooks/validation/useValidateTitle";
@@ -27,13 +27,25 @@ const inEditMode = ref(false)
 let savedTitle = ""
 
 const toggleEditMode = () => {
+  if (isEditing.value && !inEditMode.value) {
+    return
+  }
+
   inEditMode.value = !inEditMode.value
   savedTitle = title.value
 
   if (inEditMode.value) {
+    window.addEventListener("click", outsideClickListener)
     isEditing.value = true
   } else {
+    window.removeEventListener("click", outsideClickListener)
     isEditing.value = false
+  }
+}
+
+const outsideClickListener = () => {
+  if (inEditMode.value) {
+    cancelEdit()
   }
 }
 
@@ -57,6 +69,10 @@ const deleteTaskHeading = async () => {
     console.error("Failed to delete task")
   }
 }
+
+onUnmounted(() => {
+  window.removeEventListener("click", outsideClickListener)
+})
 </script>
 
 <template>

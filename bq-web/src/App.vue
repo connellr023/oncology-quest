@@ -42,6 +42,7 @@ const resetAll = () => {
   isEditing.value = false
   entries.value = {}
 }
+provide("resetAll", resetAll)
 </script>
 
 <template>

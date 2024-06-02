@@ -6,18 +6,21 @@ import { Domain } from "../../models/domain"
 
 import useProgress from "../../hooks/useProgress"
 
-import EditTask from "./EditTask.vue"
+import useValidateTitle from "../../hooks/validation/useValidateTitle"
+import useEntries from "../../hooks/useEntries"
+import UserTaskEntry from "./UserTaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
 import PushStackIcon from "../vector/PushStackIcon.vue"
 import InputModal from "../InputModal.vue"
-import useValidateTitle from "../../hooks/validation/useValidateTitle"
-import useEntries from "../../hooks/useEntries"
 
-const props = defineProps<{ tasks: Record<number, UserTask> }>()
+const props = defineProps<{
+  tasks: Record<number, UserTask>,
+  selectedDomain: Domain | null
+  externalKey?: string | number,
+}>()
 
 const session = inject<Ref<User>>("session")!
 const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
-const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 
 const { title, titleError } = useValidateTitle()
 
@@ -79,7 +82,7 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div id="entries-container" v-if="selectedDomain" :key="selectedDomain.id">
+  <div id="entries-container" v-if="selectedDomain">
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(supertaskIndex)">
       <ProgressableEntryHeading
         :progress="calculateSupertaskProgress(selectedDomain!.id, supertaskIndex)"
@@ -101,7 +104,7 @@ const {
           />
           <ul v-show="visibility[computeKey(supertaskIndex, taskIndex)]" :key="computeKey(supertaskIndex, taskIndex, -1)">
             <li v-for="(subtask, subtaskIndex) in task.children" :key="computeKey(supertaskIndex, taskIndex, subtaskIndex)">
-              <EditTask
+              <UserTaskEntry
                 :tasks="props.tasks"
                 :subtaskId="subtask.id"
                 :value="subtask.title"

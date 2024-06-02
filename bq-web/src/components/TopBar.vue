@@ -19,8 +19,7 @@ import DeleteIcon from "./vector/DeleteIcon.vue"
 import CheckIcon from "./vector/CheckIcon.vue"
 import Dropdown from "./Dropdown.vue"
 
-const props = defineProps<{ onLogout: () => void }>()
-
+const resetAll = inject<() => void>("resetAll")!
 const session = inject<Ref<User>>("session")!
 const domains = inject<Ref<Record<number, Domain>>>("domains")!
 const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
@@ -107,7 +106,7 @@ const shouldAppearFocused = (id: number) => {
 }
 
 const onLogoutClick = async () => {
-  props.onLogout()
+  resetAll()
   await logout()
 }
 
