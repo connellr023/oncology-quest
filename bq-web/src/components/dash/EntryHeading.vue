@@ -68,6 +68,8 @@ const deleteTaskHeading = async () => {
   if (!await props.deleteHeading()) {
     console.error("Failed to delete task")
   }
+
+  toggleEditMode()
 }
 
 onUnmounted(() => {

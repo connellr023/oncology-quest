@@ -14,7 +14,7 @@ const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const selectedDomain = inject<Ref<Domain | null>>("selectedDomain")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
-watch(() => [selectedUser.value, selectedDomain.value], () => {
+watch(() => [selectedUser.value?.user.id, selectedDomain.value?.id], () => {
   isEditing.value = false
 })
 </script>

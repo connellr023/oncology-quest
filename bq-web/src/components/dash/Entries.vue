@@ -82,7 +82,7 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div id="entries-container" v-if="selectedDomain">
+  <div id="entries-container" v-if="selectedDomain" :key="selectedDomain.id">
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedDomain.id]" :key="computeKey(supertaskIndex)">
       <ProgressableEntryHeading
         :progress="calculateSupertaskProgress(selectedDomain!.id, supertaskIndex)"
