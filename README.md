@@ -20,7 +20,7 @@ DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
 <br />
 
 <div align="center">
-    <img width="70px" src="https://raw.githubusercontent.com/connellr023/bq/3881786aad642489c985c335a1b65ab3473c43d9/bq-web/public/favicon.svg?token=AN3EVKLOV5KRIJUBZ7RKFM3GJORDC" />
+    <img width="70px" src="https://raw.githubusercontent.com/connellr023/bq/d8a84c0508f088b5ef3c4723a58fb77ebfd12fd7/bq-web/public/favicon.svg?token=AN3EVKN6QOAN7N6AT3BA34LGLPXY2" />
     <br />
     Developed and Tested by <b>Connell Reffo</b>.
 </div>
