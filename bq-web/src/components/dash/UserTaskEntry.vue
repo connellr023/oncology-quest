@@ -58,10 +58,12 @@ const adjustHeight = () => {
   textArea.value.style.height = textArea.value.scrollHeight + "px"
 }
 
-onMounted(adjustHeight)
+onMounted(() => {
+  adjustHeight()
 
-watch(() => comment.value, () => {
-  isSaved.value = false
+  watch(() => comment.value, () => {
+    isSaved.value = false
+  })
 })
 </script>
 
