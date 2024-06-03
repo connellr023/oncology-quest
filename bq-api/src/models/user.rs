@@ -1,11 +1,9 @@
 use crate::utilities::parsable::{Email, Name, PlainTextPassword, Username};
-use chrono::{DateTime, Utc};
 use rand::{thread_rng, Rng};
-use sqlx::{prelude::FromRow, Pool, Postgres};
+use sqlx::{FromRow, PgPool};
 use anyhow::anyhow;
 
 #[derive(Debug, FromRow, Clone)]
-#[allow(dead_code)]
 pub struct User {
     id: i32,
     username: Username,
@@ -17,8 +15,8 @@ pub struct User {
     login_count: i32,
     
     // These fields are used in the database but not in the code.
-    password_reset_timestamp: DateTime<Utc>,
-    last_task_update: DateTime<Utc>
+    // password_reset_timestamp: DateTime<Utc>,
+    // last_task_update: DateTime<Utc>
 }
 
 impl User {
@@ -48,17 +46,15 @@ impl User {
             password,
             salt,
             is_admin,
-            password_reset_timestamp: Utc::now(),
-            login_count: 0,
-            last_task_update: Utc::now()
+            login_count: 0
         })
     }
 
-    pub async fn fetch_by_id(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<Self> {
+    pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<Self> {
         let result = sqlx::query_as!(
             User,
             r#"
-            SELECT * FROM users WHERE id = $1;
+            SELECT id, username, name, email, is_admin, salt, password, login_count FROM users WHERE id = $1;
             "#,
             user_id
         )
@@ -68,7 +64,7 @@ impl User {
         Ok(result)
     }
 
-    pub async fn allow_reset_password(pool: &Pool<Postgres>, user_id: i32, expiration_hours: i32) -> anyhow::Result<()> {
+    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> anyhow::Result<()> {
         let rows_affected = sqlx::query!(
             r#"
             UPDATE users
@@ -89,7 +85,7 @@ impl User {
         Ok(())
     }
 
-    pub async fn update_password(pool: &Pool<Postgres>, username: &str, plain_text_password: &str) -> anyhow::Result<()> {
+    pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<()> {
         let record = match sqlx::query!(
             r#"
             SELECT password, salt
@@ -134,7 +130,7 @@ impl User {
     /// # Returns
     /// 
     /// Returns `true` if the user is an admin, `false` otherwise.
-    pub async fn validate_is_admin(pool: &Pool<Postgres>, primary_key: i32) -> bool {
+    pub async fn validate_is_admin(pool: &PgPool, primary_key: i32) -> bool {
         match sqlx::query!(
             r#"
             SELECT is_admin FROM users WHERE id = $1;
@@ -159,7 +155,7 @@ impl User {
     /// # Returns
     /// 
     /// Returns the user if the login was successful, an error otherwise.
-    pub async fn validate_login(pool: &Pool<Postgres>, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
+    pub async fn validate_login(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
         let mut transaction = pool.begin().await?;
         
         let result_user = sqlx::query_as!(
@@ -168,7 +164,7 @@ impl User {
             UPDATE users
             SET login_count = login_count + 1
             WHERE username = $1
-            RETURNING *;
+            RETURNING id, username, name, email, is_admin, salt, password, login_count;
             "#,
             username
         )
@@ -194,7 +190,7 @@ impl User {
     /// # Returns
     /// 
     /// Returns an error if the insert operation fails.
-    pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
         let row = sqlx::query!(
             r#"
             INSERT INTO users (username, name, email, is_admin, salt, password)
@@ -216,7 +212,7 @@ impl User {
         Ok(())
     }
 
-    pub async fn exists(&self, pool: &Pool<Postgres>) -> anyhow::Result<bool> {
+    pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"
             SELECT
@@ -231,7 +227,7 @@ impl User {
         Ok(record.exists)
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, user_id: i32, include_admins: bool) -> anyhow::Result<()> {
+    pub async fn delete(pool: &PgPool, user_id: i32, include_admins: bool) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(

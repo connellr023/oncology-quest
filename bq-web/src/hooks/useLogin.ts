@@ -27,7 +27,7 @@ const useLogin = () => {
 
         try {
             const [cachedTasks, taskCacheTimestamp] = retrieveUserTasks()
-            const response = await fetch(`${API_ENDPOINT}/api/user/login`, {
+            const response = await fetch(`${API_ENDPOINT}/api/users/login`, {
                 credentials: "include",
                 method: "POST",
                 headers: {

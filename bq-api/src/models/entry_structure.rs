@@ -1,7 +1,7 @@
 use crate::query_many;
 use crate::utilities::parsable::EntryTitle;
 use std::collections::HashMap;
-use sqlx::{FromRow, Pool, Postgres};
+use sqlx::{FromRow, PgPool};
 use serde::Serialize;
 
 #[derive(Debug, FromRow, Clone, Serialize)]
@@ -47,7 +47,7 @@ pub struct EntryStructure(Vec<EntryHierarchy>);
 
 macro_rules! fetch_all {
     ($struct_name:ident, $table_name:literal) => {
-        pub async fn fetch_all(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Box<[Self]>> {
+        pub async fn fetch_all(pool: &PgPool, domain_id: i32) -> anyhow::Result<Box<[Self]>> {
             let records = sqlx::query_as!(
                 $struct_name,
                 "SELECT * FROM " + $table_name + " WHERE domain_id = $1 ORDER BY id;",
@@ -63,7 +63,7 @@ macro_rules! fetch_all {
 
 macro_rules! update_title {
     ($struct_name:ident, $table_name:literal) => {
-        pub async fn update_title(pool: &Pool<Postgres>, id: i32, title: &str) -> anyhow::Result<()> {
+        pub async fn update_title(pool: &PgPool, id: i32, title: &str) -> anyhow::Result<()> {
             let mut transaction = pool.begin().await?;
             
             sqlx::query!(
@@ -92,7 +92,7 @@ impl Supertask {
     fetch_all!(Supertask, "supertasks");
     update_title!(Supertask, "supertasks");
 
-    pub async fn insert_from(pool: &Pool<Postgres>, title: &str, domain_id: i32) -> anyhow::Result<i32> {
+    pub async fn insert_from(pool: &PgPool, title: &str, domain_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(
@@ -119,7 +119,7 @@ impl Supertask {
         Ok(row.id)
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
         query_many!(&mut *transaction, id,
@@ -139,7 +139,7 @@ impl Task {
     fetch_all!(Task, "tasks");
     update_title!(Task, "tasks");
 
-    pub async fn insert_from(pool: &Pool<Postgres>, title: &str, domain_id: i32, supertask_id: i32) -> anyhow::Result<i32> {
+    pub async fn insert_from(pool: &PgPool, title: &str, domain_id: i32, supertask_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(
@@ -169,7 +169,7 @@ impl Task {
         Ok(row.id)
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
         query_many!(&mut *transaction, id,
@@ -188,7 +188,7 @@ impl Subtask {
     fetch_all!(Subtask, "subtasks");
     update_title!(Subtask, "subtasks");
 
-    pub async fn insert_from(pool: &Pool<Postgres>, title: &str, domain_id: i32, task_id: i32) -> anyhow::Result<i32> {
+    pub async fn insert_from(pool: &PgPool, title: &str, domain_id: i32, task_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(
@@ -218,7 +218,7 @@ impl Subtask {
         Ok(row.id)
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, id: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
         query_many!(&mut *transaction, id,
@@ -287,7 +287,7 @@ impl EntryStructure {
         Ok(Self(entry_structure))
     }
 
-    pub async fn fetch(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<Self> {
+    pub async fn fetch(pool: &PgPool, domain_id: i32) -> anyhow::Result<Self> {
         let supertasks = Supertask::fetch_all(pool, domain_id).await?;
         let tasks = Task::fetch_all(pool, domain_id).await?;
         let subtasks = Subtask::fetch_all(pool, domain_id).await?;

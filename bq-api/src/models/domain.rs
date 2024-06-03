@@ -1,7 +1,7 @@
 use crate::query_many;
 use crate::utilities::parsable::Name;
 use chrono::{DateTime, Utc};
-use sqlx::{FromRow, Pool, Postgres};
+use sqlx::{FromRow, PgPool};
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -21,7 +21,7 @@ impl Domain {
         }
     }
 
-    pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
         let row = sqlx::query!(
             r#"
             INSERT INTO domains (name)
@@ -39,7 +39,7 @@ impl Domain {
         Ok(())
     }
 
-    pub async fn delete(pool: &Pool<Postgres>, domain_id: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &PgPool, domain_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
         query_many!(&mut *transaction, domain_id,
@@ -65,7 +65,7 @@ impl Domain {
     /// # Returns
     /// 
     /// A boolean wrapped in a Result indicating whether the cache is valid. There will be an error if a database error occurs.
-    pub async fn is_cache_valid(pool: &Pool<Postgres>, domain_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<bool> {        
+    pub async fn is_cache_valid(pool: &PgPool, domain_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<bool> {        
         let cache_timestamp = match cache_timestamp {
             Some(cache_timestamp) => cache_timestamp,
             None => return Ok(false)
@@ -85,7 +85,7 @@ impl Domain {
         Ok(cache_timestamp >= last_updated)
     }
 
-    pub async fn fetch_all_as_map(pool: &Pool<Postgres>) -> anyhow::Result<HashMap<i32, Self>> {
+    pub async fn fetch_all_as_map(pool: &PgPool) -> anyhow::Result<HashMap<i32, Self>> {
         let domains = sqlx::query_as!(
             Domain,
             r#"
@@ -103,7 +103,7 @@ impl Domain {
         Ok(map)
     }
 
-    pub async fn exists(pool: &Pool<Postgres>, domain_id: i32) -> bool {
+    pub async fn exists(pool: &PgPool, domain_id: i32) -> bool {
         let exists_query = sqlx::query!(
             r#"
             SELECT EXISTS(SELECT id FROM domains WHERE id = $1);

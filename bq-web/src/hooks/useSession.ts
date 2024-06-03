@@ -24,9 +24,9 @@ const useSession = () => {
     const fetchSession = async () => {
         try {
             const [_, taskCacheTimestamp] = retrieveUserTasks()
-            const endpoint = taskCacheTimestamp ? `${taskCacheTimestamp}` : ""
+            const query = taskCacheTimestamp ? `?taskCacheTimestamp=${taskCacheTimestamp}` : ""
 
-            const response = await fetch(`${API_ENDPOINT}/api/user/session/${endpoint}`, {
+            const response = await fetch(`${API_ENDPOINT}/api/users/session${query}`, {
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json"

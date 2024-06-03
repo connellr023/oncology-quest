@@ -1,6 +1,6 @@
 use crate::utilities::parsable::Comment;
 use chrono::{DateTime, Utc};
-use sqlx::{FromRow, Pool, Postgres};
+use sqlx::{FromRow, PgPool};
 use serde::Serialize;
 use std::collections::HashMap;
 use anyhow::anyhow;
@@ -26,7 +26,7 @@ impl UserTask {
         }
     }
 
-    pub async fn exists(&self, pool: &Pool<Postgres>) -> anyhow::Result<bool> {
+    pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"
             SELECT EXISTS(
@@ -61,7 +61,7 @@ impl UserTask {
     /// # Returns
     /// 
     /// A map of subtask ID to user task.
-    pub async fn fetch_all_as_map(pool: &Pool<Postgres>, user_id: i32) -> anyhow::Result<HashMap<i32, Self>> {
+    pub async fn fetch_all_as_map(pool: &PgPool, user_id: i32) -> anyhow::Result<HashMap<i32, Self>> {
         let records = sqlx::query_as!(
             UserTask,
             r#"
@@ -88,7 +88,7 @@ impl UserTask {
     /// # Returns
     /// 
     /// A map of subtask ID to user task if the cache is outdated, otherwise None.
-    pub async fn fetch_all_as_map_if_updated(pool: &Pool<Postgres>, user_id: i32, task_cache_timestamp: DateTime<Utc>) -> anyhow::Result<Option<HashMap<i32, Self>>> {
+    pub async fn fetch_all_as_map_if_updated(pool: &PgPool, user_id: i32, task_cache_timestamp: DateTime<Utc>) -> anyhow::Result<Option<HashMap<i32, Self>>> {
         let records = sqlx::query_as!(
             UserTask,
             r#"
@@ -109,7 +109,7 @@ impl UserTask {
         }
     }
 
-    pub async fn insert(&mut self, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
         
         sqlx::query!(
@@ -144,7 +144,7 @@ impl UserTask {
         Ok(())
     }
 
-    pub async fn update(pool: &Pool<Postgres>, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
+    pub async fn update(pool: &PgPool, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
         
         sqlx::query!(

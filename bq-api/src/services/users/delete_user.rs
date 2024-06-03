@@ -3,7 +3,7 @@ use crate::{models::user::User, utilities::parsable::PlainTextPassword};
 use actix_web::{web::{Data, Json}, HttpResponse, Responder};
 use actix_session::Session;
 use serde::Deserialize;
-use sqlx::{Pool, Postgres};
+use sqlx::PgPool;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,8 +16,8 @@ struct DeleteSelfQuery {
     password: PlainTextPassword
 }
 
-#[actix_web::delete("/api/user/delete-user")]
-pub(super) async fn delete_user(session: Session, pool: Data<Pool<Postgres>>, admin_delete_user_query: Json<AdminDeleteUserQuery>) -> impl Responder {
+#[actix_web::delete("/delete-other-user")]
+pub(super) async fn delete_other_user(session: Session, pool: Data<PgPool>, admin_delete_user_query: Json<AdminDeleteUserQuery>) -> impl Responder {
     auth_admin_session!(user_id, session, pool);
 
     if User::delete(&pool, admin_delete_user_query.user_id, false).await.is_err() {
@@ -27,8 +27,8 @@ pub(super) async fn delete_user(session: Session, pool: Data<Pool<Postgres>>, ad
     HttpResponse::Ok().finish()
 }
 
-#[actix_web::delete("/api/user/delete-self")]
-pub(super) async fn delete_self(session: Session, pool: Data<Pool<Postgres>>, delete_self_query: Json<DeleteSelfQuery>) -> impl Responder {
+#[actix_web::delete("/delete-self")]
+pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_self_query: Json<DeleteSelfQuery>) -> impl Responder {
     auth_user_session_with_id!(user_id, session);
 
     let user = match User::fetch_by_id(&pool, user_id).await {

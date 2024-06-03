@@ -16,7 +16,7 @@ const useUserTasks = () => {
 
     const updateTask = async (subtaskId: number, isCompleted: boolean, comment: string): Promise<boolean> => {
         if (tasks.value[subtaskId]) {
-            const response = await fetch(`${API_ENDPOINT}/api/user/tasks/update`, {
+            const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
@@ -38,7 +38,7 @@ const useUserTasks = () => {
             }
         }
         else {
-            const response = await fetch(`${API_ENDPOINT}/api/user/tasks/create`, {
+            const response = await fetch(`${API_ENDPOINT}/api/tasks/create`, {
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json"

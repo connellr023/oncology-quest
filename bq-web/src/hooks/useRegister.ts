@@ -28,7 +28,7 @@ const useRegister = () => {
         }
         else {
             try {
-                const response = await fetch(`${API_ENDPOINT}/api/user/register`, {
+                const response = await fetch(`${API_ENDPOINT}/api/users/register`, {
                     credentials: "include",
                     method: "POST",
                     headers: {

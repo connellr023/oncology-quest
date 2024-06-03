@@ -1,5 +1,5 @@
 use super::*;
-use actix_web::web::ServiceConfig;
+use actix_web::web::{scope, ServiceConfig};
 
 /// Configures the services for the application.
 /// 
@@ -7,27 +7,50 @@ use actix_web::web::ServiceConfig;
 /// 
 /// * `cfg` - The service configuration to configure.
 pub fn config(cfg: &mut ServiceConfig) {
-    cfg.service(register_user::register);
-    cfg.service(login_user::login);
-    cfg.service(logout_user::logout);
-    cfg.service(user_session::session);
-    cfg.service(search_user::search);
-    cfg.service(reset_password::reset);
-    cfg.service(reset_password::allow_reset);
-    cfg.service(delete_user::delete_user);
-    cfg.service(delete_user::delete_self);
-    cfg.service(domain_entries::fetch_with_timestamp);
-    cfg.service(edit_entry_structure::create_supertask);
-    cfg.service(edit_entry_structure::update_supertask);
-    cfg.service(edit_entry_structure::delete_supertask);
-    cfg.service(edit_entry_structure::create_task);
-    cfg.service(edit_entry_structure::update_task);
-    cfg.service(edit_entry_structure::delete_task);
-    cfg.service(edit_entry_structure::create_subtask);
-    cfg.service(edit_entry_structure::update_subtask);
-    cfg.service(edit_entry_structure::delete_subtask);
-    cfg.service(edit_domains::create_domain);
-    cfg.service(edit_domains::delete_domain);
-    cfg.service(edit_user_task::create_user_task);
-    cfg.service(edit_user_task::update_user_task);
+    cfg.service(
+        scope("/api")
+            .service(
+                scope("/users")
+                    .service(users::register_user::register_user)
+                    .service(users::login_user::login_user)
+                    .service(users::reset_user_password::reset_password)
+                    .service(users::reset_user_password::allow_reset_password)
+                    .service(users::delete_user::delete_other_user)
+                    .service(users::delete_user::delete_self)
+                    .service(users::get_user_session::get_user_session)
+                    .service(users::search_users::search_users)
+            )
+            .service(
+                scope("/tasks")
+                    .service(tasks::create_user_task::create_user_task)
+                    .service(tasks::update_user_task::update_user_task)
+            )
+            .service(
+                scope("/entries")
+                    .service(entries::get_entries::get_entries)
+                    .service(
+                        scope("/supertasks")
+                            .service(entries::create_entries::create_supertask)
+                            .service(entries::update_entries::update_supertask)
+                            .service(entries::delete_entries::delete_supertask)
+                    )
+                    .service(
+                        scope("/tasks")
+                            .service(entries::create_entries::create_task)
+                            .service(entries::update_entries::update_task)
+                            .service(entries::delete_entries::delete_task)
+                    )
+                    .service(
+                        scope("/subtasks")
+                            .service(entries::create_entries::create_subtask)
+                            .service(entries::update_entries::update_subtask)
+                            .service(entries::delete_entries::delete_subtask)
+                    )
+            )
+            .service(
+                scope("/domains")
+                    .service(domains::create_domain::create_domain)
+                    .service(domains::delete_domain::delete_domain)
+            )
+    );
 }

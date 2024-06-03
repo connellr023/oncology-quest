@@ -1,5 +1,5 @@
 use super::{client_user::ClientUser, user_task::UserTask};
-use sqlx::{Pool, Postgres};
+use sqlx::PgPool;
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -10,7 +10,7 @@ pub struct SearchResultUser {
 }
 
 impl SearchResultUser {
-    pub async fn text_search_as_map(pool: &Pool<Postgres>, query: &str, limit: i64) -> anyhow::Result<HashMap<i32, Self>> {
+    pub async fn text_search_as_map(pool: &PgPool, query: &str, limit: i64) -> anyhow::Result<HashMap<i32, Self>> {
         let users = sqlx::query_as!(
             ClientUser,
             r#"

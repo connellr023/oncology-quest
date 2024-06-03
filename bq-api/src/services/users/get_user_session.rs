@@ -1,12 +1,11 @@
 use crate::auth_user_session_with_id;
 use crate::models::user_task::UserTask;
 use crate::models::{client_user::ClientUser, domain::Domain, user::User};
-use actix_web::web::Path;
-use actix_web::{web::Data, HttpResponse, Responder};
+use actix_web::{web::{Data, Query}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
-use sqlx::{Pool, Postgres};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
 use std::collections::HashMap;
 
 #[derive(Serialize)]
@@ -14,6 +13,12 @@ pub struct UserSessionResponse {
     pub user: ClientUser,
     pub domains: HashMap<i32, Domain>,
     pub tasks: Option<HashMap<i32, UserTask>>
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GetUserSessionQuery {
+    task_cache_timestamp: Option<DateTime<Utc>>
 }
 
 impl UserSessionResponse {
@@ -28,7 +33,7 @@ impl UserSessionResponse {
     /// # Returns
     /// 
     /// A user session response if successful, otherwise an error.
-    pub async fn build(pool: &Pool<Postgres>, user: User, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Self> {        
+    pub async fn new(pool: &PgPool, user: User, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Self> {        
         let user = ClientUser::from(user);
         let domains = Domain::fetch_all_as_map(pool).await?;
         let tasks = match task_cache_timestamp {
@@ -46,18 +51,16 @@ impl UserSessionResponse {
     }
 }
 
-#[actix_web::get("/api/user/session/{task_cache_timestamp:.*}")]
-pub(super) async fn session(session: Session, pool: Data<Pool<Postgres>>, task_cache_timestamp: Path<String>) -> impl Responder {
+#[actix_web::get("/session")]
+pub(super) async fn get_user_session(session: Session, pool: Data<PgPool>, query: Query<GetUserSessionQuery>) -> impl Responder {
     auth_user_session_with_id!(user_id, session);
-    
-    let task_cache_timestamp = task_cache_timestamp.parse::<DateTime<Utc>>().ok();
 
     let user = match User::fetch_by_id(&pool, user_id).await {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
 
-    let response = match UserSessionResponse::build(&pool, user, task_cache_timestamp).await {
+    let response = match UserSessionResponse::new(&pool, user, query.task_cache_timestamp).await {
         Ok(response) => response,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };

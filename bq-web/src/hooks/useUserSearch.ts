@@ -13,7 +13,7 @@ const useUserSearch = () => {
 
         try {
             searchError.value = false
-            const response = await fetch(`${API_ENDPOINT}/api/user/search/${query}`, {
+            const response = await fetch(`${API_ENDPOINT}/api/users/search/${query}`, {
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json"

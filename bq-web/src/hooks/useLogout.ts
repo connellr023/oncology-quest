@@ -9,7 +9,7 @@ const useLogout = () => {
     const logout = async () => {
         message.value = "Logging out..."
 
-        const response = await fetch(`${API_ENDPOINT}/api/user/logout`, {
+        const response = await fetch(`${API_ENDPOINT}/api/users/logout`, {
             method: "POST",
             credentials: "include",
         })

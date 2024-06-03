@@ -12,7 +12,7 @@ const useEntries = () => {
     const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
     const createSupertask = async (title: string, domainId: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/supertasks/create`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/create`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -44,7 +44,7 @@ const useEntries = () => {
     }
 
     const updateSupertask = async (domainId: number, supertaskIndex: number, supertaskId: number, title: string): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/supertasks/update`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/update`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -66,7 +66,7 @@ const useEntries = () => {
     }
 
     const deleteSupertask = async (domainId: number, supertaskIndex: number, supertaskId: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/supertasks/delete`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/delete`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -87,7 +87,7 @@ const useEntries = () => {
     }
 
     const createTask = async (title: string, domainId: number, supertaskId: number, supertaskIndex: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/tasks/create`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/tasks/create`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -121,7 +121,7 @@ const useEntries = () => {
     }
 
     const updateTask = async (domainId: number, supertaskIndex: number, taskIndex: number, taskId: number, title: string): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/tasks/update`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -143,7 +143,7 @@ const useEntries = () => {
     }
 
     const deleteTask = async (domainId: number, supertaskIndex: number, taskIndex: number, taskId: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/tasks/delete`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/tasks/delete`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -164,7 +164,7 @@ const useEntries = () => {
     }
 
     const createSubtask = async (title: string, domainId: number, taskId: number, supertaskIndex: number, taskIndex: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/subtasks/create`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/subtasks/create`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -195,7 +195,7 @@ const useEntries = () => {
     }
 
     const updateSubtask = async (domainId: number, supertaskIndex: number, taskIndex: number, subtaskIndex: number, subtaskId: number, title: string): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/subtasks/update`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/subtasks/update`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -217,7 +217,7 @@ const useEntries = () => {
     }
 
     const deleteSubtask = async (domainId: number, supertaskIndex: number, taskIndex: number, subtaskIndex: number, subtaskId: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/subtasks/delete`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/subtasks/delete`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
@@ -241,7 +241,7 @@ const useEntries = () => {
         const [cachedEntries, cacheTimestamp] = retrieveDomainEntries(domainId)
         const query = cacheTimestamp ? `?entriesCacheTimestamp=${cacheTimestamp}` : ""
 
-        const response = await fetch(`${API_ENDPOINT}/api/domains/${domainId}${query}`, {
+        const response = await fetch(`${API_ENDPOINT}/api/entries/${domainId}${query}`, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"

@@ -20,7 +20,7 @@ const useResetPassword = () => {
         resetError.value = ""
         loading.value = true
 
-        const response = await fetch(`${API_ENDPOINT}/api/user/reset-password`, {
+        const response = await fetch(`${API_ENDPOINT}/api/users/reset-password`, {
             credentials: "include",
             method: "POST",
             headers: {

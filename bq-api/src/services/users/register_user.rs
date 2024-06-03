@@ -12,8 +12,8 @@ struct RegisterUserQuery {
     pub password: PlainTextPassword
 }
 
-#[actix_web::post("/api/user/register")]
-pub(super) async fn register(pool: Data<Pool<Postgres>>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
+#[actix_web::post("/register")]
+pub(super) async fn register_user(pool: Data<Pool<Postgres>>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
     let register_user_query = register_user_query.into_inner();
     
     let mut user = match User::new(

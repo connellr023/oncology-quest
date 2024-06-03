@@ -1,4 +1,4 @@
-use super::user_session::UserSessionResponse;
+use super::get_user_session::UserSessionResponse;
 use crate::models::user::User;
 use crate::utilities::parsable::{Username, PlainTextPassword};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
@@ -15,8 +15,8 @@ pub struct LoginUserQuery {
     pub task_cache_timestamp: Option<DateTime<Utc>>
 }
 
-#[actix_web::post("/api/user/login")]
-pub(super) async fn login(session: Session, pool: Data<Pool<Postgres>>, login_user_query: Json<LoginUserQuery>) -> impl Responder {
+#[actix_web::post("/login")]
+pub(super) async fn login_user(session: Session, pool: Data<Pool<Postgres>>, login_user_query: Json<LoginUserQuery>) -> impl Responder {
     let user = match User::validate_login(&pool, login_user_query.username.as_str(), login_user_query.password.as_str()).await {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
@@ -26,7 +26,7 @@ pub(super) async fn login(session: Session, pool: Data<Pool<Postgres>>, login_us
         return HttpResponse::InternalServerError().finish();
     }
 
-    match UserSessionResponse::build(&pool, user, login_user_query.task_cache_timestamp).await {
+    match UserSessionResponse::new(&pool, user, login_user_query.task_cache_timestamp).await {
         Ok(response) => HttpResponse::Ok().json(response),
         Err(_) => HttpResponse::InternalServerError().finish()
     }

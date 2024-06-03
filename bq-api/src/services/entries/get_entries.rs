@@ -2,17 +2,17 @@ use crate::{auth_user_session, models::{domain::Domain, entry_structure::EntrySt
 use actix_web::{web::{Data, Path, Query}, HttpResponse, Responder};
 use actix_session::Session;
 use chrono::{DateTime, Utc};
-use sqlx::{Pool, Postgres};
+use sqlx::PgPool;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct FetchEntryStructureQuery {
+struct GetEntriesQuery {
     pub entries_cache_timestamp: Option<DateTime<Utc>>
 }
 
-#[actix_web::get("/api/domains/{domain_id}")]
-pub(super) async fn fetch_with_timestamp(session: Session, pool: Data<Pool<Postgres>>, domain_id: Path<i32>, query: Query<FetchEntryStructureQuery>) -> impl Responder {
+#[actix_web::get("/{domain_id}")]
+pub(super) async fn get_entries(session: Session, pool: Data<PgPool>, domain_id: Path<i32>, query: Query<GetEntriesQuery>) -> impl Responder {
     auth_user_session!(session);
 
     match Domain::is_cache_valid(&pool, *domain_id, query.entries_cache_timestamp).await {

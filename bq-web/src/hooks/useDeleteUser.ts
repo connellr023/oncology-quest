@@ -2,7 +2,7 @@ import { API_ENDPOINT } from "../utilities"
 
 const useDeleteUser = () => {
     const deleteSelf = async (password: string): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/user/delete-self`, {
+        const response = await fetch(`${API_ENDPOINT}/api/users/delete-self`, {
             credentials: "include",
             method: "DELETE",
             headers: {
@@ -15,7 +15,7 @@ const useDeleteUser = () => {
     }
 
     const deleteUser = async (userId: number): Promise<boolean> => {
-        const response = await fetch(`${API_ENDPOINT}/api/user/delete-user`, {
+        const response = await fetch(`${API_ENDPOINT}/api/users/delete-other-user`, {
             credentials: "include",
             method: "DELETE",
             headers: {

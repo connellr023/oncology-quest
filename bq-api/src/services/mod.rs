@@ -1,12 +1,5 @@
+mod domains;
+mod entries;
+mod tasks;
+mod users;
 pub mod config;
-pub mod register_user;
-pub mod login_user;
-pub mod logout_user;
-pub mod user_session;
-pub mod search_user;
-pub mod reset_password;
-pub mod delete_user;
-pub mod edit_entry_structure;
-pub mod domain_entries;
-pub mod edit_domains;
-pub mod edit_user_task;
