@@ -1,4 +1,4 @@
-# $\text{bq} \bullet \textit{(Breast Quest)}$
+# $\text{Oncology Quest}$
 > An application to aid Medical Oncology students.
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
@@ -16,11 +16,11 @@ HOST_PORT=...
 DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
 ```
 
-<br />
-<br />
+<!-- <br />
+<br /> -->
 
-<div align="center">
+<!-- <div align="center">
     <img width="70px" src="https://raw.githubusercontent.com/connellr023/bq/d8a84c0508f088b5ef3c4723a58fb77ebfd12fd7/bq-web/public/favicon.svg?token=AN3EVKN6QOAN7N6AT3BA34LGLPXY2" />
     <br />
     Developed and Tested by <b>Connell Reffo</b>.
-</div>
+</div> -->
