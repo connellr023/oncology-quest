@@ -7,7 +7,7 @@ defineProps<{ initials: string }>()
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../styles/variables.scss";
 
 div.icon {
   $size: 33px;

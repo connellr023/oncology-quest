@@ -24,7 +24,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../styles/variables.scss";
 
 div.dropdown-container {
   position: absolute;

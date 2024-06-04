@@ -48,7 +48,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../styles/utilities.scss";
 
 div.button-container {
   &.animate {

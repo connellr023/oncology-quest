@@ -82,7 +82,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@import "../../main.scss";
+@import "../../styles/variables.scss";
 
 button.check {
   $size: 13px;

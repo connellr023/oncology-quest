@@ -59,7 +59,7 @@ provide("resetAll", resetAll)
 </template>
 
 <style scoped lang="scss">
-@import "main.scss";
+@import "./styles/variables.scss";
 
 div.connect-error {
   margin-top: 20px;

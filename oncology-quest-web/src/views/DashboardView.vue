@@ -31,7 +31,7 @@ watch(() => [selectedUser.value?.user.id, selectedRotation.value?.id], () => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../styles/variables.scss";
 
 div.dash-container {
   opacity: 0;

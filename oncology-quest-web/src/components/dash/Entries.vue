@@ -134,7 +134,7 @@ const {
 </template>
 
 <style scoped lang="scss">
-@import "../../main.scss";
+@import "../../styles/variables.scss";
 
 button.push {
   width: 100%;

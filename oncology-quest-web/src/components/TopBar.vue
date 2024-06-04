@@ -215,7 +215,7 @@ const deleteAccount = async () => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../styles/variables.scss";
 
 div.rotation-option-dropdown {
   top: 50px;

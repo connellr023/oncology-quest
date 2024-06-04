@@ -1,0 +1,26 @@
+@mixin fade-up-children($duration: 0.5s, $delay-step: 0.1s, $children: 1, $anim-delay: 0) {
+    & > * {
+      animation: $duration fade-up-0 ease-out forwards;
+      animation-delay: $anim-delay;
+  
+      @keyframes fade-up-0 {
+        0% {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+  
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+  
+    @for $i from 1 through $children {
+      & > *:nth-child(#{$i}) {
+        transform: translate(0, 0);
+        opacity: 0;
+        animation-delay: (($i - 1) * $delay-step) + $anim-delay;
+      }
+    }
+  }

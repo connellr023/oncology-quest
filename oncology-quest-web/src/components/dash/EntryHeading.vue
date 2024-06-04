@@ -104,7 +104,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@import "../../main.scss";
+@import "../../styles/variables.scss";
 
 h3.entry-heading {
   font-size: clamp(14px, 1.5lvw, 17px);

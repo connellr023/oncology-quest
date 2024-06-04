@@ -1,17 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap");
-
-$main-txt-color: #e7e7e7;
-$main-bg-color: #030303;
-$secondary-bg-color: #050505;
-$tertiary-bg-color: #090909;
-$main-font: "Inter", "sans-serif";
-
-$theme-color-1: #331bbf;
-$theme-color-2: #1b8ebf;
-$theme-color-red: #e60a1c;
-$theme-color-yellow: #d7a51b;
-$theme-color-green: #11b814;
-$theme-color-disabled: #9494a0;
+@import "./variables.scss";
 
 @keyframes fade-in {
   from {
@@ -28,33 +16,6 @@ $theme-color-disabled: #9494a0;
   }
   to {
     opacity: 0;
-  }
-}
-
-@mixin fade-up-children($duration: 0.5s, $delay-step: 0.1s, $children: 1, $anim-delay: 0) {
-  & > * {
-    animation: $duration fade-up-0 ease-out forwards;
-    animation-delay: $anim-delay;
-
-    @keyframes fade-up-0 {
-      0% {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  }
-
-  @for $i from 1 through $children {
-    & > *:nth-child(#{$i}) {
-      transform: translate(0, 0);
-      opacity: 0;
-      animation-delay: (($i - 1) * $delay-step) + $anim-delay;
-    }
   }
 }
 

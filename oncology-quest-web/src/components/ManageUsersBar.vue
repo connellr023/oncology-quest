@@ -149,7 +149,7 @@ const onAllowResetClicked = async () => {
 </template>
 
 <style scoped lang="scss">
-@import "../main.scss";
+@import "../styles/variables.scss";
 
 div.account-bar-container {
   position: relative;

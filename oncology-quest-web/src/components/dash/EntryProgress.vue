@@ -41,7 +41,7 @@ onMounted(computeColorClass)
 </template>
 
 <style scoped lang="scss">
-@import "../../main.scss";
+@import "../../styles/variables.scss";
 
 div.container {
   flex-grow: 1;
