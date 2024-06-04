@@ -1,4 +1,5 @@
 use crate::utilities::parsable::{Email, Name, PlainTextPassword, Username};
+use chrono::{DateTime, Utc};
 use rand::{thread_rng, Rng};
 use sqlx::{FromRow, PgPool};
 use anyhow::anyhow;
@@ -64,25 +65,21 @@ impl User {
         Ok(result)
     }
 
-    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> anyhow::Result<()> {
-        let rows_affected = sqlx::query!(
+    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> anyhow::Result<DateTime<Utc>> {
+        let row = sqlx::query!(
             r#"
             UPDATE users
             SET password_reset_timestamp = NOW() + make_interval(hours => $1)
-            WHERE id = $2;
+            WHERE id = $2
+            RETURNING password_reset_timestamp;
             "#,
             expiration_hours,
             user_id
         )
-        .execute(pool)
-        .await?
-        .rows_affected();
+        .fetch_one(pool)
+        .await?;
 
-        if rows_affected == 0 {
-            return Err(anyhow!("No user found with the given username, or the password was not updated"));
-        }
-
-        Ok(())
+        Ok(row.password_reset_timestamp)
     }
 
     pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<()> {

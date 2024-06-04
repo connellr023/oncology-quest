@@ -283,10 +283,10 @@ input {
   &.minimal {
     $side-padding: 8px;
 
-    padding: 4px;
+    padding: 5px;
     padding-left: $side-padding;
     padding-right: $side-padding;
-    font-size: clamp(15px, 1.1lvw, 18px);
+    font-size: clamp(16px, 1.1lvw, 19px);
   }
 }
 

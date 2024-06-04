@@ -4,6 +4,7 @@ import { UserWithTasks, User } from "../models/user"
 
 import useUserSearch from "../hooks/useUserSearch"
 import useDeleteUser from "../hooks/useDeleteUser"
+import useAllowResetPassword from "../hooks/useAllowResetPassword"
 
 import Spinner from "../components/vector/Spinner.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
@@ -12,19 +13,24 @@ import SearchIcon from "../components/vector/SearchIcon.vue"
 import DeleteIcon from "../components/vector/DeleteIcon.vue"
 import UnlockIcon from "./vector/UnlockIcon.vue"
 import ConfirmationModal from "./ConfirmationModal.vue"
+import MessageModal from "./MessageModal.vue"
 
 const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
   
 const { search, results, loading, searchError } = useUserSearch()
 const { deleteUser } = useDeleteUser()
+const { allowReset } = useAllowResetPassword()
 
 const query = ref("")
 const deleteUserError = ref("")
+const allowResetError = ref("")
+const allowResetExpiryDate = ref("")
 
 const isCollapsed = ref(true)
 const userOptionsVisible = ref(false)
 const showConfirmationModal = ref(false)
+const showAllowResetModal = ref(false)
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
@@ -68,6 +74,21 @@ const confirmDeleteUser = () => {
 
   confirm()
 }
+
+const onAllowResetClicked = async () => {
+  const result = await allowReset(selectedUser.value!.user.id)
+
+  allowResetError.value = ""
+  userOptionsVisible.value = false
+  showAllowResetModal.value = true
+
+  if (!result) {
+    allowResetError.value = "Failed to enable password reset."
+  }
+  else {
+    allowResetExpiryDate.value = result.toLocaleTimeString()
+  }
+}
 </script>
 
 <template>
@@ -89,7 +110,7 @@ const confirmDeleteUser = () => {
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
             <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
               <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
-              <button class="bubble">
+              <button class="bubble" @click="onAllowResetClicked">
                 <UnlockIcon />
                 Enable Password Reset
               </button>
@@ -117,6 +138,13 @@ const confirmDeleteUser = () => {
     :visible="showConfirmationModal"
     :onConfirm="confirmDeleteUser"
     :onCancel="() => { showConfirmationModal = false }"
+  />
+  <MessageModal
+    title="Allow Password Reset"
+    :message="`${selectedUser?.user.name} has until ${allowResetExpiryDate} to reset their password.`"
+    :error="allowResetError"
+    :visible="showAllowResetModal"
+    @change="showAllowResetModal = $event"
   />
 </template>
 
