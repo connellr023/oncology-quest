@@ -21,7 +21,7 @@ const hide = () => {
       <p v-if="error" class="error">{{ error }}</p>
       <p v-else class="message">{{ message }}</p>
       <div class="modal-buttons"> 
-        <button class="bubble green" @click="hide">
+        <button class="bubble yellow" @click="hide">
           <CheckIcon />
           Ok
         </button>

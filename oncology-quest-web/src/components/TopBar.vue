@@ -145,6 +145,10 @@ const deleteAccount = async () => {
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
         <span class="login-count"><b>{{ session.loginCount }}</b>Login(s)</span>
+        <button class="bubble" v-if="!session.isAdmin">
+          <LogoutIcon />
+          Export Progress
+        </button>
         <button class="bubble" @click="onLogoutClick">
           <LogoutIcon />
           Logout

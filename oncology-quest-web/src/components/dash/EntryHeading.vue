@@ -81,20 +81,19 @@ onUnmounted(() => {
   <div class="entry-heading-container" @click="$emit('click')">
     <div class="header">
       <h3 v-if="!inEditMode" class="entry-heading">{{ title }}</h3>
-      <input @click.stop class="bubble minimal" v-else v-model="title" />
+      <input @click.stop :class="`bubble minimal ${titleError ? 'error' : ''}`" v-else v-model="title" />
     </div>
     <div class="edit-buttons-container" v-if="session.isAdmin">
       <template v-if="inEditMode">
         <button class="cancel icon-button red" @click.stop="cancelEdit">
           <CancelIcon />
         </button>
-        <button class="icon-button green" @click.stop="saveEdit">
+        <button class="icon-button green" @click.stop="saveEdit" :disabled="titleError ? true : false">
           <CheckIcon />
         </button>
         <button class="icon-button red" @click.stop="deleteTaskHeading">
           <DeleteIcon />
         </button>
-        <span v-if="titleError">{{ titleError }}</span>
       </template>
       <button class="edit icon-button" v-else :disabled="isEditing" @click.stop="toggleEditMode">
         <EditIcon @click.stop="toggleEditMode" />
@@ -141,16 +140,6 @@ div.edit-buttons-container {
     &.edit {
       margin-right: 15px;
       margin-left: auto;
-
-      &:disabled {
-        opacity: 0.1;
-
-        &:hover {
-          svg {
-            fill: white;
-          }
-        }
-      }
     }
   }
 }

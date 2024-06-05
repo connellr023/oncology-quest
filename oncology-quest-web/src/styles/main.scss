@@ -170,6 +170,16 @@ button {
         }
       }
     }
+
+    &.yellow {
+      &:hover {
+        color: $theme-color-yellow;
+
+        svg {
+          fill: $theme-color-yellow;
+        }
+      }
+    }
   }
 
   &.icon-button {
@@ -186,6 +196,16 @@ button {
       svg {
         opacity: 1;
         fill: $theme-color-1;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.1;
+
+      &:hover {
+        svg {
+          fill: white;
+        }
       }
     }
   }

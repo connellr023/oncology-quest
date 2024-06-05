@@ -59,7 +59,7 @@ const switchStage = () => {
     <div :class="`${inStageOne ? 'active' : ''}`" />
     <div :class="`${!inStageOne ? 'active' : ''}`" />
   </div>
-  <form @submit.prevent="handleSubmit">
+  <form @submit.prevent="handleSubmit" @keydown.enter.prevent>
     <div class="stage-container" v-show="inStageOne">
       <LabeledFormInput
         title="Username"
