@@ -5,6 +5,7 @@ import { UserWithTasks, User } from "../models/user"
 import useUserSearch from "../hooks/useUserSearch"
 import useDeleteUser from "../hooks/useDeleteUser"
 import useAllowResetPassword from "../hooks/useAllowResetPassword"
+import useExportProgress from "../hooks/useExportProgress"
 
 import Spinner from "../components/vector/Spinner.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
@@ -14,6 +15,7 @@ import DeleteIcon from "../components/vector/DeleteIcon.vue"
 import UnlockIcon from "./vector/UnlockIcon.vue"
 import ConfirmationModal from "./ConfirmationModal.vue"
 import MessageModal from "./MessageModal.vue"
+import ExportIcon from "./vector/ExportIcon.vue"
 
 const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
@@ -21,6 +23,7 @@ const session = inject<Ref<User | null>>("session")!
 const { search, results, loading, searchError } = useUserSearch()
 const { deleteUser } = useDeleteUser()
 const { allowReset } = useAllowResetPassword()
+const { exportProgress } = useExportProgress()
 
 const query = ref("")
 const deleteUserError = ref("")
@@ -56,6 +59,11 @@ const onDeleteUserClicked = () => {
   deleteUserError.value = ""
   userOptionsVisible.value = false
   showConfirmationModal.value = true
+}
+
+const onExportProgressClicked = () => {
+  exportProgress(selectedUser.value!.user.name, selectedUser.value!.tasks)
+  userOptionsVisible.value = false
 }
 
 const confirmDeleteUser = () => {
@@ -110,6 +118,10 @@ const onAllowResetClicked = async () => {
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
             <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
               <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
+              <button class="bubble" @click="onExportProgressClicked">
+                <ExportIcon />
+                Export Progress
+              </button>
               <button class="bubble" @click="onAllowResetClicked">
                 <UnlockIcon />
                 Enable Password Reset

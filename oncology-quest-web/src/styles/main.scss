@@ -226,7 +226,7 @@ textarea {
     border-radius: 10px;
     resize: none;
     font-size: clamp(15px, 1.5vw, 18px);
-    border: none;
+    border: 2px solid transparent;
     outline: none;
     background-color: transparent;
     transition: background-color 0.1s ease;
@@ -241,6 +241,10 @@ textarea {
     &:focus {
       cursor: text;
       background-color: $secondary-bg-color;
+    }
+
+    &.error {
+      border: 2px solid $theme-color-red;
     }
   }
 }

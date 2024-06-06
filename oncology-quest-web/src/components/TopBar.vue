@@ -2,7 +2,7 @@
 import { Ref, inject, reactive, ref } from "vue"
 import { User } from "../models/user"
 import { Rotation } from "../models/rotation"
-import { EntryStructure, UserTask } from "../models/tasks"
+import { UserTask } from "../models/tasks"
 
 import useLogout from "../hooks/useLogout"
 import useValidateName from "../hooks/validation/useValidateName"
@@ -20,13 +20,13 @@ import NewRotationIcon from "./vector/NewRotationIcon.vue"
 import DeleteIcon from "./vector/DeleteIcon.vue"
 import CheckIcon from "./vector/CheckIcon.vue"
 import Dropdown from "./Dropdown.vue"
+import ExportIcon from "./vector/ExportIcon.vue"
 
 const resetAll = inject<() => void>("resetAll")!
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
-const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
 const { logout } = useLogout()
 const { name, nameError } = useValidateName()
@@ -126,7 +126,7 @@ const onDeleteAccountClick = () => {
 }
 
 const onExportProgressClick = () => {
-  exportProgress(session.value.name, tasks.value, entries.value[selectedRotation.value!.id])
+  exportProgress(session.value.name, tasks.value)
   showProfileOptions.value = false
 }
 
@@ -156,7 +156,7 @@ const deleteAccount = async () => {
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
         <span class="login-count"><b>{{ session.loginCount }}</b>Login(s)</span>
         <button class="bubble" :disabled="!selectedRotation" v-if="!session.isAdmin" @click="onExportProgressClick">
-          <LogoutIcon />
+          <ExportIcon />
           Export Progress
         </button>
         <button class="bubble" @click="onLogoutClick">

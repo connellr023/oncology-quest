@@ -7,6 +7,7 @@ import useUserTasks from "../../hooks/useUserTasks";
 
 import CheckIcon from "../vector/CheckIcon.vue"
 import EntryHeading from "./EntryHeading.vue"
+import useValidateComment from "../../hooks/validation/useValidateComment";
 
 const props = defineProps<{
   saveHeading: (title: string) => Promise<boolean>,
@@ -21,9 +22,8 @@ const session = inject<Ref<User>>("session")!
 const isComplete = ref(false)
 const isSaved = ref(true)
 
-const comment = ref("")
-
 const { updateTask } = useUserTasks()
+const { comment, commentError } = useValidateComment()
 
 onMounted(() => {
   const task = props.tasks[props.subtaskId]
@@ -71,13 +71,13 @@ onMounted(() => {
   <div class="container">
     <div class="task-heading-container">
       <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
-      <button v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
+      <button :disabled="commentError ? true : false" v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
         <CheckIcon />
         {{ isSaved ? "Saved" : "Not Saved" }}
       </button>
       <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
     </div>
-    <textarea class="bubble" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
+    <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
   </div>
 </template>
 

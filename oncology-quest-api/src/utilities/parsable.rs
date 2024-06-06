@@ -1,11 +1,11 @@
 use super::regex::*;
 use anyhow::anyhow;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer};
 
 macro_rules! parsable {
     ($t:ident, $regex:expr) => {
-        #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+        #[derive(Serialize, Clone, PartialEq, Debug)]
         pub struct $t(String);
 
         impl From<$t> for String {
@@ -17,6 +17,16 @@ macro_rules! parsable {
         impl From<String> for $t {
             fn from(s: String) -> Self {
                 $t(s)
+            }
+        }
+
+        impl<'de> Deserialize<'de> for $t {
+            fn deserialize<D>(deserializer: D) -> Result<$t, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                let s = String::deserialize(deserializer)?;
+                $t::parse(s).map_err(serde::de::Error::custom)
             }
         }
 
