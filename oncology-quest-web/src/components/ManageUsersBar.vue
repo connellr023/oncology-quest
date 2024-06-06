@@ -14,7 +14,6 @@ import DeleteIcon from "../components/vector/DeleteIcon.vue"
 import UnlockIcon from "./vector/UnlockIcon.vue"
 import ConfirmationModal from "./ConfirmationModal.vue"
 import MessageModal from "./MessageModal.vue"
-import LogoutIcon from "./vector/LogoutIcon.vue"
 
 const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
 const session = inject<Ref<User | null>>("session")!
@@ -111,10 +110,6 @@ const onAllowResetClicked = async () => {
             <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
             <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
               <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
-              <button class="bubble">
-                <LogoutIcon />
-                Export Progress
-              </button>
               <button class="bubble" @click="onAllowResetClicked">
                 <UnlockIcon />
                 Enable Password Reset

@@ -2,6 +2,7 @@
 import { Ref, inject, reactive, ref } from "vue"
 import { User } from "../models/user"
 import { Rotation } from "../models/rotation"
+import { EntryStructure, UserTask } from "../models/tasks"
 
 import useLogout from "../hooks/useLogout"
 import useValidateName from "../hooks/validation/useValidateName"
@@ -9,6 +10,7 @@ import useValidatePassword from "../hooks/validation/useValidatePassword"
 import useRotations from "../hooks/useRotations"
 import useEntries from "../hooks/useEntries"
 import useDeleteUser from "../hooks/useDeleteUser"
+import useExportProgress from "../hooks/useExportProgress"
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
@@ -23,6 +25,8 @@ const resetAll = inject<() => void>("resetAll")!
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
+const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
+const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
 const { logout } = useLogout()
 const { name, nameError } = useValidateName()
@@ -30,6 +34,7 @@ const { password, passwordError } = useValidatePassword()
 const { createRotation, deleteRotation } = useRotations()
 const { fetchEntriesWithCaching } = useEntries()
 const { deleteSelf } = useDeleteUser()
+const { exportProgress } = useExportProgress()
 
 const showProfileOptions = ref(false)
 const showCreateRotationModal = ref(false)
@@ -120,6 +125,11 @@ const onDeleteAccountClick = () => {
   showProfileOptions.value = false
 }
 
+const onExportProgressClick = () => {
+  exportProgress(session.value.name, tasks.value, entries.value[selectedRotation.value!.id])
+  showProfileOptions.value = false
+}
+
 const deleteAccount = async () => {
   if (passwordError.value || password.value.length === 0) {
     return
@@ -145,7 +155,7 @@ const deleteAccount = async () => {
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
         <span class="login-count"><b>{{ session.loginCount }}</b>Login(s)</span>
-        <button class="bubble" v-if="!session.isAdmin">
+        <button class="bubble" :disabled="!selectedRotation" v-if="!session.isAdmin" @click="onExportProgressClick">
           <LogoutIcon />
           Export Progress
         </button>

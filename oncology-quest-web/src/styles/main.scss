@@ -180,6 +180,10 @@ button {
         }
       }
     }
+
+    &:disabled {
+      opacity: 0.2;
+    }
   }
 
   &.icon-button {
