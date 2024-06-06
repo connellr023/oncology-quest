@@ -1,0 +1,27 @@
+# Dockerfile for performing unit and penetration testing
+FROM rust:latest as builder
+
+WORKDIR /usr/src/oncology-quest-api
+
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y libpq-dev && apt-get install -y postgresql-client
+
+# Install SQLx CLI
+RUN cargo install sqlx-cli
+
+# Copy over manifests
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+
+# Copy source tree
+COPY ./src ./src
+
+# Copy migrations
+COPY ./migrations ./migrations
+
+# Copy entrypoint script
+COPY ./tests/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+# Run the entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]

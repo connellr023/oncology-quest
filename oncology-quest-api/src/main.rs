@@ -17,8 +17,10 @@ use sqlx::PgPool;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
-    // Load environment variables.
+    // Load from .env file
     dotenv().ok();
+
+    // Load environment variables.
     let env = Environment::new().expect("Failed to read environment variables");
     let env_clone = env.clone();
 
@@ -56,15 +58,14 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
         CookieSessionStore::default(),
         Key::from(key)
     )
-    .cookie_name(String::from("bq-session"))
+    .cookie_name(String::from("oncology-quest-session"))
     .cookie_secure(true)
+    .cookie_same_site(SameSite::None)
+    .cookie_http_only(true)
     .session_lifecycle(
         PersistentSession::default()
             .session_ttl(Duration::hours(6))
     )
-    .cookie_same_site(SameSite::None)
-    //.cookie_content_security(CookieContentSecurity::Private)
-    .cookie_http_only(true) // For now
     .build()
 }
 
