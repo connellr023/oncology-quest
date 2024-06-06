@@ -57,7 +57,7 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
         Key::from(key)
     )
     .cookie_name(String::from("bq-session"))
-    .cookie_secure(false) // For now
+    .cookie_secure(true)
     .session_lifecycle(
         PersistentSession::default()
             .session_ttl(Duration::hours(6))

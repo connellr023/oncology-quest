@@ -20,4 +20,10 @@ div {
     }
   }
 }
+
+@media (max-height: 800px) {
+  div {
+    display: none;
+  }
+}
 </style>

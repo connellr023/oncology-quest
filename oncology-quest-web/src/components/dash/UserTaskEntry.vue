@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, VNodeRef, inject, onMounted, ref, watch } from "vue"
+import { Ref, VNodeRef, inject, nextTick, onMounted, onUpdated, ref } from "vue"
 import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
 
@@ -58,13 +58,12 @@ const adjustHeight = () => {
   textArea.value.style.height = textArea.value.scrollHeight + "px"
 }
 
-onMounted(() => {
+const onInput = () => {
   adjustHeight()
+  isSaved.value = false
+}
 
-  watch(() => comment.value, () => {
-    isSaved.value = false
-  })
-})
+onUpdated(() => nextTick(adjustHeight))
 </script>
 
 <template>
@@ -77,7 +76,7 @@ onMounted(() => {
       </button>
       <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
     </div>
-    <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="adjustHeight" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
+    <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
   </div>
 </template>
 

@@ -170,7 +170,7 @@ div.note {
 div.entries-container {
   display: flex;
   flex-direction: column;
-  overflow: scroll;
+  overflow-y: auto;
   margin: auto;
   max-height: 100%;
 }
