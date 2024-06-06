@@ -318,17 +318,13 @@ form > div.stage-container {
 
     &.form-button {
       margin-top: 20px;
+      margin-bottom: 10px;
     }
   }
 }
 
 button:disabled {
   cursor: not-allowed;
-}
-
-button.back {
-  margin-top: 15px;
-  width: 100%;
 }
 
 .error-label {

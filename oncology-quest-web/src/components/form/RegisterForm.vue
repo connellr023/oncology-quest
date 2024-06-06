@@ -6,7 +6,10 @@ import useRegister from "../../hooks/useRegister"
 import LabeledFormInput from "./LabeledFormInput.vue"
 import LoadingButton from "../LoadingButton.vue"
 
-const props = defineProps<{ onRegister: () => void }>()
+const props = defineProps<{
+  onRegister: () => void,
+  onBack: () => void
+}>()
 
 const {
   username,
@@ -105,6 +108,7 @@ const switchStage = () => {
       <LoadingButton :loading="loading" text="Register" />
       <button class="prev std" @click="switchStage">Previous Step</button>
     </div>
+    <button class="back" @click="onBack">Back</button>
   </form>
 </template>
 
@@ -135,6 +139,7 @@ div.stage-indicator-container {
 }
 
 button.prev {
-  margin-top: 6px;
+  margin-top: -4px;
+  margin-bottom: 7px;
 }
 </style>

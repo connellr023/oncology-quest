@@ -22,9 +22,7 @@ macro_rules! parsable {
 
         impl<'de> Deserialize<'de> for $t {
             fn deserialize<D>(deserializer: D) -> Result<$t, D::Error>
-            where
-                D: Deserializer<'de>,
-            {
+            where D: Deserializer<'de> {
                 let s = String::deserialize(deserializer)?;
                 $t::parse(s).map_err(serde::de::Error::custom)
             }

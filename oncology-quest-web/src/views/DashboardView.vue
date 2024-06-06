@@ -20,7 +20,7 @@ watch(() => [selectedUser.value?.user.id, selectedRotation.value?.id], () => {
 </script>
 
 <template>
-  <div class="dash-container">
+  <div :class="`dash-container ${session.isAdmin ? 'admin' : ''}`">
     <ManageUsersBar v-if="session.isAdmin" />
     <div class="dash">
       <TopBar />
@@ -45,6 +45,23 @@ div.dash-container {
     flex-grow: 1;
     background-color: $main-bg-color;
     padding: 12px 25px 20px 35px;
+  }
+}
+
+@media (max-width: $mobile-breakpoint) {
+  div.dash-container {
+    width: calc(100lvw - 50px);
+
+    div.dash {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    &.admin {
+      div.dash {
+        padding-left: 12px;
+      }
+    }
   }
 }
 </style>

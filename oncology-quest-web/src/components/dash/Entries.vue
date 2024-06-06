@@ -12,6 +12,7 @@ import UserTaskEntry from "./UserTaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
 import PushStackIcon from "../vector/PushStackIcon.vue"
 import InputModal from "../InputModal.vue"
+import MainLogo from "../vector/MainLogo.vue"
 
 const props = defineProps<{
   tasks: Record<number, UserTask>,
@@ -82,7 +83,7 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div id="entries-container" v-if="selectedRotation" :key="selectedRotation.id">
+  <div class="entries-container" v-if="selectedRotation" :key="selectedRotation.id">
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedRotation.id]" :key="computeKey(supertaskIndex)">
       <ProgressableEntryHeading
         :progress="calculateSupertaskProgress(selectedRotation!.id, supertaskIndex)"
@@ -124,13 +125,16 @@ const {
         </button>
       </ul>
     </div>
-    <p class="empty-rotation note" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</p>
+    <div class="empty-rotation note" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
     <button @click="showCreateEntryModal((confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push highlight" v-if="session.isAdmin">
       <PushStackIcon />
       Push New CBD Phase
     </button>
   </div>
-  <p class="note" v-else>Select a rotation from the list in the top right corner to get started.</p>
+  <div v-else class="note">
+    <MainLogo />
+    <p>Select a rotation from the list in the top right corner to get started.</p>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -140,18 +144,30 @@ button.push {
   width: 100%;
 }
 
-p.note {
+div.note {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   text-align: center;
   font-size: clamp(19px, 1.3lvw, 24px);
   text-wrap: wrap;
   opacity: 0.8;
   height: 100%;
+
+  svg {
+    width: 10lvw;
+    min-width: 60px;
+    max-width: 80px;
+    fill: $tertiary-bg-color;
+  }
+
+  &.empty-rotation {
+    padding: 30px;
+  }
 }
 
-div#entries-container {
+div.entries-container {
   display: flex;
   flex-direction: column;
   overflow: scroll;

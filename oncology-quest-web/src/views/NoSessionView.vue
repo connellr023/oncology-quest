@@ -24,6 +24,10 @@ const gotoLogin = () => {
   setView(Views.LOGIN)
 }
 
+const gotoSelect = () => {
+  setView(Views.SELECT)
+}
+
 onMounted(() => {
   setTimeout(() => {
     shouldAnimate.value = false;
@@ -39,16 +43,16 @@ onMounted(() => {
       <button @click="setView(Views.REGISTER)" class="std">Register</button>
       <button @click="setView(Views.RESET_PASSWORD)" class="std">Reset Password</button>
     </div>
-    <LoginForm v-else-if="view === Views.LOGIN" />
-    <RegisterForm :onRegister="gotoLogin" v-else-if="view === Views.REGISTER" />
-    <ResetPasswordForm :onReset="gotoLogin" v-else-if="view === Views.RESET_PASSWORD" />
-    <button v-if="view !== Views.SELECT" @click="setView(Views.SELECT)" class="back">Back</button>
+    <LoginForm :onBack="gotoSelect" v-else-if="view === Views.LOGIN" />
+    <RegisterForm :onBack="gotoSelect" :onRegister="gotoLogin" v-else-if="view === Views.REGISTER" />
+    <ResetPasswordForm :onBack="gotoSelect" :onReset="gotoLogin" v-else-if="view === Views.RESET_PASSWORD" />
     <CreditLabel />
   </div>
 </template>
 
 <style scoped lang="scss">
 @import "../styles/utilities.scss";
+@import "../styles/variables.scss";
 
 div.button-container {
   &.animate {
@@ -62,7 +66,7 @@ div.button-container {
 
   button {
     width: 35%;
-    min-width: 200px;
+    min-width: 250px;
     max-width: 290px;
     margin: auto;
     margin-bottom: 18px;

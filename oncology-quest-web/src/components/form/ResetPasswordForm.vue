@@ -6,7 +6,10 @@ import useResetPassword from "../../hooks/useResetPassword"
 import LabeledFormInput from "./LabeledFormInput.vue"
 import LoadingButton from "../LoadingButton.vue"
 
-const props = defineProps<{ onReset: () => void }>()
+const props = defineProps<{
+  onReset: () => void,
+  onBack: () => void
+}>()
 
 const {
   username,
@@ -63,5 +66,6 @@ const handleSubmit = async () => {
     />
     <div class="form-error error-label" v-if="resetError">{{ resetError }}</div>
     <LoadingButton :loading="loading" text="Confirm" />
+    <button class="back" @click="onBack">Back</button>
   </form>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, ref } from "vue"
+import { Ref, inject, onMounted, onUnmounted, ref } from "vue"
 import { UserWithTasks, User } from "../models/user"
 
 import useUserSearch from "../hooks/useUserSearch"
@@ -97,11 +97,23 @@ const onAllowResetClicked = async () => {
     allowResetExpiryDate.value = result.toLocaleTimeString()
   }
 }
+
+const clickOffListener = () => {
+  isCollapsed.value = true
+}
+
+onMounted(() => {
+  document.addEventListener("click", clickOffListener)
+})
+
+onUnmounted(() => {
+  document.removeEventListener("click", clickOffListener)
+})
 </script>
 
 <template>
-  <div v-if="session" class="account-bar-container">
-    <div class="content-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
+  <div @click.stop v-if="session" class="account-bar-container" :class="`${isCollapsed ? 'collapsed' : ''}`">
+    <div class="content-container">
       <h3>Manage Users</h3>
       <div class="search-container">
         <input @keyup.enter="searchUser" v-model="query" type="text" placeholder="Search users..." class="bubble" />
@@ -172,7 +184,7 @@ div.collapse-indicator-container {
   cursor: pointer;
   position: absolute;
   top: 50%;
-  left: calc(100% + 8px);
+  left: calc(100% + 7px);
   transform: translateY(-50%);
   opacity: 0.5;
   transition: opacity 0.3s ease;
@@ -206,6 +218,9 @@ div.collapse-indicator-container {
 
 div.results-container {
   margin-top: 25px;
+  height: fit-content;
+  overflow-y: auto;
+  height: calc(100% - 155px);
 
   div.status {
     text-align: center;
@@ -260,32 +275,30 @@ div.search-container {
   }
 }
 
-div.content-container {
-  width: 30lvw;
-  min-width: 180px;
-  max-width: 325px;
+div.account-bar-container {
+  position: absolute;
+  z-index: 100;
+  left: 0;
   height: 100%;
-  transition: all 0.25s ease;
-  text-align: center;
-  overflow: hidden;
-  padding: 15px;
-  position: relative;
-
-  h3 {
-    margin-top: 7px;
-    margin-bottom: 25px;
-  }
+  width: 40lvw;
+  min-width: 300px;
+  max-width: 350px;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 13px rgba(0, 0, 0, 0.7);
 
   &.collapsed {
-    width: 0;
-    min-width: 0;
-    padding: 0;
-    overflow: hidden;
+    box-shadow: none;
+    transform: translateX(-100%);
+  }
 
-    * {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+  div.content-container {
+    text-align: center;
+    padding: 15px;
+    position: relative;
+
+    h3 {
+      margin-top: 7px;
+      margin-bottom: 25px;
     }
   }
 }

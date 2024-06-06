@@ -151,7 +151,7 @@ const deleteAccount = async () => {
 
 <template>
   <div class="topbar-container">
-    <div>
+    <div class="profile-icon-container">
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
         <span class="login-count"><b>{{ session.loginCount }}</b>Login(s)</span>
@@ -172,26 +172,30 @@ const deleteAccount = async () => {
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
     <div class="rotation-select-container" :key="Object.keys(rotations).length">
       <template v-if="session.isAdmin">
-        <div v-for="rotation in rotations">
-          <button @click.stop="toggleRotationDropdown(rotation.id)" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
-          <Dropdown class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
-            <button @click="selectRotation(rotation)" class="bubble green">
-              <CheckIcon />
-              Select
-            </button>
-            <button class="bubble red" @click="onDeleteRotationClick">
-              <DeleteIcon />
-              Delete
-            </button>
-          </Dropdown>
+        <div class="rotations">
+          <div v-for="rotation in rotations">
+            <button @click.stop="toggleRotationDropdown(rotation.id)" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
+            <Dropdown class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
+              <button @click="selectRotation(rotation)" class="bubble green">
+                <CheckIcon />
+                Select
+              </button>
+              <button class="bubble red" @click="onDeleteRotationClick">
+                <DeleteIcon />
+                Delete
+              </button>
+            </Dropdown>
+          </div>
         </div>
         <button @click="() => { showCreateRotationModal = true }" class="bubble highlight new-rotation">
           <NewRotationIcon />
-          New Rotation
+          <span>New Rotation</span>
         </button>
       </template>
       <p v-else-if="rotations ? Object.keys(rotations).length === 0 : true">Currently no rotations to select.</p>
-      <button v-else @click="selectRotation(rotation)" v-for="rotation in rotations" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
+      <div v-else class="rotations">
+        <button @click="selectRotation(rotation)" v-for="rotation in rotations" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
+      </div>
     </div>
   </div>
   <template v-if="session.isAdmin">
@@ -231,6 +235,10 @@ const deleteAccount = async () => {
 <style scoped lang="scss">
 @import "../styles/variables.scss";
 
+* {
+  white-space: nowrap;
+}
+
 div.rotation-option-dropdown {
   top: 50px;
   margin-left: 2px;
@@ -238,6 +246,10 @@ div.rotation-option-dropdown {
 
 button.new-rotation {
   margin-left: 10px;
+
+  span {
+    margin-left: 3px;
+  }
 }
 
 button.rotation-option {
@@ -264,18 +276,50 @@ div.topbar-container {
 div.name {
   margin-left: 10px;
   font-size: 1.1em;
+  flex-grow: 1;
 }
 
 div.rotation-select-container {
   margin-left: 15px;
   display: flex;
-  flex-grow: 1;
-  justify-content: flex-end;
-  overflow-x: auto;
+  align-items: flex-end;
+
+  div.rotations {
+    display: flex;
+    overflow-x: auto;
+    align-items: flex-end;
+    max-width: 40lvw;
+  }
 
   p {
     opacity: 0.7;
     text-align: right;
+  }
+}
+
+@media (max-width: $mobile-breakpoint) {
+  div.name {
+    display: none;
+  }
+
+  div.profile-icon-container {
+    flex-grow: 1;
+  }
+
+  button.new-rotation {
+    svg {
+      margin-right: 0;
+    }
+
+    span {
+      display: none;
+    }
+  }
+
+  div.rotation-select-container {
+    div.rotations {
+      max-width: 65lvw;
+    }
   }
 }
 </style>
