@@ -277,7 +277,7 @@ div.search-container {
 
 div.account-bar-container {
   position: absolute;
-  z-index: 100;
+  z-index: 2;
   left: 0;
   height: 100%;
   width: 40lvw;
@@ -295,6 +295,7 @@ div.account-bar-container {
     text-align: center;
     padding: 15px;
     position: relative;
+    height: 100%;
 
     h3 {
       margin-top: 7px;

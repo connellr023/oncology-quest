@@ -6,6 +6,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Serialize, Debug, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct Rotation {
     id: i32,
     name: String,

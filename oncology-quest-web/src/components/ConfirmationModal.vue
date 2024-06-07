@@ -18,7 +18,7 @@ defineProps<{
       <h3>{{ title }}</h3>
       <p>{{ description }}</p>
       <p v-if="error" class="error">{{ error }}</p>
-      <div class="modal-buttons"> 
+      <div class="modal-buttons" @click.stop> 
         <button class="bubble green" @click="onConfirm">
           <CheckIcon />
           Confirm
