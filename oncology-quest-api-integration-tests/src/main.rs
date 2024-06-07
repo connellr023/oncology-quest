@@ -194,6 +194,48 @@ pub async fn delete_rotation(client: &Client, rotation_id: i32) -> Result<Status
     Ok(response.status())
 }
 
+pub async fn create_supertask(client: &Client, title: &str, rotation_id: i32) -> Result<(StatusCode, Option<i32>)> {
+    let response = client.post(endpoint!("/api/entries/supertasks/create"))
+        .json(&json!({
+            "title": title,
+            "rotationId": rotation_id
+        }))
+        .send()
+        .await?;
+
+    Ok((response.status(), response.json().await.ok()))
+}
+
+pub async fn create_task(client: &Client, title: &str, rotation_id: i32, supertask_id: i32) -> Result<(StatusCode, Option<i32>)> {
+    let response = client.post(endpoint!("/api/entries/tasks/create"))
+        .json(&json!({
+            "title": title,
+            "rotationId": rotation_id,
+            "parentId": supertask_id
+        }))
+        .send()
+        .await?;
+
+    Ok((response.status(), response.json().await.ok()))
+}
+
+pub async fn create_subtask(client: &Client, title: &str, rotation_id: i32, task_id: i32) -> Result<(StatusCode, Option<i32>)> {
+    let response = client.post(endpoint!("/api/entries/subtasks/create"))
+        .json(&json!({
+            "title": title,
+            "rotationId": rotation_id,
+            "parentId": task_id
+        }))
+        .send()
+        .await?;
+
+    Ok((response.status(), response.json().await.ok()))
+}
+
+delete_entry_fn!("supertasks", delete_supertask);
+delete_entry_fn!("tasks", delete_task);
+delete_entry_fn!("subtasks", delete_subtask);
+
 pub async fn try_admin_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>
 where
     F: Future<Output = Result<()>>,

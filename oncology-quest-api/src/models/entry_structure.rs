@@ -65,7 +65,7 @@ macro_rules! update_title {
     ($struct_name:ident, $table_name:literal) => {
         pub async fn update_title(pool: &PgPool, id: i32, title: &str) -> anyhow::Result<()> {
             let mut transaction = pool.begin().await?;
-            
+
             sqlx::query!(
                 "UPDATE " + $table_name + " SET title = $1 WHERE id = $2;",
                 title,

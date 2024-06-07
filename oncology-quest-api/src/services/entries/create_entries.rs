@@ -32,7 +32,7 @@ macro_rules! validate_session_and_entry_id {
         auth_admin_session!(user_id, $session, $pool);
 
         if !Rotation::exists(&$pool, $entry_id).await {
-            return HttpResponse::BadRequest().finish();
+            return HttpResponse::NoContent().finish();
         }
     };
 }
