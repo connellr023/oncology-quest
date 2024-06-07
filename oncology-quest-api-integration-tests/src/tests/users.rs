@@ -1,105 +1,18 @@
-use crate::client;
+use crate::{
+    client,
+    try_authorized_test,
+    register,
+    login,
+    delete_self,
+    logout,
+    session,
+    search_users,
+    delete_user
+};
 use crate::endpoint;
-use std::future::Future;
 use reqwest::Client;
 use reqwest::StatusCode;
-use serde_json::json;
 use anyhow::{Result, anyhow};
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
-
-fn rand_username() -> String {
-    thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(10)
-        .map(char::from)
-        .collect::<String>()
-}
-
-fn rand_password() -> String {
-    thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(20)
-        .map(char::from)
-        .collect::<String>()
-}
-
-fn rand_email() -> String {
-    format!("{}@{}.com", rand_username(), rand_username())
-}
-
-pub async fn register(client: &Client, username: &str, name: &str, email: &str, password: &str) -> Result<StatusCode> {
-    let response = client.post(endpoint!("/api/users/register"))
-        .json(&json!({
-            "username": username,
-            "name": name,
-            "email": email,
-            "password": password
-        }))
-        .send()
-        .await?;
-
-    Ok(response.status())
-}
-
-pub async fn login(client: &Client, username: &str, password: &str) -> Result<StatusCode> {
-    let response = client.post(endpoint!("/api/users/login"))
-        .json(&json!({
-            "username": username,
-            "password": password
-        }))
-        .send()
-        .await?;
-
-    response.cookies().for_each(|cookie| {
-        println!("Name: {}", cookie.name());
-        println!("Path: {}", cookie.path().unwrap_or_default());
-        println!("Value: {}", cookie.value());
-    });
-
-    Ok(response.status())
-}
-
-pub async fn delete_self(client: &Client, password: &str) -> Result<StatusCode> {
-    let response = client.delete(endpoint!("/api/users/delete-self"))
-        .json(&json!({
-            "password": password
-        }))
-        .send()
-        .await?;
-
-    Ok(response.status())
-}
-
-pub async fn try_authorized_test<F>(client: &Client, callback: impl FnOnce() -> F) -> Result<()>
-where F: Future<Output = Result<()>> {
-    let username = rand_username();
-    let name = "Test User";
-    let email = rand_email();
-    let password = rand_password();
-
-    match register(client, username.as_str(), name, email.as_str(), password.as_str()).await {
-        Ok(status) if status == StatusCode::CREATED => (),
-        Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
-        Err(error) => return Err(error),
-    }
-
-    match login(client, username.as_str(), password.as_str()).await {
-        Ok(status) if status == StatusCode::OK => (),
-        Ok(status) => return Err(anyhow!("Unexpected login status code: {}", status)),
-        Err(error) => return Err(error),
-    }
-
-    callback().await?;
-
-    match delete_self(client, password.as_str()).await {
-        Ok(status) if status == StatusCode::OK => (),
-        Ok(status) => return Err(anyhow!("Unexpected delete status code: {}", status)),
-        Err(error) => return Err(error),
-    }
-
-    Ok(())
-}
 
 #[tokio::test]
 async fn test_get_session_not_logged_in() -> Result<()> {
@@ -114,11 +27,38 @@ async fn test_get_session_not_logged_in() -> Result<()> {
 async fn test_get_session_logged_in() -> Result<()> {
     let (client, _) = client()?;
     try_authorized_test(&client, || async {
-        let response = client.get(endpoint!("/api/users/session")).send().await?;
-        assert_eq!(response.status(), StatusCode::OK);
+        let (status, _) = session(&client, None).await?;
+        assert_eq!(status, StatusCode::OK);
     
         Ok(())
     }).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_logout() -> Result<()> {
+    let (client, _) = client()?;
+    
+    register(&client, "logout-user", "Logout User", "logout@test.com", "whatthesigma").await?;
+    login(&client, "logout-user", "whatthesigma").await?;
+
+    // Check that the session is active
+    let (status, _) = session(&client, None).await?;
+    assert_eq!(status, StatusCode::OK);
+
+    // Logout
+    logout(&client).await?;
+
+    // Check that the session is inactive
+    let (status, _) = session(&client, None).await?;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+
+    // Log back in
+    login(&client, "logout-user", "whatthesigma").await?;
+
+    // Delete account
+    delete_self(&client, "whatthesigma").await?;
 
     Ok(())
 }
@@ -179,6 +119,32 @@ async fn test_invalid_password_is_rejected() -> Result<()> {
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
     }
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_cannot_search_user_if_not_admin() -> Result<()> {
+    let (client, _) = client()?;
+    try_authorized_test(&client, || async {
+        let (status, _) = search_users(&client, "test").await?;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+
+        Ok(())
+    }).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_cannot_delete_user_if_not_admin() -> Result<()> {
+    let (client, _) = client()?;
+    try_authorized_test(&client, || async {
+        let status = delete_user(&client, 1).await?;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+
+        Ok(())
+    }).await?;
 
     Ok(())
 }

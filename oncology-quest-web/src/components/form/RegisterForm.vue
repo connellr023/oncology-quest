@@ -42,10 +42,10 @@ const canGotoStageTwo = computed(() => {
 const handleSubmit = async () => {
   if (!isStageTwoErrors.value) {
     await register()
+  }
 
-    if (!serverError.value) {
-      props.onRegister()
-    }
+  if (!serverError.value) {
+    props.onRegister()
   }
 }
 

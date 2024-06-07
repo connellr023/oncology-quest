@@ -59,7 +59,7 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
         Key::from(key)
     )
     .cookie_name(String::from("oncology-quest-session"))
-    .cookie_secure(true)
+    .cookie_secure(false)
     .cookie_same_site(SameSite::None)
     .cookie_http_only(true)
     .session_lifecycle(

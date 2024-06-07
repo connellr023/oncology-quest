@@ -15,4 +15,4 @@ done
 echo "Server is up - Continuing..."
 
 # Run the tests
-cargo test -- --nocapture
+cargo test
