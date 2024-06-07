@@ -40,8 +40,11 @@ async fn test_get_session_logged_in() -> Result<()> {
 async fn test_logout() -> Result<()> {
     let (client, _) = client()?;
     
-    register(&client, "logout-user", "Logout User", "logout@test.com", "whatthesigma").await?;
-    login(&client, "logout-user", "whatthesigma").await?;
+    let status = register(&client, "logout-user", "Logout User", "logout@test.com", "whatthesigma").await?;
+    assert_eq!(status, StatusCode::CREATED);
+    
+    let status = login(&client, "logout-user", "whatthesigma").await?;
+    assert_eq!(status, StatusCode::OK);
 
     // Check that the session is active
     let (status, _) = session(&client, None).await?;
@@ -55,10 +58,12 @@ async fn test_logout() -> Result<()> {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 
     // Log back in
-    login(&client, "logout-user", "whatthesigma").await?;
+    let status = login(&client, "logout-user", "whatthesigma").await?;
+    assert_eq!(status, StatusCode::OK);
 
     // Delete account
-    delete_self(&client, "whatthesigma").await?;
+    let status = delete_self(&client, "whatthesigma").await?;
+    assert_eq!(status, StatusCode::OK);
 
     Ok(())
 }

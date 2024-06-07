@@ -30,7 +30,7 @@ pub(super) async fn create_rotation(session: Session, pool: Data<PgPool>, create
         return HttpResponse::InternalServerError().finish();
     }
 
-    HttpResponse::Ok().json(CreateRotationResponse {
+    HttpResponse::Created().json(CreateRotationResponse {
         rotation_id: rotation.id(),
         last_updated: rotation.last_updated()
     })

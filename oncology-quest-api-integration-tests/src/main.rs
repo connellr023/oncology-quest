@@ -4,12 +4,14 @@
 
 mod tests;
 mod macros;
+mod responses;
 
 use std::{sync::Arc, future::Future};
 use reqwest::Client;
 use reqwest_cookie_store::CookieStoreMutex;
 use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
+use responses::CreateRotationResponse;
 use serde_json::json;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -150,6 +152,24 @@ where
     }
 
     Ok(())
+}
+
+pub async fn create_rotation(client: &Client, name: &str) -> Result<(StatusCode, Option<CreateRotationResponse>)> {
+    let response = client.post(endpoint!("/api/rotations/create"))
+        .json(&json!({ "name": name }))
+        .send()
+        .await?;
+
+    Ok((response.status(), response.json::<CreateRotationResponse>().await.ok()))
+}
+
+pub async fn delete_rotation(client: &Client, rotation_id: i32) -> Result<StatusCode> {
+    let response = client.delete(endpoint!("/api/rotations/delete"))
+        .json(&json!({ "rotationId": rotation_id }))
+        .send()
+        .await?;
+
+    Ok(response.status())
 }
 
 pub async fn try_admin_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>
