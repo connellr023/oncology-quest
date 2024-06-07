@@ -1,0 +1,21 @@
+# Container that will perform integration and penetration tests on the target
+FROM rust:latest as builder
+
+WORKDIR /usr/src/oncology-quest-api-integration-tests
+
+# Install cURL
+RUN apt-get update && apt-get install wget -y
+
+# Copy over manifest and lockfile
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+
+# Copy source tree
+COPY ./src ./src
+
+# Copy test run script
+COPY ./runtests.sh ./runtests.sh
+RUN chmod +x ./runtests.sh
+
+# Run the tests
+ENTRYPOINT ["./runtests.sh"]

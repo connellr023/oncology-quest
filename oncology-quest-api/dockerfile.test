@@ -1,4 +1,4 @@
-# Dockerfile for performing unit and penetration testing
+# Container for setting up test environment for the API
 FROM rust:latest as builder
 
 WORKDIR /usr/src/oncology-quest-api
@@ -20,7 +20,7 @@ COPY ./src ./src
 COPY ./migrations ./migrations
 
 # Copy entrypoint script
-COPY ./tests/entrypoint.sh ./entrypoint.sh
+COPY ./entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 # Run the entrypoint script

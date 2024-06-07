@@ -9,6 +9,7 @@ use actix_web::web::{scope, ServiceConfig};
 pub fn config(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/api")
+            .service(healthcheck::healthcheck)
             .service(
                 scope("/users")
                     .service(users::register_user::register_user)
