@@ -33,7 +33,7 @@ pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_sel
 
     let user = match User::fetch_by_id(&pool, user_id).await {
         Ok(user) => user,
-        Err(_) => return HttpResponse::Unauthorized().finish()
+        Err(_) => return HttpResponse::NoContent().finish()
     };
 
     if !user.validate_password(delete_self_query.password.as_str()) {
