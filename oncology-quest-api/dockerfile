@@ -1,0 +1,20 @@
+# Container to be deployed on Amazon ECS
+FROM rust:1.54 as builder
+
+WORKDIR /usr/src/oncology-quest
+
+# Copy everything from the current directory to the container
+COPY . .
+
+# Install the required dependencies
+RUN cargo install --path .
+
+# Setup second stage
+FROM debian:buster-slim
+RUN apt-get update && apt-get install -y libssl-dev && rm -rf /var/lib/apt/lists/*
+
+# Copy the built binary from the builder stage
+COPY --from=builder /usr/local/cargo/bin/oncology-quest /usr/local/bin/oncology-quest
+
+# Run the binary
+CMD ["oncology-quest"]

@@ -9,7 +9,7 @@ const useSession = () => {
     const { retrieveOrCacheUserTasks, retrieveUserTasks } = useCache()
 
     const session = ref<User | null>(null)
-    const tasks = ref<Record<number, UserTask>>({}) // Maps subtask ID to UserTask
+    const tasks = ref<Record<number, UserTask>>({})     // Maps subtask ID to UserTask
     const rotations = ref<Record<number, Rotation>>({}) // Maps rotation ID to Rotation
 
     const loading = ref(true)
@@ -38,8 +38,7 @@ const useSession = () => {
                 updateSessionData(sessionData, session, tasks, rotations)
             }
         }
-        catch (err) {
-            console.log(err)
+        catch (_) {
             connectionError.value = true
         }
 

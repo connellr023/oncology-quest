@@ -1,5 +1,5 @@
 # Container for setting up test environment for the API
-FROM rust:latest as builder
+FROM rust:1.54 as builder
 
 WORKDIR /usr/src/oncology-quest-api
 

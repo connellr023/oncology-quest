@@ -2,7 +2,7 @@ version: "3.8"
 services:
   api:
     build:
-      context: .
+      context: ./oncology-quest-api
       dockerfile: dockerfile.test
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/oncology-quest
@@ -14,7 +14,7 @@ services:
       - db
   api-integration-tests:
     build:
-      context: ../oncology-quest-api-integration-tests
+      context: ./oncology-quest-api-integration-tests
       dockerfile: dockerfile
     depends_on:
       - api
