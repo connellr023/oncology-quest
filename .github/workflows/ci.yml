@@ -1,4 +1,4 @@
-name: Integration Test
+name: API Continuous Integration
 
 on: [push, pull_request]
 

@@ -30,6 +30,7 @@ macro_rules! parsable {
 
         impl $t {
             pub fn parse(value: String) -> anyhow::Result<Self> {
+                let value = value.trim().to_string();
                 let pattern = Regex::new($regex)?;
 
                 match pattern.is_match(&value) {
@@ -126,5 +127,11 @@ mod tests {
     fn test_parse_entry_title_invalid() {
         let result = EntryTitle::parse("".to_string());
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_whitespace_trim() {
+        let username = Username::parse(" john_doe ".to_string()).unwrap();
+        assert_eq!(username.as_str(), "john_doe");
     }
 }
