@@ -93,7 +93,11 @@ pub struct EntryStructure(pub Vec<EntryHierarchy>);
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-
 pub struct CreateEntryResponse {
     pub entry_id: i32
+}
+
+#[derive(Deserialize)]
+pub struct CreateUserTaskResponse {
+    pub id: i32
 }

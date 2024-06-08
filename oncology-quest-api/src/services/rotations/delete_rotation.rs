@@ -16,7 +16,8 @@ struct DeleteRotationQuery {
 pub(super) async fn delete_rotation(session: Session, pool: Data<PgPool>, delete_rotation_query: Json<DeleteRotationQuery>) -> impl Responder {
     auth_admin_session!(user_id, session, pool);
 
-    if Rotation::delete(&pool, delete_rotation_query.rotation_id).await.is_err() {
+    if let Err(e) = Rotation::delete(&pool, delete_rotation_query.rotation_id).await {
+        eprintln!("Failed to delete rotation: {:?}", e);
         return HttpResponse::InternalServerError().finish();
     }
 

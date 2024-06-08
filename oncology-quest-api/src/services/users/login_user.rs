@@ -3,7 +3,7 @@ use crate::models::user::User;
 use crate::utilities::parsable::{Username, PlainTextPassword};
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
-use sqlx::{Pool, Postgres};
+use sqlx::PgPool;
 use actix_session::Session;
 use serde::Deserialize;
 
@@ -16,7 +16,7 @@ pub struct LoginUserQuery {
 }
 
 #[actix_web::post("/login")]
-pub(super) async fn login_user(session: Session, pool: Data<Pool<Postgres>>, login_user_query: Json<LoginUserQuery>) -> impl Responder {
+pub(super) async fn login_user(session: Session, pool: Data<PgPool>, login_user_query: Json<LoginUserQuery>) -> impl Responder {
     let user = match User::validate_login(&pool, login_user_query.username.as_str(), login_user_query.password.as_str()).await {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()

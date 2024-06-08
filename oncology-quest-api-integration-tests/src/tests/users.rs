@@ -100,6 +100,28 @@ async fn test_register_login_delete() -> Result<()> {
 }
 
 #[tokio::test]
+async fn test_no_duplicate_users() -> Result<()> {
+    const PASSWORD: &str = "goodpass2189389";
+
+    let (client, _) = client()?;
+
+    let status = register(&client, "test", "Test User", "grimace@englishorspanish.com", PASSWORD).await?;
+    assert_eq!(status, StatusCode::CREATED);
+
+    let status = register(&client, "test", "Tester", "brokensigma@hotmail.com", PASSWORD).await?;
+    assert_eq!(status, StatusCode::CONFLICT);
+
+    // Delete the user
+    let status = login(&client, "test", PASSWORD).await?;
+    assert_eq!(status.0, StatusCode::OK);
+
+    let status = delete_self(&client, PASSWORD).await?;
+    assert_eq!(status, StatusCode::OK);
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_invalid_username_is_rejected() -> Result<()> {
     let (client, _) = client()?;
 

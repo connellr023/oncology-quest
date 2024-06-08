@@ -12,7 +12,7 @@ use reqwest::Client;
 use reqwest_cookie_store::CookieStoreMutex;
 use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
-use responses::{CreateEntryResponse, CreateRotationResponse, EntryStructure, SearchResultUser, SearchUserResponse, UserSessionResponse};
+use responses::{CreateEntryResponse, CreateRotationResponse, CreateUserTaskResponse, EntryStructure, SearchResultUser, SearchUserResponse, UserSessionResponse};
 use serde_json::json;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -274,6 +274,38 @@ pub async fn get_entries(client: &Client, rotation_id: i32, entries_cache_timest
     Ok((response.status(), response.json().await.ok()))
 }
 
+pub async fn create_user_task(client: &Client, subtask_id: i32, is_completed: bool, comment: &str) -> Result<(StatusCode, Option<i32>)> {
+    let response = client.post(endpoint!("/api/tasks/create"))
+        .json(&json!({
+            "subtaskId": subtask_id,
+            "isCompleted": is_completed,
+            "comment": comment
+        }))
+        .send()
+        .await?;
+
+    let status_code = response.status();
+    let json = response
+        .json::<CreateUserTaskResponse>()
+        .await
+        .ok();
+
+    Ok((status_code, json.map(|json| { json.id })))
+}
+
+pub async fn update_user_task(client: &Client, user_task_id: i32, is_completed: bool, comment: &str) -> Result<StatusCode> {
+    let response = client.patch(endpoint!("/api/tasks/update"))
+        .json(&json!({
+            "id": user_task_id,
+            "isCompleted": is_completed,
+            "comment": comment
+        }))
+        .send()
+        .await?;
+
+    Ok(response.status())
+}
+
 pub async fn try_admin_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>
 where
     F: Future<Output = Result<()>>,
@@ -285,7 +317,7 @@ where
 
     match login(client, ADMIN_USERNAME, ADMIN_PASSWORD).await {
         Ok((status, _)) if status == StatusCode::OK => (),
-        Ok((status, _)) => return Err(anyhow!("Unexpected login status code: {}", status)),
+        Ok((status, _)) => return Err(anyhow!("Unexpected admin login status code: {}", status)),
         Err(error) => return Err(error),
     }
 
@@ -293,7 +325,7 @@ where
 
     match logout(client).await {
         Ok(status) if status == StatusCode::OK => (),
-        Ok(status) => return Err(anyhow!("Unexpected logout status code: {}", status)),
+        Ok(status) => return Err(anyhow!("Unexpected admin logout status code: {}", status)),
         Err(error) => return Err(error),
     }
 

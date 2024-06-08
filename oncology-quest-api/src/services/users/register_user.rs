@@ -2,7 +2,7 @@ use crate::utilities::parsable::{Username, Name, Email, PlainTextPassword};
 use crate::models::user::User;
 use actix_web::{web::{Json, Data}, HttpResponse, Responder};
 use serde::Deserialize;
-use sqlx::{Pool, Postgres};
+use sqlx::PgPool;
 
 #[derive(Deserialize)]
 struct RegisterUserQuery {
@@ -13,7 +13,7 @@ struct RegisterUserQuery {
 }
 
 #[actix_web::post("/register")]
-pub(super) async fn register_user(pool: Data<Pool<Postgres>>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
+pub(super) async fn register_user(pool: Data<PgPool>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
     let register_user_query = register_user_query.into_inner();
     
     let mut user = match User::new(

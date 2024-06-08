@@ -44,5 +44,5 @@ pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, creat
         return HttpResponse::InternalServerError().finish();
     }
 
-    HttpResponse::Ok().json(CreateUserTaskResponse { id: user_task.id() })
+    HttpResponse::Created().json(CreateUserTaskResponse { id: user_task.id() })
 }

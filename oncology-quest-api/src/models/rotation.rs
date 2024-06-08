@@ -44,6 +44,7 @@ impl Rotation {
         let mut transaction = pool.begin().await?;
 
         query_many!(&mut *transaction, rotation_id,
+            "DELETE FROM user_tasks WHERE subtask_id = ANY(SELECT id FROM subtasks WHERE rotation_id = $1)",
             "DELETE FROM subtasks WHERE rotation_id = $1",
             "DELETE FROM tasks WHERE rotation_id = $1",
             "DELETE FROM supertasks WHERE rotation_id = $1",
