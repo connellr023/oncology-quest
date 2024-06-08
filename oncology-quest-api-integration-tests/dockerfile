@@ -1,5 +1,5 @@
 # Container that will perform integration and penetration tests on the target
-FROM rust:1.54 as builder
+FROM rust:1.78 as builder
 
 WORKDIR /usr/src/oncology-quest-api-integration-tests
 
