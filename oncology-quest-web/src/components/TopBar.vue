@@ -49,6 +49,23 @@ const deleteRotationError = ref("")
 let focusedRotationId = -1
 const visibleRotationDropdowns = reactive<boolean[]>([])
 
+let scrollLeft = ref(0)
+let timeoutId: number | null = null
+const rotationsDiv = ref<HTMLElement | null>(null)
+
+const rotationsScrollListener = () => {
+  if (timeoutId) {
+    return
+  }
+
+  const debounceTime = 300
+
+  timeoutId = setTimeout(() => {
+    scrollLeft.value = rotationsDiv.value!.scrollLeft;
+    timeoutId = null;
+  }, debounceTime);
+}
+
 const toggleRotationDropdown = (id: number) => {
   visibleRotationDropdowns[id] = !visibleRotationDropdowns[id]
 
@@ -61,6 +78,12 @@ const toggleRotationDropdown = (id: number) => {
   }
   else {
     focusedRotationId = -1
+  }
+}
+
+const hideAllRotationDropdowns = () => {
+  for (let i = 0; i < visibleRotationDropdowns.length; i++) {
+    visibleRotationDropdowns[i] = false
   }
 }
 
@@ -172,10 +195,10 @@ const deleteAccount = async () => {
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
     <div class="rotation-select-container" :key="Object.keys(rotations).length">
       <template v-if="session.isAdmin">
-        <div class="rotations">
+        <div class="rotations" ref="rotationsDiv" @scroll="rotationsScrollListener" @mousedown="hideAllRotationDropdowns">
           <div v-for="rotation in rotations">
             <button @click.stop="toggleRotationDropdown(rotation.id)" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
-            <Dropdown class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
+            <Dropdown :style="`margin-left: -${scrollLeft}px`" class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
               <button @click="selectRotation(rotation)" class="bubble green">
                 <CheckIcon />
                 Select
@@ -285,10 +308,10 @@ div.rotation-select-container {
   align-items: flex-end;
 
   div.rotations {
-    display: flex;
     overflow-x: auto;
+    display: flex;
     align-items: flex-end;
-    max-width: 40lvw;
+    max-width: 40lvw;  
   }
 
   p {

@@ -405,6 +405,7 @@ div.modal {
       padding-right: $side-padding;
       color: $theme-color-red;
       margin: auto;
+      white-space: pre-wrap;
     }
 
     div.modal-buttons {

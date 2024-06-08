@@ -31,7 +31,7 @@ const allowResetError = ref("")
 const allowResetExpiryDate = ref("")
 
 const isCollapsed = ref(true)
-const userOptionsVisible = ref(false)
+const showUserOptions = ref(false)
 const showConfirmationModal = ref(false)
 const showAllowResetModal = ref(false)
 
@@ -41,29 +41,29 @@ const toggleCollapse = () => {
   
 const searchUser = () => {
   if (query.value.length > 0 && !loading.value) {
-    userOptionsVisible.value = false
+    showUserOptions.value = false
     search(query.value)
   }
 }
 
 const setSelectedUser = (selection: UserWithTasks) => {
   selectedUser.value = selection
-  userOptionsVisible.value = false
+  showUserOptions.value = false
 }
 
 const toggleUserOptions = () => {
-  userOptionsVisible.value = !userOptionsVisible.value
+  showUserOptions.value = !showUserOptions.value
 }
 
 const onDeleteUserClicked = () => {
   deleteUserError.value = ""
-  userOptionsVisible.value = false
+  showUserOptions.value = false
   showConfirmationModal.value = true
 }
 
 const onExportProgressClicked = () => {
   exportProgress(selectedUser.value!.user.name, selectedUser.value!.tasks)
-  userOptionsVisible.value = false
+  showUserOptions.value = false
 }
 
 const confirmDeleteUser = () => {
@@ -87,7 +87,7 @@ const onAllowResetClicked = async () => {
   const result = await allowReset(selectedUser.value!.user.id)
 
   allowResetError.value = ""
-  userOptionsVisible.value = false
+  showUserOptions.value = false
   showAllowResetModal.value = true
 
   if (!result) {
@@ -122,13 +122,13 @@ onUnmounted(() => {
           <SearchIcon v-else />
         </button>
       </div>
-      <div class="results-container">
+      <div class="results-container" @click="() => { showUserOptions = false }">
         <div v-if="searchError" class="status">An error occurred while searching for users.</div>
         <div v-else-if="Object.keys(results).length === 0" class="status">No results found.</div>
         <div v-else>
-          <div v-for="result in results" :key="result.user.id" :class="`user-option ${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }">
-            <UserProfileIcon :initials="result.user.name.substring(0, 2)" />
-            <Dropdown :isVisible="userOptionsVisible && selectedUser?.user.id === result.user.id" @change="userOptionsVisible = $event">
+          <div v-for="result in results" :key="result.user.id" :class="`user-option ${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click="setSelectedUser(result)">
+            <UserProfileIcon :initials="result.user.name.substring(0, 2)" @click.stop="toggleUserOptions" />
+            <Dropdown :isVisible="showUserOptions && selectedUser?.user.id === result.user.id" @change="showUserOptions = $event">
               <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
               <button class="bubble" @click="onExportProgressClicked">
                 <ExportIcon />
