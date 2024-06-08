@@ -12,7 +12,7 @@ use reqwest::Client;
 use reqwest_cookie_store::CookieStoreMutex;
 use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
-use responses::{CreateRotationResponse, SearchResultUser, SearchUserResponse, UserSessionResponse};
+use responses::{CreateEntryResponse, CreateRotationResponse, EntryStructure, SearchResultUser, SearchUserResponse, UserSessionResponse};
 use serde_json::json;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -203,7 +203,13 @@ pub async fn create_supertask(client: &Client, title: &str, rotation_id: i32) ->
         .send()
         .await?;
 
-    Ok((response.status(), response.json().await.ok()))
+    let status_code = response.status();
+    let json = response
+        .json::<CreateEntryResponse>()
+        .await
+        .ok();
+
+    Ok((status_code, json.map(|json| { json.entry_id })))
 }
 
 pub async fn create_task(client: &Client, title: &str, rotation_id: i32, supertask_id: i32) -> Result<(StatusCode, Option<i32>)> {
@@ -216,7 +222,13 @@ pub async fn create_task(client: &Client, title: &str, rotation_id: i32, superta
         .send()
         .await?;
 
-    Ok((response.status(), response.json().await.ok()))
+    let status_code = response.status();
+    let json = response
+        .json::<CreateEntryResponse>()
+        .await
+        .ok();
+
+    Ok((status_code, json.map(|json| { json.entry_id })))
 }
 
 pub async fn create_subtask(client: &Client, title: &str, rotation_id: i32, task_id: i32) -> Result<(StatusCode, Option<i32>)> {
@@ -229,12 +241,31 @@ pub async fn create_subtask(client: &Client, title: &str, rotation_id: i32, task
         .send()
         .await?;
 
-    Ok((response.status(), response.json().await.ok()))
+    let status_code = response.status();
+    let json = response
+        .json::<CreateEntryResponse>()
+        .await
+        .ok();
+
+    Ok((status_code, json.map(|json| { json.entry_id })))
 }
 
 delete_entry_fn!("supertasks", delete_supertask);
 delete_entry_fn!("tasks", delete_task);
 delete_entry_fn!("subtasks", delete_subtask);
+
+pub async fn get_entries(client: &Client, rotation_id: i32, entries_cache_timestamp: Option<DateTime<Utc>>) -> Result<(StatusCode, Option<EntryStructure>)> {
+    let response = match entries_cache_timestamp {
+        Some(timestamp) => client.get(endpoint!(format!("/api/entries/{}?entriesCacheTimestamp={}", rotation_id, timestamp.format("%Y-%m-%dT%H:%M:%S%.3fZ"))).as_str())
+            .send()
+            .await?,
+        None => client.get(endpoint!(format!("/api/entries/{}", rotation_id)).as_str())
+            .send()
+            .await?,
+    };
+
+    Ok((response.status(), response.json().await.ok()))
+}
 
 pub async fn try_admin_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>
 where

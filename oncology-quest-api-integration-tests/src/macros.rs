@@ -11,7 +11,7 @@ macro_rules! delete_entry_fn {
     ($entry_level:literal, $fn_name:ident) => {
         pub async fn $fn_name(client: &Client, entry_id: i32) -> Result<StatusCode> {
             let response = client.delete(endpoint!(format!("/api/entries/{}/delete", $entry_level)))
-                .json(&json!({ "entry_id": entry_id }))
+                .json(&json!({ "entryId": entry_id }))
                 .send()
                 .await?;
 

@@ -15,6 +15,7 @@ use crate::{
     try_authorized_test
 };
 use crate::endpoint;
+use chrono::Utc;
 use reqwest::Client;
 use reqwest::StatusCode;
 use anyhow::{Result, anyhow};
@@ -31,9 +32,11 @@ async fn test_get_session_not_logged_in() -> Result<()> {
 #[tokio::test]
 async fn test_get_session_logged_in() -> Result<()> {
     let (client, _) = client()?;
+
     try_authorized_test(&client, || async {
-        let (status, _) = session(&client, None).await?;
+        let (status, json) = session(&client, None).await?;
         assert_eq!(status, StatusCode::OK);
+        assert!(json.unwrap().tasks.is_some());
     
         Ok(())
     }).await?;
@@ -246,6 +249,30 @@ async fn test_reset_password() -> Result<()> {
     // Cleanup
     let status = delete_self(&client, NEW_PASSWORD).await?;
     assert_eq!(status, StatusCode::OK);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_admin_cannot_delete_admin() -> Result<()> {
+    let (client, _) = client()?;
+
+    try_admin_authorized_test(&client, || async {
+        let (status, json) = session(&client, None).await?;
+        assert_eq!(status, StatusCode::OK);
+
+        let admin_id = json.unwrap().user.id;
+
+        // Query will go through, but it won't actually delete the admin
+        let status = delete_user(&client, admin_id).await?;
+        assert_eq!(status, StatusCode::OK);
+
+        // Assert the acccount still exists
+        let (status, _) = session(&client, None).await?;
+        assert_eq!(status, StatusCode::OK);
+
+        Ok(())
+    }).await?;
 
     Ok(())
 }

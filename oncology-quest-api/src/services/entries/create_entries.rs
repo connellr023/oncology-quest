@@ -32,7 +32,7 @@ macro_rules! validate_session_and_entry_id {
         auth_admin_session!(user_id, $session, $pool);
 
         if !Rotation::exists(&$pool, $entry_id).await {
-            return HttpResponse::NoContent().finish();
+            return HttpResponse::BadRequest().finish();
         }
     };
 }
@@ -42,7 +42,7 @@ pub(super) async fn create_supertask(session: Session, pool: Data<Pool<Postgres>
     validate_session_and_entry_id!(rotation, session, pool, create_entry_query.rotation_id);
 
     match Supertask::insert_from(&pool, create_entry_query.title.as_str(), create_entry_query.rotation_id).await {
-        Ok(entry_id) => HttpResponse::Ok().json(CreateEntryResponse { entry_id }),
+        Ok(entry_id) => HttpResponse::Created().json(CreateEntryResponse { entry_id }),
         Err(err) => {
             eprintln!("{:?}", err);
             HttpResponse::InternalServerError().finish()
@@ -55,7 +55,7 @@ pub(super) async fn create_task(session: Session, pool: Data<Pool<Postgres>>, cr
     validate_session_and_entry_id!(rotation, session, pool, create_entry_query.rotation_id);
 
     match Task::insert_from(&pool, create_entry_query.title.as_str(), create_entry_query.rotation_id, create_entry_query.parent_id).await {
-        Ok(entry_id) => HttpResponse::Ok().json(CreateEntryResponse { entry_id }),
+        Ok(entry_id) => HttpResponse::Created().json(CreateEntryResponse { entry_id }),
         Err(_) => HttpResponse::InternalServerError().finish()
     }
 }
@@ -65,7 +65,7 @@ pub(super) async fn create_subtask(session: Session, pool: Data<Pool<Postgres>>,
     validate_session_and_entry_id!(rotation, session, pool, create_entry_query.rotation_id);
 
     match Subtask::insert_from(&pool, create_entry_query.title.as_str(), create_entry_query.rotation_id, create_entry_query.parent_id).await {
-        Ok(entry_id) => HttpResponse::Ok().json(CreateEntryResponse { entry_id }),
+        Ok(entry_id) => HttpResponse::Created().json(CreateEntryResponse { entry_id }),
         Err(_) => HttpResponse::InternalServerError().finish()
     }
 }

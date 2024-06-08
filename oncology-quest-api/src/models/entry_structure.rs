@@ -5,6 +5,7 @@ use sqlx::{FromRow, PgPool};
 use serde::Serialize;
 
 #[derive(Debug, FromRow, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Supertask {
     id: i32,
     title: EntryTitle,
@@ -12,6 +13,7 @@ pub struct Supertask {
 }
 
 #[derive(Debug, FromRow, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Task {
     id: i32,
     supertask_id: i32,
@@ -20,6 +22,7 @@ pub struct Task {
 }
 
 #[derive(Debug, FromRow, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Subtask {
     id: i32,
     task_id: i32,
