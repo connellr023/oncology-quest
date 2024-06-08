@@ -27,7 +27,7 @@ psql "postgres://postgres:password@db:5432/oncology-quest" \
 echo "Admin user created"
 
 # Run unit tests
-# cargo test
+cargo test
 
 # Start the application
 exec cargo run
