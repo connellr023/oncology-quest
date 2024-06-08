@@ -42,10 +42,13 @@ fn rand_email() -> String {
     format!("{}@{}.com", rand_username(), rand_username())
 }
 
+fn format_timestamp(timestamp: DateTime<Utc>) -> String {
+    timestamp.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()
+}
+
 pub async fn session(client: &Client, task_cache_timestamp: Option<DateTime<Utc>>) -> Result<(StatusCode, Option<UserSessionResponse>)> {
     let response = match task_cache_timestamp {
-        Some(timestamp) => client.get(endpoint!("/api/users/session"))
-            .json(&json!({ "taskCacheTimestamp": timestamp }))
+        Some(timestamp) => client.get(endpoint!(format!("/api/users/session?taskCacheTimestamp={}", format_timestamp(timestamp))))
             .send()
             .await?,
         None => client.get(endpoint!("/api/users/session"))
@@ -254,9 +257,13 @@ delete_entry_fn!("supertasks", delete_supertask);
 delete_entry_fn!("tasks", delete_task);
 delete_entry_fn!("subtasks", delete_subtask);
 
+update_entry_fn!("supertasks", update_supertask);
+update_entry_fn!("tasks", update_task);
+update_entry_fn!("subtasks", update_subtask);
+
 pub async fn get_entries(client: &Client, rotation_id: i32, entries_cache_timestamp: Option<DateTime<Utc>>) -> Result<(StatusCode, Option<EntryStructure>)> {
     let response = match entries_cache_timestamp {
-        Some(timestamp) => client.get(endpoint!(format!("/api/entries/{}?entriesCacheTimestamp={}", rotation_id, timestamp.format("%Y-%m-%dT%H:%M:%S%.3fZ"))).as_str())
+        Some(timestamp) => client.get(endpoint!(format!("/api/entries/{}?entriesCacheTimestamp={}", rotation_id, format_timestamp(timestamp))).as_str())
             .send()
             .await?,
         None => client.get(endpoint!(format!("/api/entries/{}", rotation_id)).as_str())

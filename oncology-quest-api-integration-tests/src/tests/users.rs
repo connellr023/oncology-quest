@@ -30,13 +30,28 @@ async fn test_get_session_not_logged_in() -> Result<()> {
 }
 
 #[tokio::test]
-async fn test_get_session_logged_in() -> Result<()> {
+async fn test_get_session_logged_in_invalid_cache() -> Result<()> {
     let (client, _) = client()?;
 
     try_authorized_test(&client, || async {
         let (status, json) = session(&client, None).await?;
         assert_eq!(status, StatusCode::OK);
         assert!(json.unwrap().tasks.is_some());
+    
+        Ok(())
+    }).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_get_session_logged_in_valid_cache() -> Result<()> {
+    let (client, _) = client()?;
+
+    try_authorized_test(&client, || async {
+        let (status, json) = session(&client, Some(Utc::now())).await?;
+        assert_eq!(status, StatusCode::OK);
+        assert!(json.unwrap().tasks.is_none());
     
         Ok(())
     }).await?;
