@@ -7,9 +7,8 @@ import "sample_feature/sample_item_list_view.dart";
 import "settings/settings_controller.dart";
 import "settings/settings_view.dart";
 
-/// The Widget that configures your application.
-class MyApp extends StatelessWidget {
-  const MyApp({
+class App extends StatelessWidget {
+  const App({
     super.key,
     required this.settingsController,
   });
@@ -42,7 +41,7 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [
-            Locale("en", ""), // English, no country code
+            Locale("en", "CA"),
           ],
 
           // Use AppLocalizations to configure the correct application title

@@ -1,6 +1,6 @@
 {
   "appTitle": "oncology_quest_mobile",
   "@appTitle": {
-    "description": "The title of the application"
+    "description": "An application to aid Medical Oncology students."
   }
 }
