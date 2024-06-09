@@ -127,7 +127,7 @@ onUnmounted(() => {
         <div v-else-if="Object.keys(results).length === 0" class="status">No results found.</div>
         <div v-else>
           <div v-for="result in results" :key="result.user.id" :class="`user-option ${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click="setSelectedUser(result)">
-            <UserProfileIcon :initials="result.user.name.substring(0, 2)" @click.stop="toggleUserOptions" />
+            <UserProfileIcon :initials="result.user.name.substring(0, 2)" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }" />
             <Dropdown :isVisible="showUserOptions && selectedUser?.user.id === result.user.id" @change="showUserOptions = $event">
               <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
               <button class="bubble" @click="onExportProgressClicked">
@@ -250,6 +250,12 @@ div.results-container {
     &.selected,
     &:hover {
       background-color: $main-bg-color;
+    }
+
+    &.selected {
+      span.name {
+        cursor: auto;
+      }
     }
   }
 }

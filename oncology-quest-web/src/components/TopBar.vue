@@ -126,6 +126,7 @@ const confirmDeleteRotation = () => {
   else {
     showDeleteRotationModal.value = false
     visibleRotationDropdowns[focusedRotationId] = false
+    selectedRotation.value = null
   }
 }
 
@@ -198,7 +199,7 @@ const deleteAccount = async () => {
         <div class="rotations" ref="rotationsDiv" @scroll="rotationsScrollListener" @mousedown="hideAllRotationDropdowns">
           <div v-for="rotation in rotations">
             <button @click.stop="toggleRotationDropdown(rotation.id)" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
-            <Dropdown :style="`margin-left: -${scrollLeft}px`" class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
+            <Dropdown @mousedown.stop :style="`margin-left: -${scrollLeft}px`" class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
               <button @click="selectRotation(rotation)" class="bubble green">
                 <CheckIcon />
                 Select
