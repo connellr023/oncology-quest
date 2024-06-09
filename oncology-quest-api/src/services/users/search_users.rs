@@ -1,8 +1,5 @@
-use crate::auth_admin_session;
 use crate::models::search_result_user::SearchResultUser;
-use actix_web::{web::{Data, Path}, HttpResponse, Responder};
-use actix_session::Session;
-use sqlx::PgPool;
+use crate::services::prelude::*;
 
 const SEARCH_LIMIT: i64 = 10;
 

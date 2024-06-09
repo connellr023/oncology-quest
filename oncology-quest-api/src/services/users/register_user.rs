@@ -1,8 +1,6 @@
 use crate::utilities::parsable::{Username, Name, Email, PlainTextPassword};
 use crate::models::user::User;
-use actix_web::{web::{Json, Data}, HttpResponse, Responder};
-use serde::Deserialize;
-use sqlx::PgPool;
+use crate::services::prelude::*;
 
 #[derive(Deserialize)]
 struct RegisterUserQuery {
