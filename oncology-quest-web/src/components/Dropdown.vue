@@ -19,7 +19,9 @@ onUnmounted(() => {
 
 <template>
   <div v-show="isVisible" class="dropdown-container" @click.stop>
-    <slot></slot>
+    <div>
+      <slot></slot>
+    </div>
   </div>
 </template>
 
@@ -27,21 +29,36 @@ onUnmounted(() => {
 @import "../styles/variables.scss";
 
 div.dropdown-container {
+  $offset: 2px;
+
   position: absolute;
   top: 55px;
-  background-color: $main-bg-color;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 1;
-  background-color: $tertiary-bg-color;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-
-  & > * {
-    flex-grow: 1;
+  
+  & > div {
+    background-color: $main-bg-color;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    background-color: $tertiary-bg-color;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
-    text-align: left;
+    height: 100%;
+    left: $offset;
+    
+    & > * {
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  &.right {
+    right: $offset;
   }
 }
 </style>

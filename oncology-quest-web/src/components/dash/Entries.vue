@@ -12,7 +12,7 @@ import UserTaskEntry from "./UserTaskEntry.vue"
 import ProgressableEntryHeading from "./ProgressableEntryHeading.vue"
 import PushStackIcon from "../vector/PushStackIcon.vue"
 import InputModal from "../InputModal.vue"
-import MainLogo from "../vector/MainLogo.vue"
+import SelectRotationGraphic from "../vector/SelectRotationGraphic.vue"
 
 const props = defineProps<{
   tasks: Record<number, UserTask>,
@@ -132,7 +132,7 @@ const {
     </button>
   </div>
   <div v-else class="note">
-    <MainLogo />
+    <SelectRotationGraphic class="graphic" />
     <p>Select a rotation from the list in the top right corner to get started.</p>
   </div>
 </template>
@@ -154,11 +154,12 @@ div.note {
   text-wrap: wrap;
   opacity: 0.8;
   height: 100%;
+  animation: fade-in 1s;
 
   svg {
-    width: 10lvw;
-    min-width: 60px;
-    max-width: 80px;
+    width: 20lvw;
+    min-width: 240px;
+    max-width: 300px;
     fill: $tertiary-bg-color;
   }
 

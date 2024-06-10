@@ -219,6 +219,7 @@ div.collapse-indicator-container {
 div.results-container {
   margin-top: 25px;
   height: fit-content;
+  overflow-x: hidden;
   overflow-y: auto;
   height: calc(100% - 155px);
 

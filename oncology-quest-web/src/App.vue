@@ -49,7 +49,7 @@ provide("resetAll", resetAll)
   <main>
     <div class="flex-wrapper">
       <MainLogo :class="`logo ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
-      <div v-if="connectionError" class="connect-error"><b><i>bq</i></b> is currently under maintenance.</div>
+      <div v-if="connectionError" class="connect-error"><b><i>Oncology Quest</i></b> is currently under maintenance.</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
         <DashboardView :resetAll="resetAll" v-else />
@@ -73,8 +73,8 @@ $logo-vert-offset: 170px;
 
 svg {
   width: 15lvw;
-  min-width: 50px;
-  max-width: 80px;
+  min-width: 60px;
+  max-width: 100px;
   margin: 0 auto;
   display: block;
   animation: pulse 4s infinite ease-out;
