@@ -12,9 +12,15 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const HomeView(),
-      theme: ThemeData(),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.dark,
+      theme: ThemeData(
+        primaryColor: const Color(0xFF331BBF),
+        scaffoldBackgroundColor: const Color(0xFF030303),
+        textTheme: const TextTheme(
+          bodySmall: TextStyle(color: Color(0xFFE7E7E7)),
+          bodyMedium: TextStyle(color: Color(0xFFE7E7E7)),
+          bodyLarge: TextStyle(color: Color(0xFFE7E7E7))
+        )
+      ),
       restorationScopeId: 'app',
       localizationsDelegates: const [
         AppLocalizations.delegate,

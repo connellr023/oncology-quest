@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -6,15 +7,23 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home View'),
-      ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-          },
-          child: const Text('Go to Settings'),
-        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SvgPicture.asset(
+              'assets/images/logo.svg',
+              width: 100,
+              height: 100,
+              color: Theme.of(context).primaryColor,
+
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Get started with Oncology Quest below.'
+            ),
+          ],
+        )
       ),
     );
   }
