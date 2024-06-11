@@ -7,6 +7,7 @@ import { Rotation } from "../models/rotation";
 import ManageUsersBar from "../components/ManageUsersBar.vue"
 import TopBar from "../components/TopBar.vue"
 import Entries from "../components/dash/Entries.vue"
+import RotationSelect from "../components/dash/RotationSelect.vue"
 
 const session = inject<Ref<User>>("session")!
 const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
@@ -20,12 +21,15 @@ watch(() => [selectedUser.value?.user.id, selectedRotation.value?.id], () => {
 </script>
 
 <template>
-  <div :class="`dash-container ${session.isAdmin ? 'admin' : ''}`">
+  <div class="dash-container">
     <ManageUsersBar v-if="session.isAdmin" />
     <div class="dash">
       <TopBar />
-      <Entries v-if="session.isAdmin" :selectedRotation="selectedRotation" :key="`${selectedUser?.user.id}.${selectedRotation?.id}`" :tasks="selectedUser?.tasks || {}" />
-      <Entries v-else :tasks="tasks" :selectedRotation="selectedRotation" />
+      <div class="dash-content">
+        <RotationSelect />
+        <Entries v-if="session.isAdmin" :selectedRotation="selectedRotation" :key="`${selectedUser?.user.id}.${selectedRotation?.id}`" :tasks="selectedUser?.tasks || {}" />
+        <Entries v-else :tasks="tasks" :selectedRotation="selectedRotation" />
+      </div>
     </div>
   </div>
 </template>
@@ -38,29 +42,17 @@ div.dash-container {
   animation: fade-in 1s forwards;
   animation-delay: 0.5s;
   display: flex;
+  flex-direction: column;
   width: 100lvw;
   height: 100lvh;
-
+  
   div.dash {
-    flex-grow: 1;
-    background-color: $main-bg-color;
-    padding: 12px 25px 20px 35px;
-  }
-}
+    padding: 13px 25px 0 30px;
+    height: 100%;
 
-@media (max-width: $mobile-breakpoint) {
-  div.dash-container {
-    width: calc(100lvw - 50px);
-
-    div.dash {
-      padding-left: 0;
-      padding-right: 0;
-    }
-
-    &.admin {
-      div.dash {
-        padding-left: 12px;
-      }
+    div.dash-content {
+      height: calc(100% - 85px);
+      overflow-y: auto;
     }
   }
 }

@@ -184,7 +184,7 @@ div.collapse-indicator-container {
   cursor: pointer;
   position: absolute;
   top: 50%;
-  left: calc(100% + 7px);
+  left: calc(100% + 4px);
   transform: translateY(-50%);
   opacity: 0.5;
   transition: opacity 0.3s ease;

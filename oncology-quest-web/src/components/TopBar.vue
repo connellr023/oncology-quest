@@ -8,7 +8,6 @@ import useLogout from "../hooks/useLogout"
 import useValidateName from "../hooks/validation/useValidateName"
 import useValidatePassword from "../hooks/validation/useValidatePassword"
 import useRotations from "../hooks/useRotations"
-import useEntries from "../hooks/useEntries"
 import useDeleteUser from "../hooks/useDeleteUser"
 import useExportProgress from "../hooks/useExportProgress"
 
@@ -18,7 +17,6 @@ import InputModal from "./InputModal.vue"
 import ConfirmationModal from "./ConfirmationModal.vue"
 import NewRotationIcon from "./vector/NewRotationIcon.vue"
 import DeleteIcon from "./vector/DeleteIcon.vue"
-import CheckIcon from "./vector/CheckIcon.vue"
 import Dropdown from "./Dropdown.vue"
 import ExportIcon from "./vector/ExportIcon.vue"
 
@@ -32,7 +30,6 @@ const { logout } = useLogout()
 const { name, nameError } = useValidateName()
 const { password, passwordError } = useValidatePassword()
 const { createRotation, deleteRotation } = useRotations()
-const { fetchEntriesWithCaching } = useEntries()
 const { deleteSelf } = useDeleteUser()
 const { exportProgress } = useExportProgress()
 
@@ -46,61 +43,8 @@ const isDeleteAccountLoading = ref(false)
 
 const deleteRotationError = ref("")
 
-let focusedRotationId = -1
-const visibleRotationDropdowns = reactive<Record<number, boolean>>({})
-
-let scrollLeft = ref(0)
-let timeoutId: number | null = null
-const rotationsDiv = ref<HTMLElement | null>(null)
-
-const rotationsScrollListener = () => {
-  if (timeoutId) {
-    return
-  }
-
-  const debounceTime = 300
-
-  timeoutId = setTimeout(() => {
-    scrollLeft.value = rotationsDiv.value!.scrollLeft;
-    timeoutId = null;
-  }, debounceTime);
-}
-
-const toggleRotationDropdown = (id: number) => {
-  visibleRotationDropdowns[id] = !visibleRotationDropdowns[id]
-
-  if (id !== focusedRotationId) {
-    visibleRotationDropdowns[focusedRotationId] = false
-  }
-
-  if (visibleRotationDropdowns[id]) {
-    focusedRotationId = id
-  }
-  else {
-    focusedRotationId = -1
-  }
-}
-
-const hideAllRotationDropdowns = () => {
-  for (const id in visibleRotationDropdowns) {
-    visibleRotationDropdowns[id] = false
-  }
-}
-
 const toggleProfileOptions = () => {
   showProfileOptions.value = !showProfileOptions.value
-}
-
-const selectRotation = async (rotation: Rotation) => {
-  if (!await fetchEntriesWithCaching(rotation.id)) {
-    console.error("Failed to fetch entries.")
-    return
-  }
-
-  console.log("Selected rotation:", rotation)
-
-  selectedRotation.value = rotation
-  visibleRotationDropdowns[focusedRotationId] = false
 }
 
 const confirmNewRotation = async () => {
@@ -121,29 +65,25 @@ const confirmNewRotation = async () => {
   isCreateRotationLoading.value = false
 }
 
-const confirmDeleteRotation = () => {
-  if (!deleteRotation(focusedRotationId)) {
-    deleteRotationError.value = "Failed to delete rotation."
-  }
-  else {
-    showDeleteRotationModal.value = false
-    visibleRotationDropdowns[focusedRotationId] = false
-    selectedRotation.value = null
-  }
-}
+// const confirmDeleteRotation = () => {
+//   if (!deleteRotation(focusedRotationId)) {
+//     deleteRotationError.value = "Failed to delete rotation."
+//   }
+//   else {
+//     showDeleteRotationModal.value = false
+//     visibleRotationDropdowns[focusedRotationId] = false
+//     selectedRotation.value = null
+//   }
+// }
 
-const shouldAppearFocused = (id: number) => {
-  return visibleRotationDropdowns[id] || selectedRotation.value?.id === id
-}
+// const onDeleteRotationClick = () => {
+//   visibleRotationDropdowns[focusedRotationId] = false
+//   showDeleteRotationModal.value = true
+// }
 
 const onLogoutClick = async () => {
   resetAll()
   await logout()
-}
-
-const onDeleteRotationClick = () => {
-  visibleRotationDropdowns[focusedRotationId] = false
-  showDeleteRotationModal.value = true
 }
 
 const onDeleteAccountClick = () => {
@@ -197,25 +137,16 @@ const deleteAccount = async () => {
     </div>
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
     <div class="rotation-select-container" :key="Object.keys(rotations).length">
-      <div class="rotations" ref="rotationsDiv" @scroll="rotationsScrollListener" @mousedown="hideAllRotationDropdowns">
-        <div v-for="rotation in rotations" class="rotation">
-          <button @click.stop="toggleRotationDropdown(rotation.id)" :class="`bubble rotation-option ${shouldAppearFocused(rotation.id) ? 'focused' : ''}`" :key="rotation.id">{{ rotation.name }}</button>
-          <Dropdown @mousedown.stop :style="`margin-left: -${scrollLeft}px`" class="rotation-option-dropdown" :isVisible="visibleRotationDropdowns[rotation.id]" @change="visibleRotationDropdowns[rotation.id] = $event">
-            <button @click="selectRotation(rotation)" class="bubble green">
-              <CheckIcon />
-              Select
-            </button>
-            <button class="bubble red" @click="onDeleteRotationClick" v-if=session.isAdmin>
-              <DeleteIcon />
-              Delete
-            </button>
-          </Dropdown>
-        </div>
-      </div>
-      <button v-if="session.isAdmin" @click="() => { showCreateRotationModal = true }" class="bubble highlight new-rotation">
-        <NewRotationIcon />
-        <span>New Rotation</span>
-      </button>
+      <template v-if="session.isAdmin">
+        <button @click="() => { showCreateRotationModal = true }" class="green bubble highlight new-rotation">
+          <NewRotationIcon />
+          New Rotation
+        </button>
+        <button class="red bubble highlight">
+          <NewRotationIcon />
+          Delete Rotation
+        </button>
+      </template>
       <p v-else-if="rotations ? Object.keys(rotations).length === 0 : true">Currently no rotations to select.</p>
     </div>
   </div>
@@ -233,10 +164,10 @@ const deleteAccount = async () => {
     />
     <ConfirmationModal
       title="Delete Rotation"
-      description="Are you sure you want to delete this rotation?"
+      description="Are you sure you want to delete the currently selected rotation?"
       :error="deleteRotationError"
       :visible="showDeleteRotationModal"
-      :onConfirm="confirmDeleteRotation"
+      :onConfirm="() => { /* confirmDeleteRotation */ }"
       :onCancel="() => { showDeleteRotationModal = false }"
     />
   </template>
@@ -280,45 +211,8 @@ div.name {
   flex-grow: 1;
 }
 
-div.rotation-select-container {
-  margin-left: 15px;
-  display: flex;
-  align-items: flex-end;
-  max-width: 50lvw;
-
-  div.rotations {
-    display: flex;
-    align-items: flex-end;
-    overflow: visible;
-    margin-right: 20px;
-    
-    div.rotation {
-      position: relative;
-      overflow: visible;
-
-      div.rotation-option-dropdown {
-        top: 50px;
-      }
-
-      button.new-rotation {
-        span {
-          margin-left: 3px;
-        }
-      }
-
-      button.rotation-option {
-        $side-margin: 2px;
-
-        margin-left: $side-margin;
-        margin-right: $side-margin;
-      }
-    }
-  }
-
-  p {
-    opacity: 0.7;
-    text-align: right;
-  }
+button.new-rotation {
+  margin-right: 5px;
 }
 
 @media (max-width: $mobile-breakpoint) {
@@ -328,20 +222,6 @@ div.rotation-select-container {
 
   div.profile-icon-container {
     flex-grow: 1;
-  }
-
-  button.new-rotation {
-    svg {
-      margin-right: 0;
-    }
-
-    span {
-      display: none;
-    }
-  }
-
-  div.rotation-select-container {
-    max-width: 75lvw;
   }
 }
 </style>

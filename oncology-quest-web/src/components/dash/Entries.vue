@@ -84,6 +84,7 @@ const {
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
   <div class="entries-container" v-if="selectedRotation" :key="selectedRotation.id">
+    <h1>Tasks</h1>
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedRotation.id]" :key="computeKey(supertaskIndex)">
       <ProgressableEntryHeading
         :progress="calculateSupertaskProgress(selectedRotation!.id, supertaskIndex)"
@@ -133,7 +134,7 @@ const {
   </div>
   <div v-else class="note">
     <SelectRotationGraphic class="graphic" />
-    <p>Select a rotation from the list in the top right corner to get started.</p>
+    <p>Select a rotation from the above list to get started.</p>
   </div>
 </template>
 
@@ -144,17 +145,21 @@ button.push {
   width: 100%;
 }
 
+div.supertask {
+  background-color: rgba($secondary-bg-color, 0.65);
+
+  &:hover,
+  &.focused {
+    background-color: $secondary-bg-color;
+  }
+}
+
 div.note {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
   text-align: center;
   font-size: clamp(19px, 1.3lvw, 24px);
   text-wrap: wrap;
-  opacity: 0.8;
-  height: 100%;
-  animation: fade-in 1s;
+  text-align: center;
+  margin-top: 10lvh;
 
   svg {
     width: 20lvw;
@@ -166,14 +171,18 @@ div.note {
   &.empty-rotation {
     padding: 30px;
   }
+
+  &.empty-rotation,
+  p {
+    opacity: 0.8;
+  }
 }
 
 div.entries-container {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   margin: auto;
-  max-height: 100%;
+  margin-top: 15px;
 }
 
 .focusable {
