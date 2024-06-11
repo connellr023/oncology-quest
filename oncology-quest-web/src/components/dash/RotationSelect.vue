@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import { Ref, inject } from "vue"
+import { Ref, inject, ref } from "vue"
 import { Rotation } from "../../models/rotation"
+import { User } from "../../models/user"
 
 import useEntries from "../../hooks/useEntries"
 
 import CheckIcon from "../vector/CheckIcon.vue"
+import EditIcon from "../vector/EditIcon.vue"
+import CancelIcon from "../vector/CancelIcon.vue"
+import DeleteIcon from "../vector/DeleteIcon.vue"
+import useRotations from "../../hooks/useRotations"
 
+const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 
 const { fetchEntriesWithCaching } = useEntries()
+const { deleteRotation } = useRotations()
+
+const isEditing = ref(false)
 
 const selectRotation = async (rotation: Rotation) => {
   if (!await fetchEntriesWithCaching(rotation.id)) {
@@ -23,19 +32,51 @@ const selectRotation = async (rotation: Rotation) => {
 const unselectRotation = () => {
   selectedRotation.value = null
 }
+
+const toggleIsEditing = () => {
+  unselectRotation()
+  isEditing.value = !isEditing.value
+}
+
+const onRotationClick = (rotation: Rotation) => {
+  if (isEditing.value) {
+    deleteRotation(rotation.id)
+  }
+  else {
+    if (selectedRotation.value?.id === rotation.id) {
+      unselectRotation()
+    }
+    else {
+      selectRotation(rotation)
+    }
+  }
+}
 </script>
 
 <template>
   <div class="rotation-select-container">
-    <h1 class="section-heading">Rotations</h1>
+    <div class="heading-container">
+      <h1 class="section-heading">Rotations</h1>
+      <button :class="`icon-button ${isEditing ? 'red' : 'highlight'}`" v-if="session.isAdmin" @click="toggleIsEditing">
+        <template v-if="isEditing">
+          <CancelIcon  />
+          Cancel
+        </template>
+        <template v-else>
+          <EditIcon />
+          Edit
+        </template>
+      </button>
+    </div>
     <div class="rotations" v-if="Object.keys(rotations).length > 0">
       <button
         v-for="rotation in rotations"
-        :class="`rotation bubble ${selectedRotation?.id === rotation.id ? 'focused' : ''}`"
+        :class="`rotation bubble ${isEditing ? 'red' : ''} ${selectedRotation?.id === rotation.id ? 'focused' : ''}`"
         :key="rotation.id"
-        @click="() => { if (selectedRotation?.id === rotation.id) { unselectRotation() } else { selectRotation(rotation) } }"
+        @click="onRotationClick(rotation)"
       >
         <CheckIcon v-show="selectedRotation?.id === rotation.id" />
+        <DeleteIcon v-if="isEditing" />
         {{ rotation.name }}
       </button>
     </div>
@@ -51,6 +92,14 @@ p.no-rotations {
   font-size: clamp(18px, 1.3lvw, 23px);
   opacity: 0.7;
   padding: 8px;
+}
+
+div.heading-container {
+  display: flex;
+
+  h1 {
+    margin-right: 20px;
+  }
 }
 
 div.rotations {

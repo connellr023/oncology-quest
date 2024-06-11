@@ -30,6 +30,8 @@
 </template>
 
 <style lang="scss">
+@import "../../styles/variables.scss";
+
 .cls-1 {
   opacity: .85;
 }
@@ -43,7 +45,7 @@
 }
 
 .cls-4 {
-  fill: #f9ed32;
+  fill: $theme-color-yellow;
 }
 
 .cls-8 {

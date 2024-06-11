@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, reactive, ref } from "vue"
+import { Ref, inject, ref } from "vue"
 import { User } from "../models/user"
 import { Rotation } from "../models/rotation"
 import { UserTask } from "../models/tasks"
@@ -14,7 +14,6 @@ import useExportProgress from "../hooks/useExportProgress"
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
 import InputModal from "./InputModal.vue"
-import ConfirmationModal from "./ConfirmationModal.vue"
 import NewRotationIcon from "./vector/NewRotationIcon.vue"
 import DeleteIcon from "./vector/DeleteIcon.vue"
 import Dropdown from "./Dropdown.vue"
@@ -29,19 +28,16 @@ const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
 const { logout } = useLogout()
 const { name, nameError } = useValidateName()
 const { password, passwordError } = useValidatePassword()
-const { createRotation, deleteRotation } = useRotations()
+const { createRotation } = useRotations()
 const { deleteSelf } = useDeleteUser()
 const { exportProgress } = useExportProgress()
 
 const showProfileOptions = ref(false)
 const showCreateRotationModal = ref(false)
 const showDeleteAccountModal = ref(false)
-const showDeleteRotationModal = ref(false)
 
 const isCreateRotationLoading = ref(false)
 const isDeleteAccountLoading = ref(false)
-
-const deleteRotationError = ref("")
 
 const toggleProfileOptions = () => {
   showProfileOptions.value = !showProfileOptions.value
@@ -64,22 +60,6 @@ const confirmNewRotation = async () => {
 
   isCreateRotationLoading.value = false
 }
-
-// const confirmDeleteRotation = () => {
-//   if (!deleteRotation(focusedRotationId)) {
-//     deleteRotationError.value = "Failed to delete rotation."
-//   }
-//   else {
-//     showDeleteRotationModal.value = false
-//     visibleRotationDropdowns[focusedRotationId] = false
-//     selectedRotation.value = null
-//   }
-// }
-
-// const onDeleteRotationClick = () => {
-//   visibleRotationDropdowns[focusedRotationId] = false
-//   showDeleteRotationModal.value = true
-// }
 
 const onLogoutClick = async () => {
   resetAll()
@@ -136,41 +116,26 @@ const deleteAccount = async () => {
       </Dropdown>
     </div>
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
-    <div class="rotation-select-container" :key="Object.keys(rotations).length">
-      <template v-if="session.isAdmin">
-        <button @click="() => { showCreateRotationModal = true }" class="green bubble highlight new-rotation">
-          <NewRotationIcon />
-          New Rotation
-        </button>
-        <button class="red bubble highlight">
-          <NewRotationIcon />
-          Delete Rotation
-        </button>
-      </template>
+    <div>
+      <button v-if="session.isAdmin" @click="() => { showCreateRotationModal = true }" class="green bubble highlight new-rotation">
+        <NewRotationIcon />
+        New Rotation
+      </button>
       <p v-else-if="rotations ? Object.keys(rotations).length === 0 : true">Currently no rotations to select.</p>
     </div>
   </div>
-  <template v-if="session.isAdmin">
-    <InputModal
-      v-model="name"
-      title="New Rotation"
-      placeholder="Enter rotation name..."
-      :loading="isCreateRotationLoading"
-      :error="nameError"
-      :visible="showCreateRotationModal"
-      :isPassword="false"
-      :onConfirm="confirmNewRotation"
-      :onCancel="() => { showCreateRotationModal = false }"
-    />
-    <ConfirmationModal
-      title="Delete Rotation"
-      description="Are you sure you want to delete the currently selected rotation?"
-      :error="deleteRotationError"
-      :visible="showDeleteRotationModal"
-      :onConfirm="() => { /* confirmDeleteRotation */ }"
-      :onCancel="() => { showDeleteRotationModal = false }"
-    />
-  </template>
+  <InputModal
+    v-if="session.isAdmin"
+    v-model="name"
+    title="New Rotation"
+    placeholder="Enter rotation name..."
+    :loading="isCreateRotationLoading"
+    :error="nameError"
+    :visible="showCreateRotationModal"
+    :isPassword="false"
+    :onConfirm="confirmNewRotation"
+    :onCancel="() => { showCreateRotationModal = false }"
+  />
   <InputModal
     v-model="password"
     title="Delete Account"
@@ -212,16 +177,6 @@ div.name {
 }
 
 button.new-rotation {
-  margin-right: 5px;
-}
-
-@media (max-width: $mobile-breakpoint) {
-  div.name {
-    display: none;
-  }
-
-  div.profile-icon-container {
-    flex-grow: 1;
-  }
+  margin-top: -2px;
 }
 </style>
