@@ -50,8 +50,7 @@ provide("resetAll", resetAll)
     <div class="flex-wrapper">
       <div :class="`logo-container ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`">
         <MainLogo class="logo" />
-        <svg class="logo-effect
-  t" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54">
+        <svg class="logo-effect" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54">
           <ellipse cx="27" cy="27" rx="27" ry="27" />
         </svg>
       </div>

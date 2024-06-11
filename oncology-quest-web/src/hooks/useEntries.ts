@@ -239,9 +239,13 @@ const useEntries = () => {
 
     const fetchEntriesWithCaching = async (rotationId: number): Promise<boolean> => {
         const [cachedEntries, cacheTimestamp] = retrieveRotationEntries(rotationId)
-        const query = cacheTimestamp ? `?entriesCacheTimestamp=${cacheTimestamp}` : ""
+        const url = new URL(`${API_ENDPOINT}/api/entries/${rotationId}`)
 
-        const response = await fetch(`${API_ENDPOINT}/api/entries/${rotationId}${query}`, {
+        if (cacheTimestamp) {
+            url.searchParams.append("entriesCacheTimestamp", cacheTimestamp)
+        }
+
+        const response = await fetch(url, {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
