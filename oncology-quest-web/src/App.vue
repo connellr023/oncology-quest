@@ -48,7 +48,13 @@ provide("resetAll", resetAll)
 <template>
   <main>
     <div class="flex-wrapper">
-      <MainLogo :class="`logo ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
+      <div :class="`logo-container ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`">
+        <MainLogo class="logo" />
+        <svg class="logo-effect
+  t" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54">
+          <ellipse cx="27" cy="27" rx="27" ry="27" />
+        </svg>
+      </div>
       <div v-if="connectionError" class="connect-error"><b><i>Oncology Quest</i></b> is currently under maintenance.</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
@@ -71,51 +77,65 @@ div.connect-error {
 
 $logo-vert-offset: 170px;
 
+.fade-up {
+  transform: translateY($logo-vert-offset);
+  animation: move-up 0.8s;
+}
+
+.fade-out {
+  animation: fade-out 0.5s;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+}
+
+.fade-up,
+.fade-out {
+  animation-fill-mode: forwards;
+  animation-delay: 0.13s;
+}
+
 svg {
   width: 15lvw;
-  min-width: 60px;
-  max-width: 100px;
-  margin: 0 auto;
-  display: block;
-  animation: pulse 4s infinite ease-out;
-  
+  min-width: 100px;
+  max-width: 125px;
+
   &.logo {
+    margin: 0 auto;
+    display: block;
     fill: $theme-color-1;
   }
 
-  &.fade-up {
-    transform: translateY($logo-vert-offset);
-    animation: move-up 0.8s;
-  }
+  &.logo-effect {
+    fill: $theme-color-1;
+    opacity: 0.2;
+    animation: pulse 9s infinite ease-out;
+    position: absolute;
+    filter: blur(45px);
+    z-index: 2;
 
-  &.fade-out {
-    animation: fade-out 0.5s;
-    position: fixed;
-    transform: translate(-50%, -50%);
-    left: 50%;
-    top: 50%;
-  }
+    $start-scale: 1;
+    $end-scale: 1.6;
 
-  &.fade-up,
-  &.fade-out {
-    animation-fill-mode: forwards;
-    animation-delay: 0.13s;
+    @keyframes pulse {
+      0% {
+        transform: scale($start-scale);
+      }
+      50% {
+        transform: scale($end-scale);
+      }
+      100% {
+        transform: scale($start-scale);
+      }
+    }
   }
 }
 
-$max-opacity: 0.65;
-$min-opacity: 0.45;
-
-@keyframes pulse {
-  0% {
-    opacity: $min-opacity;
-  }
-  50% {
-    opacity: $max-opacity;
-  }
-  100% {
-    opacity: $min-opacity;
-  }
+div.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes move-up {

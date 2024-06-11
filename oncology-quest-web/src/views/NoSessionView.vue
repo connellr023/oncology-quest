@@ -59,7 +59,7 @@ div.button-container {
     @include fade-up-children(0.4s, 0.15s, 4, 0.5s);
   }
 
-  width: 100lvw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   text-align: center;
