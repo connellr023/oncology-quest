@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS users(
     id SERIAL PRIMARY KEY,
     username TEXT NOT NULL,
     name TEXT NOT NULL,
-    email TEXT NOT NULL,
     password_reset_timestamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     is_admin BOOLEAN NOT NULL,
     salt BIGINT NOT NULL,
