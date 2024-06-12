@@ -14,12 +14,10 @@ const props = defineProps<{
 const {
   username,
   name,
-  email,
   password,
   confirmedPassword,
   usernameError,
   nameError,
-  emailError,
   passwordError,
   confirmedPasswordError,
   serverError,
@@ -28,7 +26,7 @@ const {
 } = useRegister()
 
 const isStageOneErrors = computed(() => {
-  return (usernameError.value || nameError.value || emailError.value) ? true : false
+  return (usernameError.value || nameError.value) ? true : false
 })
 
 const isStageTwoErrors = computed(() => {
@@ -36,7 +34,7 @@ const isStageTwoErrors = computed(() => {
 })
 
 const canGotoStageTwo = computed(() => {
-  return (!isStageOneErrors.value && username.value && name.value && email.value) ? true : false
+  return (!isStageOneErrors.value && username.value && name.value) ? true : false
 })
 
 const handleSubmit = async () => {
@@ -77,13 +75,6 @@ const switchStage = () => {
         type="text"
         :error="nameError"
         v-model="name"
-      />
-      <LabeledFormInput
-        title="Email"
-        name="email"
-        type="email"
-        :error="emailError"
-        v-model="email"
       />
       <button :disabled="!canGotoStageTwo" class="form-button std" @click="switchStage">Next Step</button>
     </div>

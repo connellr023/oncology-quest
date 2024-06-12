@@ -3,13 +3,11 @@ import { API_ENDPOINT, isPasswordBanned } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidateName from "./validation/useValidateName"
-import useValidateEmail from "./validation/useValidateEmail"
 import useValidateConfirmedPassword from "./validation/useValidateConfirmedPassword"
 
 const useRegister = () => {
     const { username, usernameError } = useValidateUsername()
     const { name, nameError } = useValidateName()
-    const { email, emailError } = useValidateEmail()
     const {
         password,
         passwordError,
@@ -37,7 +35,6 @@ const useRegister = () => {
                     body: JSON.stringify({
                         username: username.value,
                         name: name.value,
-                        email: email.value,
                         password: password.value,
                     }),
                 })
@@ -69,8 +66,6 @@ const useRegister = () => {
         usernameError,
         name,
         nameError,
-        email,
-        emailError,
         password,
         passwordError,
         confirmedPassword,

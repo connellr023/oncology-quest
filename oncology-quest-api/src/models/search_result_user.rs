@@ -14,9 +14,9 @@ impl SearchResultUser {
         let users = sqlx::query_as!(
             ClientUser,
             r#"
-            SELECT users.id, users.username, users.name, users.email, users.is_admin, users.login_count
+            SELECT users.id, users.username, users.name, users.is_admin, users.login_count
             FROM users
-            WHERE (username ILIKE $1 OR name ILIKE $1 OR email ILIKE $1)
+            WHERE (username ILIKE $1 OR name ILIKE $1)
             AND is_admin = FALSE
             LIMIT $2;
             "#,

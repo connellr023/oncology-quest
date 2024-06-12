@@ -1,4 +1,4 @@
-use crate::utilities::parsable::{Email, Name, PlainTextPassword, Username};
+use crate::utilities::parsable::{Name, PlainTextPassword, Username};
 use chrono::{DateTime, Utc};
 use rand::{thread_rng, Rng};
 use sqlx::{FromRow, PgPool};
@@ -9,7 +9,6 @@ pub struct User {
     id: i32,
     username: Username,
     name: Name,
-    email: Email,
     is_admin: bool,
     salt: i64,
     password: String,
@@ -27,7 +26,6 @@ impl User {
     ///
     /// * `username` - The username of the user.
     /// * `name` - The name of the user.
-    /// * `email` - The email of the user.
     /// * `plain_text_password` - The plain text password of the user.
     /// * `is_admin` - A flag indicating whether the user is an admin or not.
     ///
@@ -35,7 +33,7 @@ impl User {
     ///
     /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
     /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
-    pub fn new(username: Username, name: Name, email: Email, plain_text_password: PlainTextPassword, is_admin: bool) -> anyhow::Result<Self> {
+    pub fn new(username: Username, name: Name, plain_text_password: PlainTextPassword, is_admin: bool) -> anyhow::Result<Self> {
         let salt = thread_rng().gen::<i64>();
         let password = Self::gen_password_hash(salt, plain_text_password.as_str())?;
 
@@ -43,7 +41,6 @@ impl User {
             id: -1,
             username,
             name,
-            email,
             password,
             salt,
             is_admin,
@@ -55,7 +52,7 @@ impl User {
         let result = sqlx::query_as!(
             User,
             r#"
-            SELECT id, username, name, email, is_admin, salt, password, login_count FROM users WHERE id = $1;
+            SELECT id, username, name, is_admin, salt, password, login_count FROM users WHERE id = $1;
             "#,
             user_id
         )
@@ -161,7 +158,7 @@ impl User {
             UPDATE users
             SET login_count = login_count + 1
             WHERE username = $1
-            RETURNING id, username, name, email, is_admin, salt, password, login_count;
+            RETURNING id, username, name, is_admin, salt, password, login_count;
             "#,
             username
         )
@@ -190,13 +187,12 @@ impl User {
     pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
         let row = sqlx::query!(
             r#"
-            INSERT INTO users (username, name, email, is_admin, salt, password)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO users (username, name, is_admin, salt, password)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING id
             "#,
             self.username.as_str(),
             self.name.as_str(),
-            self.email.as_str(),
             self.is_admin,
             self.salt,
             self.password.as_str()
@@ -213,10 +209,10 @@ impl User {
         let record = sqlx::query!(
             r#"
             SELECT
-            EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)
+            EXISTS(SELECT 1 FROM users WHERE username = $1)
             AS "exists!";
             "#,
-            self.username.as_str(), self.email.as_str()
+            self.username.as_str()
         )
         .fetch_one(pool)
         .await?;
@@ -293,10 +289,6 @@ impl User {
         &self.name
     }
 
-    pub fn email(&self) -> &Email {
-        &self.email
-    }
-
     pub fn is_admin(&self) -> bool {
         self.is_admin
     }
@@ -315,11 +307,10 @@ mod tests {
     fn test_new_user() {
         let username = Username::parse("test-user".to_string()).unwrap();
         let name = Name::parse("Test User".to_string()).unwrap();
-        let email = Email::parse("lol@test.com".to_string()).unwrap();
         let password = PlainTextPassword::parse("password".to_string()).unwrap();
         let is_admin = false;
 
-        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), is_admin).unwrap();
+        let user = User::new(username.clone(), name.clone(), password.clone(), is_admin).unwrap();
 
         assert_eq!(user.username, username);
         assert_eq!(user.name, name);
@@ -331,10 +322,9 @@ mod tests {
     fn test_validate_password() {
         let username = Username::parse("test-user".to_string()).unwrap();
         let name = Name::parse("Test User".to_string()).unwrap();
-        let email = Email::parse("lol@test.com".to_string()).unwrap();
         let plain_text_password = PlainTextPassword::parse("password".to_string()).unwrap();
 
-        let user = User::new(username, name, email, plain_text_password.clone(), false).unwrap();
+        let user = User::new(username, name, plain_text_password.clone(), false).unwrap();
 
         assert_eq!(user.validate_password(plain_text_password.as_str()), true);
     }
@@ -343,15 +333,13 @@ mod tests {
     fn test_from_user_to_client_user() {
         let username = Username::parse("test-user".to_string()).unwrap();
         let name = Name::parse("Test User".to_string()).unwrap();
-        let email = Email::parse("lol@test.com".to_string()).unwrap();
         let password = PlainTextPassword::parse("password".to_string()).unwrap();
 
-        let user = User::new(username.clone(), name.clone(), email.clone(), password.clone(), false).unwrap();
+        let user = User::new(username.clone(), name.clone(), password.clone(), false).unwrap();
         let client_user: ClientUser = user.into();
 
         assert_eq!(client_user.username, username);
         assert_eq!(client_user.name, name);
-        assert_eq!(client_user.email, email);
         assert_eq!(client_user.is_admin, false);
     }
 }

@@ -38,10 +38,6 @@ fn rand_password() -> String {
         .collect::<String>()
 }
 
-fn rand_email() -> String {
-    format!("{}@{}.com", rand_username(), rand_username())
-}
-
 fn format_timestamp(timestamp: DateTime<Utc>) -> String {
     timestamp.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()
 }
@@ -59,12 +55,11 @@ pub async fn session(client: &Client, task_cache_timestamp: Option<DateTime<Utc>
     Ok((response.status(), response.json().await.ok()))
 }
 
-pub async fn register(client: &Client, username: &str, name: &str, email: &str, password: &str) -> Result<StatusCode> {
+pub async fn register(client: &Client, username: &str, name: &str, password: &str) -> Result<StatusCode> {
     let response = client.post(endpoint!("/api/users/register"))
         .json(&json!({
             "username": username,
             "name": name,
-            "email": email,
             "password": password
         }))
         .send()
@@ -153,10 +148,9 @@ where
 {
     let username = rand_username();
     let name = "Test User";
-    let email = rand_email();
     let password = rand_password();
 
-    match register(client, username.as_str(), name, email.as_str(), password.as_str()).await {
+    match register(client, username.as_str(), name, password.as_str()).await {
         Ok(status) if status == StatusCode::CREATED => (),
         Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
         Err(error) => return Err(error),

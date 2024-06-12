@@ -48,7 +48,6 @@ macro_rules! parsable {
 
 parsable!(Username, USERNAME_REGEX);
 parsable!(Name, NAME_REGEX);
-parsable!(Email, EMAIL_REGEX);
 parsable!(PlainTextPassword, PASSWORD_REGEX);
 parsable!(Comment, COMMENT_REGEX);
 parsable!(EntryTitle, ENTRY_TITLE_REGEX);
@@ -78,18 +77,6 @@ mod tests {
     #[test]
     fn test_parse_name_invalid() {
         let result = Name::parse("John123".to_string());
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_parse_email_valid() {
-        let email = Email::parse("john@example.com".to_string()).unwrap();
-        assert_eq!(email.as_str(), "john@example.com");
-    }
-
-    #[test]
-    fn test_parse_email_invalid() {
-        let result = Email::parse("john@example".to_string());
         assert!(result.is_err());
     }
 

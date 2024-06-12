@@ -1,4 +1,4 @@
-use crate::utilities::parsable::{Username, Name, Email, PlainTextPassword};
+use crate::utilities::parsable::{Username, Name, PlainTextPassword};
 use crate::models::user::User;
 use crate::services::prelude::*;
 
@@ -6,7 +6,6 @@ use crate::services::prelude::*;
 struct RegisterUserQuery {
     pub username: Username,
     pub name: Name,
-    pub email: Email,
     pub password: PlainTextPassword
 }
 
@@ -17,7 +16,6 @@ pub(super) async fn register_user(pool: Data<PgPool>, register_user_query: Json<
     let mut user = match User::new(
         register_user_query.username,
         register_user_query.name,
-        register_user_query.email,
         register_user_query.password,
         false
     ) {

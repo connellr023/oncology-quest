@@ -5,7 +5,6 @@ export interface User {
     id: number,
     username: string,
     name: string,
-    email: string,
     isAdmin: boolean,
     loginCount: number
 }
