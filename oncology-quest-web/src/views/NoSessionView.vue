@@ -4,7 +4,7 @@ import { onMounted, ref } from "vue"
 import LoginForm from "../components/form/LoginForm.vue"
 import RegisterForm from "../components/form/RegisterForm.vue"
 import ResetPasswordForm from "../components/form/ResetPasswordForm.vue"
-import CreditLabel from "../components/CreditLabel.vue"
+import InfoLabel from "../components/InfoLabel.vue"
 
 enum Views {
   SELECT,
@@ -37,8 +37,11 @@ onMounted(() => {
 
 <template>
   <div class="container flex-wrapper">
-    <div v-if="view === Views.SELECT" :class="`button-container ${shouldAnimate ? 'animate' : ''}`">
-      <h1>Get started with <b><i>Oncology Quest</i></b> below.</h1>
+    <div v-if="view === Views.SELECT" :class="`content-container ${shouldAnimate ? 'animate' : ''}`">
+      <div class="greeting-container">
+        <h1>Welcome to <b><i>Oncology Quest</i></b>,</h1>
+        <p>the <i>open-source</i> aid for Medical Oncology Students.</p>
+      </div>
       <button @click="gotoLogin" class="std">Login</button>
       <button @click="setView(Views.REGISTER)" class="std">Register</button>
       <button @click="setView(Views.RESET_PASSWORD)" class="std">Reset Password</button>
@@ -46,7 +49,7 @@ onMounted(() => {
     <LoginForm :onBack="gotoSelect" v-else-if="view === Views.LOGIN" />
     <RegisterForm :onBack="gotoSelect" :onRegister="gotoLogin" v-else-if="view === Views.REGISTER" />
     <ResetPasswordForm :onBack="gotoSelect" :onReset="gotoLogin" v-else-if="view === Views.RESET_PASSWORD" />
-    <CreditLabel />
+    <InfoLabel />
   </div>
 </template>
 
@@ -54,7 +57,7 @@ onMounted(() => {
 @import "../styles/utilities.scss";
 @import "../styles/variables.scss";
 
-div.button-container {
+div.content-container {
   &.animate {
     @include fade-up-children(0.4s, 0.15s, 4, 0.5s);
   }
@@ -73,8 +76,19 @@ div.button-container {
     padding: 15px
   }
 
-  h1 {
-    margin-bottom: 30px;
+  div.greeting-container {
+    margin-bottom: 17px;
+    margin-top: -15px;
+
+    p {
+      $side-padding: 20px;
+
+      padding-left: $side-padding;
+      padding-right: $side-padding;
+      margin-top: -5px;
+      font-size: clamp(18px, 1.3lvw, 23px);
+      white-space: pre-wrap;
+    }
   }
 }
 

@@ -280,8 +280,16 @@ input {
 }
 
 h1 {
+  $side-padding: 15px;
+
+  padding-left: $side-padding;
+  padding-right: $side-padding;
   font-weight: normal;
   font-size: clamp(25px, 2.4lvw, 32px);
+
+  &.section-heading {
+    padding-left: 0;
+  }
 }
 
 form,

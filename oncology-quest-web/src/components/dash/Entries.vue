@@ -84,7 +84,7 @@ const {
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
   <div class="entries-container" v-if="selectedRotation" :key="selectedRotation.id">
-    <h1>Tasks</h1>
+    <h1 class="section-heading">Tasks</h1>
     <div :class="`supertask focusable ${visibility[computeKey(supertaskIndex)] ? 'focused': ''}`" v-for="(supertask, supertaskIndex) in entries[selectedRotation.id]" :key="computeKey(supertaskIndex)">
       <ProgressableEntryHeading
         :progress="calculateSupertaskProgress(selectedRotation!.id, supertaskIndex)"
