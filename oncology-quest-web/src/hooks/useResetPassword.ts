@@ -3,11 +3,13 @@ import { API_ENDPOINT } from "../utilities"
 
 import useValidateConfirmedPassword from "./validation/useValidateConfirmedPassword"
 import useValidateUsername from "./validation/useValidateUsername"
+import useValidateResetToken from "./validation/useValidateResetToken"
 
 const useResetPassword = () => {
     const resetError = ref("")
     const loading = ref(false)
 
+    const { token, tokenError } = useValidateResetToken()
     const { username, usernameError } = useValidateUsername()
     const {
         confirmedPassword,
@@ -28,7 +30,8 @@ const useResetPassword = () => {
             },
             body: JSON.stringify({
                 username: username.value,
-                password: password.value
+                password: password.value,
+                resetToken: token.value
             })
         })
 
@@ -40,7 +43,7 @@ const useResetPassword = () => {
         else {
             switch (response.status) {
                 case 403:
-                    resetError.value = "That didn't work. Check your credentials and that you have a reset available."
+                    resetError.value = "That didn't work. Check your credentials and ensure you have a valid reset token."
                     break
                 case 500:
                     resetError.value = "Internal server error."
@@ -60,6 +63,8 @@ const useResetPassword = () => {
         requestResetPassword,
         username,
         usernameError,
+        token,
+        tokenError,
         resetError,
         loading
     }

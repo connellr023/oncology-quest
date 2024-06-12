@@ -29,6 +29,7 @@ const query = ref("")
 const deleteUserError = ref("")
 const allowResetError = ref("")
 const allowResetExpiryDate = ref("")
+const resetToken = ref("")
 
 const isCollapsed = ref(true)
 const showUserOptions = ref(false)
@@ -94,7 +95,8 @@ const onAllowResetClicked = async () => {
     allowResetError.value = "Failed to enable password reset."
   }
   else {
-    allowResetExpiryDate.value = result.toLocaleTimeString()
+    allowResetExpiryDate.value = result.passwordResetTimestamp.toLocaleTimeString()
+    resetToken.value = result.resetToken
   }
 }
 
@@ -165,11 +167,12 @@ onUnmounted(() => {
   />
   <MessageModal
     title="Allow Password Reset"
-    :message="`${selectedUser?.user.name} has until ${allowResetExpiryDate} to reset their password.`"
     :error="allowResetError"
     :visible="showAllowResetModal"
     @change="showAllowResetModal = $event"
-  />
+  >
+    <template #message><b>{{ selectedUser?.user.name }}</b> has until <b>{{ allowResetExpiryDate }}</b> to reset their password with the following token: <b>{{ resetToken }}</b>. Make sure to provide this information to the user.</template>
+  </MessageModal>
 </template>
 
 <style scoped lang="scss">

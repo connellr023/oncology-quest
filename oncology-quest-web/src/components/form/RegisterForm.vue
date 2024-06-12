@@ -4,7 +4,7 @@ import { computed, ref } from "vue"
 import useRegister from "../../hooks/useRegister"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
-import LoadingButton from "../LoadingButton.vue"
+import TwoStageForm from "./TwoStageForm.vue"
 
 const props = defineProps<{
   onRegister: () => void,
@@ -48,20 +48,21 @@ const handleSubmit = async () => {
 }
 
 const inStageOne = ref(true)
-
-const switchStage = () => {
-  inStageOne.value = !inStageOne.value
-}
 </script>
 
 <template>
-  <h1>Register a <b><i>Oncology Quest</i></b> account below.</h1>
-  <div class="stage-indicator-container">
-    <div :class="`${inStageOne ? 'active' : ''}`" />
-    <div :class="`${!inStageOne ? 'active' : ''}`" />
-  </div>
-  <form @submit.prevent="handleSubmit" @keydown.enter.prevent>
-    <div class="stage-container" v-show="inStageOne">
+  <TwoStageForm
+    submitButtonText="Register"
+    :error="serverError"
+    :loading="loading"
+    :onBack="onBack"
+    :handleSubmit="handleSubmit"
+    :inStageOne="inStageOne"
+    :canGotoStageTwo="canGotoStageTwo"
+    @update-stage="inStageOne = $event"
+  >
+    <template #title>Register a <b><i>Oncology Quest</i></b> account below.</template>
+    <template #stage-one>
       <LabeledFormInput
         title="Username"
         name="username"
@@ -76,9 +77,8 @@ const switchStage = () => {
         :error="nameError"
         v-model="name"
       />
-      <button :disabled="!canGotoStageTwo" class="form-button std" @click="switchStage">Next Step</button>
-    </div>
-    <div class="stage-container" v-show="!inStageOne">
+    </template>
+    <template #stage-two>
       <LabeledFormInput
         title="Password"
         name="password"
@@ -93,44 +93,6 @@ const switchStage = () => {
         :error="confirmedPasswordError"
         v-model="confirmedPassword"
       />
-      <div>
-        <div class="error-label" v-if="serverError">{{ serverError }}</div>
-      </div>
-      <LoadingButton :loading="loading" text="Register" />
-      <button class="prev std" @click="switchStage">Previous Step</button>
-    </div>
-    <button class="back" @click="onBack">Back</button>
-  </form>
+    </template>
+  </TwoStageForm>
 </template>
-
-<style scoped lang="scss">
-div.stage-indicator-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 5px;
-  margin-bottom: 15px;
-
-  div {
-    $size: 12px;
-
-    width: $size;
-    height: $size;
-    border-radius: 50%;
-    background-color: #ffffff;
-    opacity: 0.7;
-    margin: 0 5px;
-    transition: all 0.3s ease;
-  }
-
-  div.active {
-    opacity: 1;
-    border-radius: 8px;
-    width: 45px;
-  }
-}
-
-button.prev {
-  margin-top: -4px;
-  margin-bottom: 7px;
-}
-</style>

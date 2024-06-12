@@ -13,12 +13,12 @@ defineProps<{
 </script>
 
 <template>
- <div class="modal" v-if="visible">
+ <div class="modal" v-if="visible" @click.stop>
     <div class="modal-content">
       <h3>{{ title }}</h3>
       <p>{{ description }}</p>
       <p v-if="error" class="error">{{ error }}</p>
-      <div class="modal-buttons" @click.stop> 
+      <div class="modal-buttons"> 
         <button class="bubble green" @click="onConfirm">
           <CheckIcon />
           Confirm
