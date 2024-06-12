@@ -51,6 +51,7 @@ parsable!(Name, NAME_REGEX);
 parsable!(PlainTextPassword, PASSWORD_REGEX);
 parsable!(Comment, COMMENT_REGEX);
 parsable!(EntryTitle, ENTRY_TITLE_REGEX);
+parsable!(ResetToken, RESET_TOKEN_REGEX);
 
 #[cfg(test)]
 mod tests {
@@ -120,5 +121,17 @@ mod tests {
     fn test_whitespace_trim() {
         let username = Username::parse(" john_doe ".to_string()).unwrap();
         assert_eq!(username.as_str(), "john_doe");
+    }
+
+    #[test]
+    fn test_parse_reset_token_valid() {
+        let reset_token = ResetToken::parse("abcd".to_string()).unwrap();
+        assert_eq!(reset_token.as_str(), "abcd");
+    }
+
+    #[test]
+    fn test_parse_reset_token_invalid() {
+        let result = ResetToken::parse("abc".to_string());
+        assert!(result.is_err());
     }
 }

@@ -248,16 +248,20 @@ async fn test_reset_password() -> Result<()> {
     let status = logout(&client).await?;
     assert_eq!(status, StatusCode::OK);
 
+    let mut token = None;
+
     // Give the dummy user ability to reset their password as admin
     try_admin_authorized_test(&client, || async {
-        let status = allow_reset_password(&client, dummy_user_id).await?;
-        assert_eq!(status, StatusCode::OK);
+        let result = allow_reset_password(&client, dummy_user_id).await?;
+        assert_eq!(result.0, StatusCode::OK);
+
+        token = Some(result.1.unwrap().reset_token);
 
         Ok(())
     }).await?;
 
     // Reset the dummy user's password
-    let status = reset_password(&client, USERNAME, NEW_PASSWORD).await?;
+    let status = reset_password(&client, USERNAME, NEW_PASSWORD, token.unwrap().as_str()).await?;
     assert_eq!(status, StatusCode::OK);
 
     // Ensure old password is rejected
@@ -285,9 +289,8 @@ async fn test_admin_cannot_delete_admin() -> Result<()> {
 
         let admin_id = json.unwrap().user.id;
 
-        // Query will go through, but it won't actually delete the admin
         let status = delete_user(&client, admin_id).await?;
-        assert_eq!(status, StatusCode::OK);
+        assert_eq!(status, StatusCode::FORBIDDEN);
 
         // Assert the acccount still exists
         let (status, _) = session(&client, None).await?;

@@ -12,7 +12,7 @@ use reqwest::Client;
 use reqwest_cookie_store::CookieStoreMutex;
 use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
-use responses::{CreateEntryResponse, CreateRotationResponse, CreateUserTaskResponse, EntryStructure, SearchResultUser, SearchUserResponse, UserSessionResponse};
+use responses::{AllowResetPasswordResponse, CreateEntryResponse, CreateRotationResponse, CreateUserTaskResponse, EntryStructure, SearchResultUser, SearchUserResponse, UserSessionResponse};
 use serde_json::json;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -120,11 +120,12 @@ pub async fn delete_user(client: &Client, user_id: i32) -> Result<StatusCode> {
     Ok(response.status())
 }
 
-pub async fn reset_password(client: &Client, username: &str, password: &str) -> Result<StatusCode> {
+pub async fn reset_password(client: &Client, username: &str, password: &str, token: &str) -> Result<StatusCode> {
     let response = client.post(endpoint!("/api/users/reset-password"))
         .json(&json!({
             "username": username,
-            "password": password
+            "password": password,
+            "resetToken": token
         }))
         .send()
         .await?;
@@ -132,13 +133,13 @@ pub async fn reset_password(client: &Client, username: &str, password: &str) -> 
     Ok(response.status())
 }
 
-pub async fn allow_reset_password(client: &Client, user_id: i32) -> Result<StatusCode> {
+pub async fn allow_reset_password(client: &Client, user_id: i32) -> Result<(StatusCode, Option<AllowResetPasswordResponse>)> {
     let response = client.patch(endpoint!("/api/users/allow-reset-password"))
         .json(&json!({ "userId": user_id }))
         .send()
         .await?;
 
-    Ok(response.status())
+    Ok((response.status(), response.json().await.ok()))
 }
 
 pub async fn try_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>

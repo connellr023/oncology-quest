@@ -16,9 +16,13 @@ struct DeleteSelfQuery {
 pub(super) async fn delete_other_user(session: Session, pool: Data<PgPool>, admin_delete_user_query: Json<AdminDeleteUserQuery>) -> impl Responder {
     auth_admin_session!(user_id, session, pool);
 
-    if User::delete(&pool, admin_delete_user_query.user_id, false).await.is_err() {
-        return HttpResponse::InternalServerError().finish();
-    }
+    match User::delete(&pool, admin_delete_user_query.user_id, false).await {
+        Ok(success) => match success {
+            true => return HttpResponse::Ok().finish(),
+            false => return HttpResponse::Forbidden().finish()
+        },
+        Err(_) => HttpResponse::InternalServerError().finish()
+    };
 
     HttpResponse::Ok().finish()
 }
@@ -36,9 +40,13 @@ pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_sel
         return HttpResponse::Unauthorized().finish();
     }
 
-    if User::delete(&pool, user_id, true).await.is_err() {
-        return HttpResponse::InternalServerError().finish();
-    }
+    match User::delete(&pool, user_id, true).await {
+        Ok(success) => match success {
+            true => return HttpResponse::Ok().finish(),
+            false => return HttpResponse::Forbidden().finish()
+        },
+        Err(_) => HttpResponse::InternalServerError().finish()
+    };
 
     session.remove("uid");
 

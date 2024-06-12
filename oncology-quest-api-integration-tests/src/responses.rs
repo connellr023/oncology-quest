@@ -100,3 +100,10 @@ pub struct CreateEntryResponse {
 pub struct CreateUserTaskResponse {
     pub id: i32
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AllowResetPasswordResponse {
+    pub password_reset_timestamp: DateTime<Utc>,
+    pub reset_token: String
+}

@@ -1,8 +1,10 @@
-use crate::utilities::parsable::{Name, PlainTextPassword, Username};
+use crate::utilities::parsable::{Name, PlainTextPassword, ResetToken, Username};
 use chrono::{DateTime, Utc};
-use rand::{thread_rng, Rng};
+use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sqlx::{FromRow, PgPool};
 use anyhow::anyhow;
+
+const PASSWORD_RESET_TOKEN_LENGTH: usize = 4;
 
 #[derive(Debug, FromRow, Clone)]
 pub struct User {
@@ -12,11 +14,7 @@ pub struct User {
     is_admin: bool,
     salt: i64,
     password: String,
-    login_count: i32,
-    
-    // These fields are used in the database but not in the code.
-    // password_reset_timestamp: DateTime<Utc>,
-    // last_task_update: DateTime<Utc>
+    login_count: i32
 }
 
 impl User {
@@ -48,11 +46,23 @@ impl User {
         })
     }
 
+    /// Fetches a user from the database by their ID.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `user_id` - The ID of the user to fetch.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns the user if found, an error otherwise.
     pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<Self> {
         let result = sqlx::query_as!(
             User,
             r#"
-            SELECT id, username, name, is_admin, salt, password, login_count FROM users WHERE id = $1;
+            SELECT id, username, name, is_admin, salt, password, login_count
+            FROM users
+            WHERE id = $1;
             "#,
             user_id
         )
@@ -62,43 +72,80 @@ impl User {
         Ok(result)
     }
 
-    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> anyhow::Result<DateTime<Utc>> {
+    #[inline(always)]
+    fn generate_reset_token() -> ResetToken {
+        let token = thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(PASSWORD_RESET_TOKEN_LENGTH)
+            .map(char::from)
+            .collect();
+
+        ResetToken::parse(token).unwrap()
+    }
+
+    /// Allows a user to reset their password by generating a reset token and setting the expiration time.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `user_id` - The ID of the user to allow password reset for.
+    /// * `expiration_hours` - The number of hours the reset token will be valid for.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns a tuple containing the expiration time and the reset token if successful, an error otherwise.
+    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> anyhow::Result<(DateTime<Utc>, ResetToken)> {
+        let token = Self::generate_reset_token();
         let row = sqlx::query!(
             r#"
             UPDATE users
-            SET password_reset_timestamp = NOW() + make_interval(hours => $1)
-            WHERE id = $2
+            SET password_reset_timestamp = NOW() + make_interval(hours => $1), password_reset_token = $2
+            WHERE id = $3
             RETURNING password_reset_timestamp;
             "#,
             expiration_hours,
+            token.as_str(),
             user_id
         )
         .fetch_one(pool)
         .await?;
 
-        Ok(row.password_reset_timestamp)
+        Ok((row.password_reset_timestamp, token))
     }
 
-    pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<()> {
+    /// Updates the user's password if the reset token is valid and has not expired.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `username` - The username of the user to update the password for.
+    /// * `plain_text_password` - The new plain text password to set.
+    /// * `reset_token` - The reset token to validate.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns a result containing `true` if the password was updated, `false` otherwise and an error if the operation failed.
+    pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str, reset_token: &str) -> anyhow::Result<bool> {
         let record = match sqlx::query!(
             r#"
             SELECT password, salt
             FROM users
-            WHERE username = $1 AND password_reset_timestamp > NOW();
+            WHERE username = $1 AND password_reset_timestamp > NOW() AND password_reset_token = $2;
             "#,
-            username
+            username,
+            reset_token
         )
         .fetch_optional(pool)
         .await? {
             Some(record) => record,
-            None => return Err(anyhow!("User does not exist or cannot reset password"))
+            None => return Ok(false)
         };
 
         let new_hashed_password = Self::gen_password_hash(record.salt, plain_text_password)?;
         let rows_affected = sqlx::query!(
             r#"
             UPDATE users
-            SET password = $1, password_reset_timestamp = NOW()
+            SET password = $1, password_reset_timestamp = NOW(), password_reset_token = NULL
             WHERE username = $2;
             "#,
             new_hashed_password, username
@@ -108,10 +155,10 @@ impl User {
         .rows_affected();
 
         if rows_affected == 0 {
-            return Err(anyhow::anyhow!("No user found with the given username, or the password was not updated"));
+            return Ok(false)
         }
 
-        Ok(())
+        Ok(true)
     }
 
     /// Checks if a given user is an admin.
@@ -205,6 +252,15 @@ impl User {
         Ok(())
     }
 
+    /// Checks if this user exists in the database.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns `true` if the user exists, `false` otherwise.
     pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"
@@ -220,15 +276,27 @@ impl User {
         Ok(record.exists)
     }
 
-    pub async fn delete(pool: &PgPool, user_id: i32, include_admins: bool) -> anyhow::Result<()> {
+    /// Deletes a user from the database by their ID.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `user_id` - The ID of the user to delete.
+    /// * `include_admins` - A flag indicating whether to allow deletion of admin users.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns a result containing `true` if the user was deleted, `false` otherwise and an error if the operation failed.
+    pub async fn delete(pool: &PgPool, user_id: i32, include_admins: bool) -> anyhow::Result<bool> {
         let mut transaction = pool.begin().await?;
 
-        sqlx::query!(
+        let rows_affected_tasks = sqlx::query!(
             "DELETE FROM user_tasks WHERE user_id = $1;",
             user_id
         )
         .execute(&mut *transaction)
-        .await?;
+        .await?
+        .rows_affected();
 
         let query = match include_admins {
             true => sqlx::query!(
@@ -241,13 +309,14 @@ impl User {
             )
         };
 
-        query
+        let rows_affected_users = query
             .execute(&mut *transaction)
-            .await?;
+            .await?
+            .rows_affected();
 
         transaction.commit().await?;
     
-        Ok(())
+        Ok(rows_affected_users > 0 || rows_affected_tasks > 0)
     }
 
     /// Generates a password hash using the provided salt and password.
