@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
+import { Ref, computed, nextTick, reactive, ref, watch } from "vue"
 
 import useResetPassword from "../../hooks/useResetPassword"
 
@@ -26,6 +26,8 @@ const {
 } = useResetPassword()
 
 const inStageOne = ref(true)
+const tokenInputs = reactive(["", "", "", ""])
+const tokenInputFields = reactive<Ref<[HTMLInputElement] | null>[]>([ref(null), ref(null), ref(null), ref(null)])
 
 const isStageOneError = computed(() => {
   return (usernameError.value || passwordError.value || confirmedPasswordError.value) ? true : false
@@ -35,6 +37,14 @@ const canGotoStageTwo = computed(() => {
   return (!isStageOneError.value && username.value && password.value && confirmedPassword.value) ? true : false
 })
 
+const joinedTokenInputs = computed(() => {
+  return tokenInputs.join("")
+})
+
+watch(() => joinedTokenInputs.value, (newVal) => {
+  token.value = newVal
+})
+
 const handleSubmit = async () => {
   if (!tokenError.value) {
     await requestResetPassword()
@@ -42,6 +52,18 @@ const handleSubmit = async () => {
 
   if (!resetError.value) {
     props.onReset()
+  }
+}
+
+const gotoNextInputField = (index: number) => {
+  if (index < tokenInputFields.length - 1) {
+    nextTick(() => {
+      const field = tokenInputFields[index + 1].value
+
+      if (field) {
+        field[0].focus()
+      }
+    })
   }
 }
 </script>
@@ -82,13 +104,38 @@ const handleSubmit = async () => {
       />
     </template>
     <template #stage-two>
-      <LabeledFormInput
-        title="Token"
-        name="password-reset-token"
-        type="text"
-        :error="tokenError"
-        v-model="token"
-      />
+      <div class="token-input-container">
+        <input
+          v-for="(field, index) in tokenInputFields"
+          :class="`${tokenError ? 'error' : ''}`"
+          :key="index"
+          :ref="field"
+          v-model="tokenInputs[index]"
+          maxlength="1"
+          type="text"
+          @input="gotoNextInputField(index)"
+        />
+      </div>
+      <span v-if="tokenError" class="error-label">{{ tokenError }}</span>
     </template>
   </TwoStageForm>
 </template>
+
+<style scoped lang="scss">
+div.token-input-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+  gap: 15px;
+
+  input {
+    $size: 30px;
+
+    border-radius: 12px;
+    width: $size;
+    height: $size;
+    font-size: $size;
+    text-align: center;
+  }
+}
+</style>

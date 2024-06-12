@@ -172,7 +172,7 @@ div.topbar-container {
 
 div.name {
   margin-left: 10px;
-  font-size: 1.1em;
+  font-size: clamp(15px, 1.2lvw, 18px);
   flex-grow: 1;
 }
 

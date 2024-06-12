@@ -10,7 +10,7 @@ defineProps<{ initials: string }>()
 @import "../styles/variables.scss";
 
 div.icon {
-  $size: 33px;
+  $size: clamp(32px, 3lvw, 37px);
 
   user-select: none;
   width: $size;
