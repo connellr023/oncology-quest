@@ -14,7 +14,7 @@
 
 <br />
 
-`.env` file sample
+`.env` file samplef for backend
 ```
 HOST_IP=...
 HOST_PORT=...
