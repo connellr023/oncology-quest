@@ -16,7 +16,7 @@
 
 #### Building API for production
 ```
-RUSTFLAGS="--cfg production" cargo build --release
+build --release --features production
 ```
 
 <br />

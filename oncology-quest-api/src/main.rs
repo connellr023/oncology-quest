@@ -18,7 +18,7 @@ use sqlx::PgPool;
 const SESSION_COOKIE_NAME: &str = "oncology-quest-session";
 const SESSION_COOKIE_DURATION: i64 = 6;
 
-#[cfg(production)]
+#[cfg(feature = "production")]
 mod prod_config {
     use actix_web::http::header::{self, HeaderName};
 
@@ -34,7 +34,6 @@ async fn main() -> io::Result<()> {
 
     // Load environment variables.
     let env = Environment::new().expect("Failed to read environment variables");
-    let env_clone = env.clone();
 
     // Setup Postgres connection pool
     let pool = PgPool::connect(env.database_url())
@@ -50,12 +49,13 @@ async fn main() -> io::Result<()> {
 
     // Start HTTP server.
     HttpServer::new(move || {
+        
         // Initialize the application.
         App::new()
             .app_data(Data::new(pool.clone()))
             .configure(config)
             .wrap(session_middleware(&key))
-            .wrap(cors(env_clone.origin()))
+            .wrap(cors())
     })
     .bind(format!("{}:{}",
         env.host_ip(),
@@ -65,7 +65,7 @@ async fn main() -> io::Result<()> {
     .await
 }
 
-#[cfg(not(production))]
+#[cfg(not(feature = "production"))]
 fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     SessionMiddleware::builder(
         CookieSessionStore::default(),
@@ -82,7 +82,7 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     .build()
 }
 
-#[cfg(production)]
+#[cfg(feature = "production")]
 fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     SessionMiddleware::builder(
         CookieSessionStore::default(),
@@ -99,17 +99,16 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     .build()
 }
 
-#[cfg(not(production))]
-fn cors(allowed_origin: &str) -> Cors {
+#[cfg(not(feature = "production"))]
+fn cors() -> Cors {
     Cors::permissive()
-        .allowed_origin(allowed_origin)
         .supports_credentials()
 }
 
-#[cfg(production)]
-fn cors(allowed_origin: &str) -> Cors {
+#[cfg(feature = "production")]
+fn cors() -> Cors {
     Cors::default()
-        .allowed_origin(allowed_origin)
+        .allow_any_origin()
         .allowed_methods(prod_config::ALLOWED_METHODS)
         .allowed_headers(prod_config::ALLOWED_HEADERS)
         .allowed_header(prod_config::ALLOWED_HEADER)
