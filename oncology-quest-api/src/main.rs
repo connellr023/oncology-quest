@@ -9,7 +9,7 @@ use rand::{thread_rng, RngCore};
 use utilities::environment::Environment;
 use actix_web::{cookie::{time::Duration, Key, SameSite}, web::Data, App, HttpServer};
 use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
-use std::{io, sync::Arc};
+use std::io;
 use dotenv::dotenv;
 use services::config::config;
 use actix_cors::Cors;
@@ -33,8 +33,8 @@ async fn main() -> io::Result<()> {
     dotenv().ok();
 
     // Load environment variables.
-    let env = Arc::new(Environment::new().expect("Failed to read environment variables"));
-    let env_clone = Arc::clone(&env);
+    let env = Environment::new().expect("Failed to read environment variables");
+    let env_clone = env.clone();
 
     // Setup Postgres connection pool
     let pool = PgPool::connect(env.database_url())

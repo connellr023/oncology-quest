@@ -1,9 +1,16 @@
 FROM fedora:35
 
+# Set the environment variables
+ENV HOST_IP=0.0.0.0
+ENV HOST_PORT=80
+
 WORKDIR /api-prod
 
 # Copy the compiled binary
 COPY ./target/release/oncology-quest-api /api-prod/api
+
+# Expose the port
+EXPOSE 80
 
 # Run the binary
 CMD ["./api"]
