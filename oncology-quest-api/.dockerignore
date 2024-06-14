@@ -1,7 +1,5 @@
 .env
 .vscode/
-target/
-rundocker.sh
 
 # Editor directories and files
 **/.vscode/

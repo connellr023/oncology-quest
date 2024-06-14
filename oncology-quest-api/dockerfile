@@ -1,20 +1,9 @@
-# Container to be deployed on Amazon ECS
-FROM rust:1.78 as builder
+FROM fedora:35
 
-WORKDIR /usr/src/oncology-quest
+WORKDIR /api-prod
 
-# Copy everything from the current directory to the container
-COPY . .
-
-# Install the required dependencies
-RUN cargo install --path .
-
-# Setup second stage
-FROM debian:buster-slim
-RUN apt-get update && apt-get install -y libssl-dev && rm -rf /var/lib/apt/lists/*
-
-# Copy the built binary from the builder stage
-COPY --from=builder /usr/local/cargo/bin/oncology-quest /usr/local/bin/oncology-quest
+# Copy the compiled binary
+COPY ./target/release/oncology-quest-api /api-prod/api
 
 # Run the binary
-CMD ["oncology-quest"]
+CMD ["./api"]

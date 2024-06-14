@@ -14,6 +14,13 @@
 
 <br />
 
+#### Building API for production
+```
+RUSTFLAGS="--cfg production" cargo build --release
+```
+
+<br />
+
 `.env` file samplef for backend
 ```
 HOST_IP=...
