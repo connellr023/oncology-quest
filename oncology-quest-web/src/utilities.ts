@@ -1,4 +1,5 @@
-export const API_ENDPOINT = import.meta.env.DEV ? "http://127.0.0.1:8080" : "http://oncology-quest-namespace:8080"
+// In production, the API endpoint is the same origin of the current page due to the load balancer
+export const API_ENDPOINT = import.meta.env.DEV ? "http://127.0.0.1:8080" : window.location.origin
 
 export const USERNAME_REGEX = /^[a-zA-Z0-9\-\_\.]{1,25}$/
 export const NAME_REGEX = /^[a-zA-Z\s]{1,35}$/

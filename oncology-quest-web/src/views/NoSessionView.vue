@@ -40,7 +40,7 @@ onMounted(() => {
     <div v-if="view === Views.SELECT" :class="`content-container ${shouldAnimate ? 'animate' : ''}`">
       <div class="greeting-container">
         <h1>Welcome to <b><i>Oncology Quest</i></b>,</h1>
-        <p>the <i>open-source</i> aid for Medical Oncology Students.</p>
+        <p>an aid for Medical Oncology Trainees</p>
       </div>
       <button @click="gotoLogin" class="std">Login</button>
       <button @click="setView(Views.REGISTER)" class="std">Register</button>

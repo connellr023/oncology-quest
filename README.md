@@ -1,5 +1,5 @@
 # $\text{Oncology Quest}$
-> An application to aid Medical Oncology students.
+> An application to aid Medical Oncology Trainees.
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Actix](https://img.shields.io/badge/actix-%23ffffff.svg?style=for-the-badge&logo=actix&logoColor=black)

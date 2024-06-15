@@ -2,7 +2,7 @@
   <div>
     <span>&copy; <b><a target="_blank" href="https://github.com/connellr023">Connell Reffo</a></b> 2024</span>
     <span class="divider">&verbar;</span>
-    <span>Found an issue? Report it to the project repository <b><a href="https://github.com/connellr023/oncology-quest" target="_blank">here</a></b>.</span>
+    <span>Found an issue? Report it to the project repository <b><a href="https://github.com/connellr023/oncology-quest" target="_blank">here</a></b></span>
   </div>
 </template>
 
