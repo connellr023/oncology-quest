@@ -5,7 +5,7 @@ export const USERNAME_REGEX = /^[a-zA-Z0-9\-\_\.]{1,25}$/
 export const NAME_REGEX = /^[a-zA-Z\s]{1,35}$/
 export const PASSWORD_REGEX = /^.{8,200}$/
 export const COMMENT_REGEX = /^[a-zA-Z0-9\s.,!?'"()-]{0,150}$/
-export const ENTRY_TITLE_REGEX = /^[a-zA-Z0-9+\-/()\s]{1,20}$/
+export const ENTRY_TITLE_REGEX = /^[a-zA-Z0-9+\-/()\s]{1,100}$/
 export const RESET_TOKEN_REGEX = /^[a-zA-Z0-9]{4}$/
 
 const BANNED_PASSWORD_PATTERNS = [

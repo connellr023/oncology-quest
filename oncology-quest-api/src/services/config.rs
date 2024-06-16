@@ -3,23 +3,19 @@ use actix_web::web::{scope, ServiceConfig};
 use actix_governor::{governor::{clock::QuantaInstant, middleware::NoOpMiddleware}, Governor, GovernorConfigBuilder, PeerIpKeyExtractor};
 
 fn governor(per_second: u64, burst_size: u32) -> Governor<PeerIpKeyExtractor, NoOpMiddleware<QuantaInstant>> {
-    if cfg!(feature = "production") {
-        let cfg = GovernorConfigBuilder::default()
+    let cfg = match cfg!(feature = "production") {
+        true => GovernorConfigBuilder::default()
             .per_second(per_second)
             .burst_size(burst_size)
             .finish()
-            .unwrap();
+            .unwrap(),
+        false => GovernorConfigBuilder::default()
+            .permissive(true)
+            .finish()
+            .unwrap()
+    };
     
-        Governor::new(&cfg)
-    }
-    else {
-        Governor::new(
-            &GovernorConfigBuilder::default()
-                .permissive(true)
-                .finish()
-                .unwrap()
-        )
-    }
+    Governor::new(&cfg)
 }
 
 /// Configures the services for the application.

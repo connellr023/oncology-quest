@@ -11,28 +11,60 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/connellr023/oncology-quest/ci.yml?style=for-the-badge&logo=docker)
 
+<br />
+
+#### Features
+ - Straightforward user registration and authentication
+ - Management dashboard for administrative users
+ - Responsive and dark themed front end user interface
+ - Client side caching in browser session storage of frequently required data that is possibly large
+    - Rotation entry data
+    - User task data
+
+<br />
+
+#### Security Measures
+ - Role based authentication for admins and regular users
+ - Password hashing with **BCRYPT** combined with 64-bit integer nonce used as a **salt**
+ - Simple rate limiter on sensitive **API** routes
+ - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
+
+<br />
+
+#### API Integration and Penetration Testing
+ - There is a seperate Rust crate in this repository that handles integration testing for the **API** endpoint of this web app
+
+<br />
+
+#### Deployment Details
+ - This web app is deployed for users on **AWS**
+ - Chosen service is **ECS Fargate** for easy container orchestration
+    - Currently **1** container running a **NGINX** server to handle frontend static file requests
+    - Currently **1** container running backend **API** services to handle **CRUD** related requests
+    - Currently **1** **PostgreSQL** database instance running on **RDS**
+- Additionally, an **Application Load Balancer** as well as **Route 53 DNS** services are employed to route users between the **frontend** and **API** container under the same domain name
 
 <br />
 
 #### Building API for production
+```bash
+cargo build --release --features production
 ```
-build --release --features production
-```
+When building for production, it is essential to enable the *production* feature as that will enable the specialized **cookie** and **CORS** policies as well as the **rate limiter**.
 
 <br />
 
-`.env` file samplef for backend
-```
-HOST_IP=...
-HOST_PORT=...
+#### Backend Development Environment Variables
+`.env` file sample for backend
+```ini
+HOST_IP=127.0.0.1
+HOST_PORT=8080
 DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
 ```
 
-<!-- <br />
-<br /> -->
+<br />
+<br />
 
-<!-- <div align="center">
-    <img width="70px" src="https://raw.githubusercontent.com/connellr023/bq/d8a84c0508f088b5ef3c4723a58fb77ebfd12fd7/bq-web/public/favicon.svg?token=AN3EVKN6QOAN7N6AT3BA34LGLPXY2" />
-    <br />
-    Developed and Tested by <b>Connell Reffo</b>.
-</div> -->
+<div align="center">
+    Developed and tested by <b>Connell Reffo</b> in 2024.
+</div>
