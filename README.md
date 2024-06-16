@@ -28,11 +28,20 @@
  - Password hashing with **BCRYPT** combined with 64-bit integer nonce used as a **salt**
  - Simple rate limiter on sensitive **API** routes
  - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
+ - **REGEX** patterns that filter every user input to prevent **XSS** attacks as well as **SQL** injection but the backend already uses prepared statements anyway
 
 <br />
 
 #### API Integration and Penetration Testing
  - There is a seperate Rust crate in this repository that handles integration testing for the **API** endpoint of this web app
+ - The integration tests send automated requests to the **API** and assert the expected responses (as if to simulate a real user)
+ - These tests are executed by orchestrating **3** containers via **Docker Compose**
+    - Database container running a **PostgreSQL** instance
+        - This serves as a disposable database for pure testing purposes
+        - It is easily instantiated and destroyed since it is running in a container
+    - Endpoint container running an instance of the backend server
+    - Penetration/Integration container
+        - This is the container that sends requests to the endpoint
 
 <br />
 
