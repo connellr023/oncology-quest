@@ -22,7 +22,7 @@ const SESSION_COOKIE_DURATION: i64 = 6;
 mod prod_config {
     use actix_web::http::header::{self, HeaderName};
 
-    pub const ALLOWED_ORIGIN: &str = "http://oncology-quest-alb-1095195425.us-west-1.elb.amazonaws.com";
+    pub const ALLOWED_ORIGIN: &str = "https://www.oncologyquest.net";
     pub const ALLOWED_METHODS: [&str; 4] = ["GET", "PATCH", "POST", "DELETE"];
     pub const ALLOWED_HEADERS: [HeaderName; 2] = [header::ACCEPT, header::AUTHORIZATION];
     pub const ALLOWED_HEADER: HeaderName = header::CONTENT_TYPE;
