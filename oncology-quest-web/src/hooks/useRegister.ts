@@ -47,6 +47,9 @@ const useRegister = () => {
                         case 409:
                             serverError.value = "That username is already taken. Please choose another."
                             break
+                        case 429:
+                            serverError.value = "Too many requests. Please try again later."
+                            break
                         default:
                             serverError.value = "Server error. Please try again later."
                             break

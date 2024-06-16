@@ -1,5 +1,26 @@
 use super::*;
 use actix_web::web::{scope, ServiceConfig};
+use actix_governor::{governor::{clock::QuantaInstant, middleware::NoOpMiddleware}, Governor, GovernorConfigBuilder, PeerIpKeyExtractor};
+
+fn governor(per_second: u64, burst_size: u32) -> Governor<PeerIpKeyExtractor, NoOpMiddleware<QuantaInstant>> {
+    if cfg!(feature = "production") {
+        let cfg = GovernorConfigBuilder::default()
+            .per_second(per_second)
+            .burst_size(burst_size)
+            .finish()
+            .unwrap();
+    
+        Governor::new(&cfg)
+    }
+    else {
+        Governor::new(
+            &GovernorConfigBuilder::default()
+                .permissive(true)
+                .finish()
+                .unwrap()
+        )
+    }
+}
 
 /// Configures the services for the application.
 /// 
@@ -13,9 +34,12 @@ pub fn config(cfg: &mut ServiceConfig) {
             .service(
                 scope("/users")
                     .service(users::register_user::register_user)
+                        .wrap(governor(4, 2))
                     .service(users::login_user::login_user)
-                    .service(users::logout_user::logout_user)
+                        .wrap(governor(4, 3))
+                    .service(users::logout_user::logout_user)       
                     .service(users::reset_user_password::reset_password)
+                        .wrap(governor(3, 2))
                     .service(users::reset_user_password::allow_reset_password)
                     .service(users::delete_user::delete_other_user)
                     .service(users::delete_user::delete_self)
@@ -30,6 +54,7 @@ pub fn config(cfg: &mut ServiceConfig) {
             .service(
                 scope("/entries")
                     .service(entries::get_entries::get_entries)
+                        .wrap(governor(1, 15))
                     .service(
                         scope("/supertasks")
                             .service(entries::create_entries::create_supertask)

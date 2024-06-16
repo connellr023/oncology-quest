@@ -39,7 +39,7 @@ onMounted(() => {
   <div class="container flex-wrapper">
     <div v-if="view === Views.SELECT" :class="`content-container ${shouldAnimate ? 'animate' : ''}`">
       <div class="greeting-container">
-        <h1>Welcome to <b><i>Oncology Quest</i></b>,</h1>
+        <h1>Welcome to <b><i>Oncology Quest</i></b></h1>
         <p>an aid for Medical Oncology Trainees</p>
       </div>
       <button @click="gotoLogin" class="std">Login</button>

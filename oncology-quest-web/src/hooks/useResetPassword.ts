@@ -48,6 +48,9 @@ const useResetPassword = () => {
                 case 500:
                     resetError.value = "Internal server error."
                     break
+                case 429:
+                    resetError.value = "Too many requests. Please try again later."
+                    break
                 default:
                     resetError.value = "An unknown error occurred."
                     break

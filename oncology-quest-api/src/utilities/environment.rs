@@ -20,17 +20,11 @@ impl Environment {
         let host_port = var("HOST_PORT")?;
         let database_url = var("DATABASE_URL")?;
 
-        #[cfg(feature = "production")]
-        let in_production = true;
-
-        #[cfg(not(feature = "production"))]
-        let in_production = false;
-
         Ok(Self {
             host_ip,
             host_port,
             database_url,
-            in_production
+            in_production: cfg!(feature = "production")
         })
     }
     

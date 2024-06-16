@@ -44,11 +44,21 @@ const useLogin = () => {
                 const sessionData: Session = await response.json()
                 updateSessionData(sessionData, session, tasks, rotations)
             }
-            else if (response.status === 401) {
-                loginError.value = "That username and password combination is incorrect."
-            }
             else {
-                loginError.value = `Received status code ${response.status}`
+                switch (response.status) {
+                    case 401:
+                        loginError.value = "That username and password combination is incorrect."
+                        break
+                    case 429:
+                        loginError.value = "Too many requests. Please try again later."
+                        break
+                    case 500:
+                        loginError.value = "Internal server error."
+                        break
+                    default:
+                        loginError.value = "An unknown error occurred."
+                        break
+                }
             }
         }
         catch (error) {

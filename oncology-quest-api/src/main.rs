@@ -67,6 +67,7 @@ async fn main() -> io::Result<()> {
 }
 
 #[cfg(not(feature = "production"))]
+#[inline(always)]
 fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     SessionMiddleware::builder(
         CookieSessionStore::default(),
@@ -84,6 +85,7 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
 }
 
 #[cfg(feature = "production")]
+#[inline(always)]
 fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     SessionMiddleware::builder(
         CookieSessionStore::default(),
@@ -101,12 +103,14 @@ fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
 }
 
 #[cfg(not(feature = "production"))]
+#[inline(always)]
 fn cors() -> Cors {
     Cors::permissive()
         .supports_credentials()
 }
 
 #[cfg(feature = "production")]
+#[inline(always)]
 fn cors() -> Cors {
     Cors::default()
         .allowed_origin(prod_config::ALLOWED_ORIGIN)
