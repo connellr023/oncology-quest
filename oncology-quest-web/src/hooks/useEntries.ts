@@ -237,8 +237,15 @@ const useEntries = () => {
         return false
     }
 
+    const seenRotations = new Set<number>()
+
     const fetchEntriesWithCaching = async (rotationId: number): Promise<boolean> => {
         const [cachedEntries, cacheTimestamp] = retrieveRotationEntries(rotationId)
+
+        if (seenRotations.has(rotationId)) {
+            return true
+        }
+
         const url = new URL(`${API_ENDPOINT}/api/entries/${rotationId}`)
 
         if (cacheTimestamp) {
@@ -254,6 +261,8 @@ const useEntries = () => {
 
         if (response.status === 304) {
             entries.value[rotationId] = cachedEntries || []
+            seenRotations.add(rotationId)
+
             return true
         }
 
@@ -263,6 +272,8 @@ const useEntries = () => {
 
                 cacheRotationEntries(rotationId, data)
                 entries.value[rotationId] = data
+                seenRotations.add(rotationId)
+
                 return true
             }
             catch (_) {

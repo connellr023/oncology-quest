@@ -26,11 +26,15 @@ const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 const { title, titleError } = useValidateTitle()
 
 const createEntryCallback = ref<() => any>(() => {})
+const createEntryModalTitle = ref("")
+
 const isCreateEntryModalVisible = ref(false)
 const isCreateEntryLoading = ref(false)
 
-const showCreateEntryModal = (onConfirm: (confirmTitle: string) => Promise<Boolean>) => {
+const showCreateEntryModal = (modalTitle: string, onConfirm: (confirmTitle: string) => Promise<Boolean>) => {
   isCreateEntryModalVisible.value = true
+
+  createEntryModalTitle.value = modalTitle
   createEntryCallback.value = async () => {
     isCreateEntryLoading.value = true
 
@@ -70,7 +74,7 @@ const {
     :error="titleError"
     :loading="isCreateEntryLoading"
     :visible="isCreateEntryModalVisible"
-    :title="'Create New Entry'"
+    :title="createEntryModalTitle"
     :placeholder="'Entry entry title...'"
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
@@ -105,19 +109,19 @@ const {
             :saveHeading="(saveTitle: string) => updateSubtask(selectedRotation!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"
             :deleteHeading="() => deleteSubtask(selectedRotation!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id)"
           />
-          <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createSubtask(confirmTitle, selectedRotation!.id, task.entry.id, supertaskIndex, taskIndex))">
+          <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal('Create Clinical Experience Entry', (confirmTitle: string) => createSubtask(confirmTitle, selectedRotation!.id, task.entry.id, supertaskIndex, taskIndex))">
             <PushStackIcon />
             Push New Clinical Experience
           </button>
         </ProgressableEntryItem>
-        <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal((confirmTitle: string) => createTask(confirmTitle, selectedRotation!.id, supertask.entry.id, supertaskIndex))">
+        <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal('Create EPA Entry', (confirmTitle: string) => createTask(confirmTitle, selectedRotation!.id, supertask.entry.id, supertaskIndex))">
           <PushStackIcon />
           Push New EPA
         </button>
       </ProgressableEntryItem>
     </ul>
     <div class="empty-rotation note" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
-    <button @click="showCreateEntryModal((confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push highlight" v-if="session.isAdmin">
+    <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push highlight" v-if="session.isAdmin">
       <PushStackIcon />
       Push New CBD Phase
     </button>

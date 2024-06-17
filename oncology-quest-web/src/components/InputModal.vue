@@ -27,7 +27,7 @@ defineProps<{
       </div>
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
-        <button class="bubble green" @click="onConfirm">
+        <button class="bubble green" @click="onConfirm" :disabled="error ? true : false">
           <CheckIcon />
           Confirm
         </button>
