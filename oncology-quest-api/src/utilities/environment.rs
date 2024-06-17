@@ -5,8 +5,7 @@ use std::{env::var, fmt::{self, Display, Formatter}};
 pub struct Environment {
     host_ip: String,
     host_port: String,
-    database_url: String,
-    in_production: bool
+    database_url: String
 }
 
 impl Environment {
@@ -23,8 +22,7 @@ impl Environment {
         Ok(Self {
             host_ip,
             host_port,
-            database_url,
-            in_production: cfg!(feature = "production")
+            database_url
         })
     }
     
@@ -45,12 +43,6 @@ impl Environment {
     pub fn database_url(&self) -> &str {
         &self.database_url
     }
-
-    /// Returns whether the application is running in production mode.
-    #[inline(always)]
-    pub fn in_production(&self) -> bool {
-        self.in_production
-    }
 }
 
 impl Display for Environment {
@@ -59,7 +51,8 @@ impl Display for Environment {
         writeln!(f, "Host IP: {}", self.host_ip())?;
         writeln!(f, "Host Port: {}", self.host_port())?;
         writeln!(f, "Database URL: {}", self.database_url())?;
-        writeln!(f, "Production Mode: {}", self.in_production())?;
+        writeln!(f, "Production Mode: {}", cfg!(feature = "production"))?;
+        writeln!(f, "Monolith Mode: {}", cfg!(feature = "monolith"))?;
 
         Ok(())
     }

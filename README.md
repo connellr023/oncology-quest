@@ -57,9 +57,14 @@
 
 #### Building API for production
 ```bash
-cargo build --release --features production
+cargo build --release --features "production"
 ```
 When building for production, it is essential to enable the *production* feature as that will enable the specialized **cookie** and **CORS** policies as well as the **rate limiter**.
+
+Additionally, for single container monolith use with the **API** also serving the static frontend files, use the *monolith* feature.
+```bash
+cargo build --release --features "production monolith"
+```
 
 <br />
 

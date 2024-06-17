@@ -2,6 +2,9 @@ use super::*;
 use actix_web::web::{scope, ServiceConfig};
 use actix_governor::{governor::{clock::QuantaInstant, middleware::NoOpMiddleware}, Governor, GovernorConfigBuilder, PeerIpKeyExtractor};
 
+#[cfg(feature = "monolith")]
+use actix_files::Files;
+
 fn governor(per_second: u64, burst_size: u32) -> Governor<PeerIpKeyExtractor, NoOpMiddleware<QuantaInstant>> {
     let cfg = match cfg!(feature = "production") {
         true => GovernorConfigBuilder::default()
@@ -75,5 +78,11 @@ pub fn config(cfg: &mut ServiceConfig) {
                     .service(rotations::create_rotation::create_rotation)
                     .service(rotations::delete_rotation::delete_rotation)
             )
+    );
+
+    #[cfg(feature = "monolith")]
+    cfg.service(
+        Files::new("/", "./dist")
+            .index_file("index.html")
     );
 }
