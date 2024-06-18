@@ -105,7 +105,7 @@ impl Rotation {
         Ok(map)
     }
 
-    pub async fn exists(pool: &PgPool, rotation_id: i32) -> bool {
+    pub async fn exists(pool: &PgPool, rotation_id: i32) -> anyhow::Result<bool> {
         let exists_query = sqlx::query!(
             r#"
             SELECT EXISTS(SELECT id FROM rotations WHERE id = $1);
@@ -113,9 +113,10 @@ impl Rotation {
             rotation_id
         )
         .fetch_one(pool)
-        .await;
+        .await?
+        .exists;
 
-        exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
+        Ok(exists_query.unwrap_or(false))
     }
 
     pub fn id(&self) -> i32 {

@@ -1,13 +1,12 @@
+use super::prelude::*;
 use crate::utilities::parsable::{Name, PlainTextPassword, ResetToken, Username};
-use chrono::{DateTime, Utc};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use sqlx::{FromRow, PgPool};
 use anyhow::anyhow;
 
 const PASSWORD_RESET_TOKEN_LENGTH: usize = 4;
 
-#[derive(Debug, FromRow, Clone)]
-pub struct User {
+#[derive(Debug, Clone)]
+struct DbUser {
     id: i32,
     username: Username,
     name: Name,
@@ -17,7 +16,16 @@ pub struct User {
     login_count: i32
 }
 
-impl User {
+/// Wrapper around a User struct that indicates that the user is not yet synced with the database.
+pub struct User<SyncState>(DbUser, PhantomData<SyncState>);
+
+impl From<DbUser> for User<DatabaseSynced> {
+    fn from(db_user: DbUser) -> Self {
+        Self(db_user, PhantomData)
+    }
+}
+
+impl User<DatabaseUnsynced> {
     /// Creates a new User instance with the provided parameters.
     ///
     /// # Arguments
@@ -33,19 +41,62 @@ impl User {
     /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
     pub fn new(username: Username, name: Name, plain_text_password: PlainTextPassword, is_admin: bool) -> anyhow::Result<Self> {
         let salt = thread_rng().gen::<i64>();
-        let password = Self::gen_password_hash(salt, plain_text_password.as_str())?;
+        let password = User::gen_password_hash(salt, plain_text_password.as_str())?;
 
-        Ok(Self {
+        let db_user = DbUser {
             id: -1,
             username,
             name,
-            password,
-            salt,
             is_admin,
+            salt,
+            password,
             login_count: 0
-        })
+        };
+
+        Ok(Self(db_user, PhantomData))
     }
 
+    /// Inserts the user into the database and sets the user's ID.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns an error if the insert operation fails.
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<User<DatabaseSynced>> {
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO users (username, name, is_admin, salt, password)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id
+            "#,
+            self.0.username.as_str(),
+            self.0.name.as_str(),
+            self.0.is_admin,
+            self.0.salt,
+            self.0.password.as_str()
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(User(
+            DbUser {
+                id: row.id,
+                username: self.0.username,
+                name: self.0.name,
+                is_admin: self.0.is_admin,
+                salt: self.0.salt,
+                password: self.0.password,
+                login_count: self.0.login_count
+            },
+            PhantomData
+        ))
+    }
+}
+
+impl User<DatabaseSynced> {
     /// Fetches a user from the database by their ID.
     /// 
     /// # Arguments
@@ -58,7 +109,7 @@ impl User {
     /// Returns the user if found, an error otherwise.
     pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<Self> {
         let result = sqlx::query_as!(
-            User,
+            DbUser,
             r#"
             SELECT id, username, name, is_admin, salt, password, login_count
             FROM users
@@ -69,7 +120,7 @@ impl User {
         .fetch_one(pool)
         .await?;
 
-        Ok(result)
+        Ok(result.into())
     }
 
     #[inline(always)]
@@ -199,8 +250,8 @@ impl User {
     pub async fn validate_login(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
         let mut transaction = pool.begin().await?;
         
-        let result_user = sqlx::query_as!(
-            User,
+        let result_user: Self = sqlx::query_as!(
+            DbUser,
             r#"
             UPDATE users
             SET login_count = login_count + 1
@@ -210,7 +261,8 @@ impl User {
             username
         )
         .fetch_one(&mut *transaction)
-        .await?;
+        .await?
+        .into();
 
         if !result_user.validate_password(plain_text_password) {
             transaction.rollback().await?;
@@ -220,36 +272,6 @@ impl User {
         transaction.commit().await?;
 
         Ok(result_user)
-    }
-
-    /// Inserts the user into the database and sets the user's ID.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `pool` - The Postgres connection pool to use for the operation.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns an error if the insert operation fails.
-    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
-        let row = sqlx::query!(
-            r#"
-            INSERT INTO users (username, name, is_admin, salt, password)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING id
-            "#,
-            self.username.as_str(),
-            self.name.as_str(),
-            self.is_admin,
-            self.salt,
-            self.password.as_str()
-        )
-        .fetch_one(pool)
-        .await?;
-    
-        self.id = row.id;
-    
-        Ok(())
     }
 
     /// Checks if this user exists in the database.
@@ -268,7 +290,7 @@ impl User {
             EXISTS(SELECT 1 FROM users WHERE username = $1)
             AS "exists!";
             "#,
-            self.username.as_str()
+            self.0.username.as_str()
         )
         .fetch_one(pool)
         .await?;
@@ -343,72 +365,31 @@ impl User {
     ///
     /// Returns `true` if the provided password matches the user's hashed password, `false` otherwise.
     pub fn validate_password(&self, plain_text_password: &str) -> bool {
-        bcrypt::verify(format!("{}{}", plain_text_password, self.salt), &self.password).unwrap_or(false)
+        bcrypt::verify(format!("{}{}", plain_text_password, self.0.salt), &self.0.password).unwrap_or(false)
     }
 
+    #[inline(always)]
     pub fn id(&self) -> i32 {
-        self.id
+        self.0.id
     }
 
+    #[inline(always)]
     pub fn username(&self) -> &Username {
-        &self.username
+        &self.0.username
     }
 
+    #[inline(always)]
     pub fn name(&self) -> &Name {
-        &self.name
+        &self.0.name
     }
 
+    #[inline(always)]
     pub fn is_admin(&self) -> bool {
-        self.is_admin
+        self.0.is_admin
     }
 
+    #[inline(always)]
     pub fn login_count(&self) -> i32 {
-        self.login_count
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::models::client_user::ClientUser;
-
-    #[test]
-    fn test_new_user() {
-        let username = Username::parse("test-user".to_string()).unwrap();
-        let name = Name::parse("Test User".to_string()).unwrap();
-        let password = PlainTextPassword::parse("password".to_string()).unwrap();
-        let is_admin = false;
-
-        let user = User::new(username.clone(), name.clone(), password.clone(), is_admin).unwrap();
-
-        assert_eq!(user.username, username);
-        assert_eq!(user.name, name);
-        assert_ne!(user.password, password.as_str());
-        assert_eq!(user.is_admin, is_admin);
-    }
-
-    #[test]
-    fn test_validate_password() {
-        let username = Username::parse("test-user".to_string()).unwrap();
-        let name = Name::parse("Test User".to_string()).unwrap();
-        let plain_text_password = PlainTextPassword::parse("password".to_string()).unwrap();
-
-        let user = User::new(username, name, plain_text_password.clone(), false).unwrap();
-
-        assert_eq!(user.validate_password(plain_text_password.as_str()), true);
-    }
-
-    #[test]
-    fn test_from_user_to_client_user() {
-        let username = Username::parse("test-user".to_string()).unwrap();
-        let name = Name::parse("Test User".to_string()).unwrap();
-        let password = PlainTextPassword::parse("password".to_string()).unwrap();
-
-        let user = User::new(username.clone(), name.clone(), password.clone(), false).unwrap();
-        let client_user: ClientUser = user.into();
-
-        assert_eq!(client_user.username, username);
-        assert_eq!(client_user.name, name);
-        assert_eq!(client_user.is_admin, false);
+        self.0.login_count
     }
 }

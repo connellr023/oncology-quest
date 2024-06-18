@@ -27,8 +27,11 @@ macro_rules! validate_session_and_entry_id {
     ($varname:ident, $session:ident, $pool:ident, $entry_id:expr) => {
         auth_admin_session!(user_id, $session, $pool);
 
-        if !Rotation::exists(&$pool, $entry_id).await {
-            return HttpResponse::BadRequest().finish();
+        match Rotation::exists(&$pool, $entry_id).await {
+            Ok(exists) => if !exists {
+                return HttpResponse::BadRequest().finish();
+            },
+            Err(_) => return HttpResponse::InternalServerError().finish()
         }
     };
 }

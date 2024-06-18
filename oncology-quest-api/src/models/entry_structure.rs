@@ -221,6 +221,18 @@ impl Subtask {
         Ok(row.id)
     }
 
+    pub async fn exists(pool: &PgPool, id: i32) -> anyhow::Result<bool> {
+        let exists = sqlx::query!(
+            "SELECT EXISTS(SELECT 1 FROM subtasks WHERE id = $1) AS exists;",
+            id
+        )
+        .fetch_one(pool)
+        .await?
+        .exists;
+
+        Ok(exists.unwrap_or(false))
+    }
+
     pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
