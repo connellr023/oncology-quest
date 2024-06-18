@@ -1,10 +1,8 @@
-use super::user::User;
-use crate::utilities::parsable::{Username, Name};
+use super::{user::User, prelude::*};
+use crate::utilities::parsable::{Name, Username};
 use std::collections::HashMap;
-use serde::{Serialize, Deserialize};
-use sqlx::{prelude::FromRow, PgPool};
 
-#[derive(Serialize, Deserialize, FromRow)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
     pub id: i32,
@@ -40,8 +38,8 @@ impl ClientUser {
     }
 }
 
-impl From<User> for ClientUser {
-    fn from(user: User) -> Self {
+impl From<User<DatabaseSynced>> for ClientUser {
+    fn from(user: User<DatabaseSynced>) -> Self {
         Self {
             id: user.id(),
             username: user.username().to_owned(),

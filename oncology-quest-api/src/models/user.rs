@@ -6,7 +6,7 @@ use anyhow::anyhow;
 const PASSWORD_RESET_TOKEN_LENGTH: usize = 4;
 
 #[derive(Debug, Clone)]
-struct DbUser {
+struct UserModel {
     id: i32,
     username: Username,
     name: Name,
@@ -16,14 +16,8 @@ struct DbUser {
     login_count: i32
 }
 
-/// Wrapper around a User struct that indicates that the user is not yet synced with the database.
-pub struct User<SyncState>(DbUser, PhantomData<SyncState>);
-
-impl From<DbUser> for User<DatabaseSynced> {
-    fn from(db_user: DbUser) -> Self {
-        Self(db_user, PhantomData)
-    }
-}
+/// Wrapper around a UserModel struct that indicates if the user is synced with the database.
+pub struct User<SyncState>(UserModel, PhantomData<SyncState>);
 
 impl User<DatabaseUnsynced> {
     /// Creates a new User instance with the provided parameters.
@@ -43,17 +37,18 @@ impl User<DatabaseUnsynced> {
         let salt = thread_rng().gen::<i64>();
         let password = User::gen_password_hash(salt, plain_text_password.as_str())?;
 
-        let db_user = DbUser {
-            id: -1,
-            username,
-            name,
-            is_admin,
-            salt,
-            password,
-            login_count: 0
-        };
-
-        Ok(Self(db_user, PhantomData))
+        Ok(User(
+            UserModel {
+                id: -1,
+                username,
+                name,
+                is_admin,
+                salt,
+                password,
+                login_count: 0
+            },
+            PhantomData
+        ))
     }
 
     /// Inserts the user into the database and sets the user's ID.
@@ -82,7 +77,7 @@ impl User<DatabaseUnsynced> {
         .await?;
 
         Ok(User(
-            DbUser {
+            UserModel {
                 id: row.id,
                 username: self.0.username,
                 name: self.0.name,
@@ -109,7 +104,7 @@ impl User<DatabaseSynced> {
     /// Returns the user if found, an error otherwise.
     pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<Self> {
         let result = sqlx::query_as!(
-            DbUser,
+            UserModel,
             r#"
             SELECT id, username, name, is_admin, salt, password, login_count
             FROM users
@@ -120,7 +115,7 @@ impl User<DatabaseSynced> {
         .fetch_one(pool)
         .await?;
 
-        Ok(result.into())
+        Ok(Self(result, PhantomData))
     }
 
     #[inline(always)]
@@ -250,19 +245,21 @@ impl User<DatabaseSynced> {
     pub async fn validate_login(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
         let mut transaction = pool.begin().await?;
         
-        let result_user: Self = sqlx::query_as!(
-            DbUser,
-            r#"
-            UPDATE users
-            SET login_count = login_count + 1
-            WHERE username = $1
-            RETURNING id, username, name, is_admin, salt, password, login_count;
-            "#,
-            username
-        )
-        .fetch_one(&mut *transaction)
-        .await?
-        .into();
+        let result_user = Self(
+            sqlx::query_as!(
+                UserModel,
+                r#"
+                UPDATE users
+                SET login_count = login_count + 1
+                WHERE username = $1
+                RETURNING id, username, name, is_admin, salt, password, login_count;
+                "#,
+                username
+            )
+            .fetch_one(&mut *transaction)
+            .await?,
+            PhantomData
+        );
 
         if !result_user.validate_password(plain_text_password) {
             transaction.rollback().await?;

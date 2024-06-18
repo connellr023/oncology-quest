@@ -1,13 +1,11 @@
+use super::prelude::*;
 use crate::utilities::parsable::Comment;
-use chrono::{DateTime, Utc};
-use sqlx::{FromRow, PgPool};
-use serde::Serialize;
 use std::collections::HashMap;
 use anyhow::anyhow;
 
-#[derive(Debug, FromRow, Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserTask {
+struct UserTaskModel {
     id: i32,
     user_id: i32,
     subtask_id: i32,
@@ -16,18 +14,69 @@ pub struct UserTask {
     comment: Comment
 }
 
-impl UserTask {
+pub struct UserTask<SyncState>(UserTaskModel, PhantomData<SyncState>);
+
+impl UserTask<DatabaseUnsynced> {
     pub fn new(user_id: i32, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
-        Self {
-            id: -1,
-            user_id,
-            subtask_id,
-            rotation_id,
-            is_completed,
-            comment
-        }
+        Self(
+            UserTaskModel {
+                id: -1,
+                user_id,
+                subtask_id,
+                rotation_id,
+                is_completed,
+                comment
+            },
+            PhantomData
+        )
     }
 
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<DatabaseSynced>> {
+        let mut transaction = pool.begin().await?;
+        
+        sqlx::query!(
+            r#"
+            UPDATE users
+            SET last_task_update = NOW()
+            WHERE id = $1;
+            "#,
+            self.0.user_id
+        )
+        .execute(&mut *transaction)
+        .await?;
+
+        let row = sqlx::query!(
+            r#"
+            INSERT INTO user_tasks (user_id, subtask_id, rotation_id, is_completed, comment)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id;
+            "#,
+            self.0.user_id,
+            self.0.subtask_id,
+            self.0.rotation_id,
+            self.0.is_completed,
+            self.0.comment.as_str()
+        )
+        .fetch_one(&mut *transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        Ok(UserTask(
+            UserTaskModel {
+                id: row.id,
+                user_id: self.0.user_id,
+                subtask_id: self.0.subtask_id,
+                rotation_id: self.0.rotation_id,
+                is_completed: self.0.is_completed,
+                comment: self.0.comment
+            },
+            PhantomData
+        ))
+    }
+}
+
+impl UserTask<DatabaseSynced> {
     pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"
@@ -37,9 +86,9 @@ impl UserTask {
                 WHERE subtask_id = $1 AND user_id = $2 AND rotation_id = $3
             ) AS "exists!";
             "#,
-            self.subtask_id,
-            self.user_id,
-            self.rotation_id
+            self.0.subtask_id,
+            self.0.user_id,
+            self.0.rotation_id
         )
         .fetch_one(pool)
         .await?;
@@ -51,7 +100,7 @@ impl UserTask {
         let user_tasks = match task_cache_timestamp {
             Some(timestamp) => {
                 sqlx::query_as!(
-                    Self,
+                    UserTaskModel,
                     r#"
                     SELECT ut.* 
                     FROM user_tasks ut
@@ -67,7 +116,7 @@ impl UserTask {
             },
             None => {
                 sqlx::query_as!(
-                    Self,
+                    UserTaskModel,
                     r#"
                     SELECT * 
                     FROM user_tasks
@@ -87,46 +136,10 @@ impl UserTask {
 
         let map = user_tasks
             .into_iter()
-            .map(|task| { (task.subtask_id(), task) })
+            .map(|task| { (task.subtask_id, Self(task, PhantomData)) })
             .collect::<HashMap<_, _>>();
 
         Ok(Some(map))
-    }
-
-    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-        
-        sqlx::query!(
-            r#"
-            UPDATE users
-            SET last_task_update = NOW()
-            WHERE id = $1;
-            "#,
-            self.user_id
-        )
-        .execute(&mut *transaction)
-        .await?;
-
-        let row = sqlx::query!(
-            r#"
-            INSERT INTO user_tasks (user_id, subtask_id, rotation_id, is_completed, comment)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING id;
-            "#,
-            self.user_id,
-            self.subtask_id,
-            self.rotation_id,
-            self.is_completed,
-            self.comment.as_str()
-        )
-        .fetch_one(&mut *transaction)
-        .await?;
-
-        transaction.commit().await?;
-
-        self.id = row.id;
-
-        Ok(())
     }
 
     pub async fn update(pool: &PgPool, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
@@ -167,14 +180,14 @@ impl UserTask {
     }
 
     pub fn id(&self) -> i32 {
-        self.id
+        self.0.id
     }
 
     pub fn subtask_id(&self) -> i32 {
-        self.subtask_id
+        self.0.subtask_id
     }
 
     pub fn rotation_id(&self) -> i32 {
-        self.rotation_id
+        self.0.rotation_id
     }
 }
