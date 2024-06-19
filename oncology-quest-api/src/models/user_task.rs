@@ -3,7 +3,7 @@ use crate::utilities::parsable::Comment;
 use std::collections::HashMap;
 use anyhow::anyhow;
 
-#[derive(Debug, Serialize)]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct UserTaskModel {
     id: i32,
@@ -14,6 +14,7 @@ struct UserTaskModel {
     comment: Comment
 }
 
+#[derive(Serialize)]
 pub struct UserTask<S>(UserTaskModel, PhantomData<S>);
 
 impl<S> UserTask<S> {
@@ -33,7 +34,7 @@ impl<S> UserTask<S> {
     }
 }
 
-impl UserTask<Unknown> {
+impl UserTask<Unsynced> {
     pub fn new(user_id: i32, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
         Self(
             UserTaskModel {
@@ -48,7 +49,7 @@ impl UserTask<Unknown> {
         )
     }
 
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<InDatabase>> {
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<Synced>> {
         let mut transaction = pool.begin().await?;
         
         sqlx::query!(
@@ -112,51 +113,27 @@ impl UserTask<Unknown> {
     }
 }
 
-impl UserTask<InDatabase> {
-    pub async fn fetch_as_map(pool: &PgPool, user_id: i32, rotation_id: i32, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Option<HashMap<i32, Self>>> {        
-        let user_tasks = match task_cache_timestamp {
-            Some(timestamp) => {
-                sqlx::query_as!(
-                    UserTaskModel,
-                    r#"
-                    SELECT ut.* 
-                    FROM user_tasks ut
-                    JOIN users u ON ut.user_id = u.id
-                    WHERE ut.user_id = $1 AND u.last_task_update <= $2 AND ut.rotation_id = $3;
-                    "#,
-                    user_id,
-                    timestamp,
-                    rotation_id
-                )
-                .fetch_all(pool)
-                .await?
-            },
-            None => {
-                sqlx::query_as!(
-                    UserTaskModel,
-                    r#"
-                    SELECT * 
-                    FROM user_tasks
-                    WHERE user_id = $1 AND rotation_id = $2;
-                    "#,
-                    user_id,
-                    rotation_id
-                )
-                .fetch_all(pool)
-                .await?
-            }
-        };
-
-        if user_tasks.is_empty() {
-            return Ok(None);
-        }
+impl UserTask<Synced> {
+    pub async fn fetch_as_map(pool: &PgPool, user_id: i32, rotation_id: i32) -> anyhow::Result<HashMap<i32, Self>> {        
+        let user_tasks = sqlx::query_as!(
+            UserTaskModel,
+            r#"
+            SELECT * 
+            FROM user_tasks
+            WHERE user_id = $1 AND rotation_id = $2;
+            "#,
+            user_id,
+            rotation_id
+        )
+        .fetch_all(pool)
+        .await?;
 
         let map = user_tasks
             .into_iter()
             .map(|task| { (task.subtask_id, Self(task, PhantomData)) })
             .collect::<HashMap<_, _>>();
 
-        Ok(Some(map))
+        Ok(map)
     }
 
     pub async fn update(pool: &PgPool, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {

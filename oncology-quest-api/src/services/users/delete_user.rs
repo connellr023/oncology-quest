@@ -1,3 +1,4 @@
+use crate::models::user::UserSession;
 use crate::{models::user::User, utilities::parsable::PlainTextPassword};
 use crate::services::prelude::*;
 
@@ -31,7 +32,7 @@ pub(super) async fn delete_other_user(session: Session, pool: Data<PgPool>, admi
 
 #[actix_web::delete("/delete-self")]
 pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_self_query: Json<DeleteSelfQuery>) -> impl Responder {    
-    let user_id = match handle_any_session_validation(&session).await {
+    let user_id = match handle_any_session_validation(&session) {
         Ok(user_id) => user_id,
         Err(response) => return response
     };
@@ -53,7 +54,7 @@ pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_sel
         Err(_) => HttpResponse::InternalServerError().finish()
     };
 
-    User::clear_session(&session);
+    UserSession::clear(&session);
 
     HttpResponse::Ok().finish()
 }

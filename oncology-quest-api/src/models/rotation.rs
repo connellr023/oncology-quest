@@ -14,7 +14,19 @@ struct RotationModel {
 #[derive(Serialize)]
 pub struct Rotation<S>(RotationModel, PhantomData<S>);
 
-impl Rotation<Unknown> {
+impl<S> Rotation<S> {
+    #[inline(always)]
+    pub fn id(&self) -> i32 {
+        self.0.id
+    }
+
+    #[inline(always)]
+    pub fn last_updated(&self) -> DateTime<Utc> {
+        self.0.last_updated
+    }
+}
+
+impl Rotation<Unsynced> {
     pub fn new(name: Name) -> Self {
         Self(
             RotationModel {
@@ -26,7 +38,7 @@ impl Rotation<Unknown> {
         )
     }
     
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<Rotation<InDatabase>> {
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<Rotation<Synced>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO rotations (name)
@@ -49,7 +61,7 @@ impl Rotation<Unknown> {
     }
 }
 
-impl Rotation<InDatabase> {
+impl Rotation<Synced> {
     pub async fn delete(pool: &PgPool, rotation_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -127,13 +139,5 @@ impl Rotation<InDatabase> {
         .exists;
 
         Ok(exists_query.unwrap_or(false))
-    }
-
-    pub fn id(&self) -> i32 {
-        self.0.id
-    }
-
-    pub fn last_updated(&self) -> DateTime<Utc> {
-        self.0.last_updated
     }
 }

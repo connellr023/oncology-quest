@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[derive(Serialize)]
 pub struct UserSessionResponse {
     pub user: ClientUser,
-    pub rotations: HashMap<i32, Rotation<InDatabase>>
+    pub rotations: HashMap<i32, Rotation<Synced>>
 }
 
 impl UserSessionResponse {
@@ -20,7 +20,7 @@ impl UserSessionResponse {
     /// # Returns
     /// 
     /// A user session response if successful, otherwise an error.
-    pub async fn new(pool: &PgPool, user: User<InDatabase>) -> anyhow::Result<Self> {        
+    pub async fn new(pool: &PgPool, user: User<Synced>) -> anyhow::Result<Self> {        
         let user = ClientUser::from(user);
         let rotations = Rotation::fetch_all_as_map(pool).await?;
 
@@ -35,9 +35,9 @@ impl UserSessionResponse {
 
 #[actix_web::get("/session")]
 pub(super) async fn get_user_session(session: Session, pool: Data<PgPool>) -> impl Responder {
-    let user_id = match User::id_from_session(&session) {
-        Some(user_id) => user_id,
-        None => return HttpResponse::Unauthorized().finish()
+    let user_id = match handle_any_session_validation(&session) {
+        Ok(user_id) => user_id,
+        Err(response) => return response
     };
 
     let user = match User::fetch_by_id(&pool, user_id).await {

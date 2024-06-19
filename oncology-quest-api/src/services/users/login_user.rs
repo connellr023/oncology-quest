@@ -1,5 +1,5 @@
 use super::get_user_session::UserSessionResponse;
-use crate::models::user::User;
+use crate::models::user::{User, UserSession};
 use crate::utilities::parsable::{Username, PlainTextPassword};
 use crate::services::prelude::*;
 
@@ -17,7 +17,7 @@ pub(super) async fn login_user(session: Session, pool: Data<PgPool>, login_user_
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
 
-    if !User::is_session_insert_ok(&session, user.id()) {
+    if !UserSession::is_insert_ok(&session, user.id()) {
         return HttpResponse::InternalServerError().finish();
     }
 

@@ -118,7 +118,7 @@ impl<S> User<S> {
     }
 }
 
-impl User<Unknown> {
+impl User<Unsynced> {
     /// Creates a new User instance with the provided parameters.
     ///
     /// # Arguments
@@ -147,24 +147,6 @@ impl User<Unknown> {
             },
             PhantomData
         ))
-    }
-
-    /// Checks if the provided session is valid.
-    #[inline(always)]
-    pub fn id_from_session(session: &Session) -> Option<i32> {
-        session.get::<i32>(SESSION_USER_ID_KEY)
-            .ok()?
-            .clone()
-    }
-
-    #[inline(always)]
-    pub fn is_session_insert_ok(session: &Session, user_id: i32) -> bool {
-        session.insert(SESSION_USER_ID_KEY, user_id).is_ok()
-    }
-
-    #[inline(always)]
-    pub fn clear_session(session: &Session) {
-        session.remove(SESSION_USER_ID_KEY);
     }
 
     /// Checks if this user exists in the database.
@@ -200,7 +182,7 @@ impl User<Unknown> {
     /// # Returns
     /// 
     /// Returns an error if the insert operation fails.
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<User<InDatabase>> {
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<User<Synced>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO users (username, name, salt, password)
@@ -279,7 +261,7 @@ impl User<Unknown> {
     }
 }
 
-impl User<InDatabase> {
+impl User<Synced> {
     /// Validates a user's login credentials and increments the login count.
     /// 
     /// # Arguments
@@ -347,7 +329,7 @@ impl User<InDatabase> {
     }
 
     pub async fn validate_admin_session(pool: &PgPool, session: &Session) -> anyhow::Result<bool> {
-        let user_id = User::id_from_session(session)
+        let user_id = UserSession::extract_user_id(session)
             .ok_or_else(|| anyhow!("User ID not found in session"))?;
 
         let exists = sqlx::query!(
@@ -405,6 +387,25 @@ impl User<InDatabase> {
         Ok((row.password_reset_timestamp, token))
     }
 
+    pub async fn is_task_cache_valid(pool: &PgPool, user_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<bool> {
+        let cache_timestamp = match cache_timestamp {
+            Some(cache_timestamp) => cache_timestamp,
+            None => return Ok(false)
+        };
+
+        let last_updated = sqlx::query!(
+            r#"
+            SELECT last_task_update FROM users WHERE id = $1;
+            "#,
+            user_id
+        )
+        .fetch_one(pool)
+        .await?
+        .last_task_update;
+
+        Ok(cache_timestamp >= last_updated)
+    }
+
     #[inline(always)]
     pub async fn delete_self(self, pool: &PgPool) -> anyhow::Result<bool> {
         Self::delete(pool, self.id(), true).await
@@ -413,5 +414,27 @@ impl User<InDatabase> {
     #[inline(always)]
     pub async fn delete_other(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
         Self::delete(pool, user_id, false).await
+    }
+}
+
+pub struct UserSession;
+
+impl UserSession {
+    /// Checks if the provided session is valid.
+    #[inline(always)]
+    pub fn extract_user_id(session: &Session) -> Option<i32> {
+        session.get::<i32>(SESSION_USER_ID_KEY)
+            .ok()?
+            .clone()
+    }
+
+    #[inline(always)]
+    pub fn is_insert_ok(session: &Session, user_id: i32) -> bool {
+        session.insert(SESSION_USER_ID_KEY, user_id).is_ok()
+    }
+
+    #[inline(always)]
+    pub fn clear(session: &Session) {
+        session.remove(SESSION_USER_ID_KEY);
     }
 }
