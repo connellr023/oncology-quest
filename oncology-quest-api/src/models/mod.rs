@@ -1,4 +1,4 @@
-pub(super) mod prelude;
+mod prelude;
 pub mod user;
 pub mod client_user;
 pub mod entry_structure;

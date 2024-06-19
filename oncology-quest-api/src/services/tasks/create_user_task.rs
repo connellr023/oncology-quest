@@ -1,5 +1,5 @@
 use crate::models::entry_structure::Subtask;
-use crate::models::rotation::RotationModel;
+use crate::models::rotation::Rotation;
 use crate::models::user_task::UserTask;
 use crate::utilities::parsable::Comment;
 use crate::services::prelude::*;
@@ -20,11 +20,14 @@ struct CreateUserTaskResponse {
 
 #[actix_web::post("/create")]
 pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, create_user_task_query: Json<CreateUserTaskQuery>) -> impl Responder {
-    auth_regular_session!(user_id, session, pool);
+    let user_id = match handle_regular_session_validation(&pool, &session).await {
+        Ok(user_id) => user_id,
+        Err(response) => return response
+    };
 
     let create_user_task_query = create_user_task_query.into_inner();
 
-    let mut user_task = UserTask::new(
+    let user_task = UserTask::new(
         user_id,
         create_user_task_query.subtask_id,
         create_user_task_query.rotation_id,
@@ -46,16 +49,17 @@ pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, creat
         Err(_) => return HttpResponse::InternalServerError().finish()
     }
 
-    match RotationModel::exists(&pool, user_task.rotation_id()).await {
+    match Rotation::exists(&pool, user_task.rotation_id()).await {
         Ok(exists) => if !exists {
             return HttpResponse::BadRequest().finish();
         },
         Err(_) => return HttpResponse::InternalServerError().finish()
     }
 
-    if user_task.insert(&pool).await.is_err() {
-        return HttpResponse::InternalServerError().finish();
-    }
+    let user_task = match user_task.insert(&pool).await {
+        Ok(user_task) => user_task,
+        Err(_) => return HttpResponse::InternalServerError().finish()
+    };
 
     HttpResponse::Created().json(CreateUserTaskResponse { id: user_task.id() })
 }

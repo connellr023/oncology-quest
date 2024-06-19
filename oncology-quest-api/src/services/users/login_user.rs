@@ -1,5 +1,5 @@
 use super::get_user_session::UserSessionResponse;
-use crate::models::user::UserKind;
+use crate::models::user::User;
 use crate::utilities::parsable::{Username, PlainTextPassword};
 use crate::services::prelude::*;
 
@@ -12,12 +12,12 @@ pub struct LoginUserQuery {
 
 #[actix_web::post("/login")]
 pub(super) async fn login_user(session: Session, pool: Data<PgPool>, login_user_query: Json<LoginUserQuery>) -> impl Responder {
-    let user = match UserKind::login(&pool, login_user_query.username.as_str(), login_user_query.password.as_str()).await {
+    let user = match User::login(&pool, login_user_query.username.as_str(), login_user_query.password.as_str()).await {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
 
-    if session.insert("uid", user.id()).is_err() {
+    if !User::is_session_insert_ok(&session, user.id()) {
         return HttpResponse::InternalServerError().finish();
     }
 

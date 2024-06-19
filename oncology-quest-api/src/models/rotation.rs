@@ -11,6 +11,7 @@ struct RotationModel {
     last_updated: DateTime<Utc>
 }
 
+#[derive(Serialize)]
 pub struct Rotation<S>(RotationModel, PhantomData<S>);
 
 impl Rotation<Unknown> {

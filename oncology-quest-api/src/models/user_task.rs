@@ -1,4 +1,4 @@
-use super::{prelude::*, user::User};
+use super::prelude::*;
 use crate::utilities::parsable::Comment;
 use std::collections::HashMap;
 use anyhow::anyhow;
@@ -16,12 +16,29 @@ struct UserTaskModel {
 
 pub struct UserTask<S>(UserTaskModel, PhantomData<S>);
 
+impl<S> UserTask<S> {
+    #[inline(always)]
+    pub fn id(&self) -> i32 {
+        self.0.id
+    }
+
+    #[inline(always)]
+    pub fn subtask_id(&self) -> i32 {
+        self.0.subtask_id
+    }
+
+    #[inline(always)]
+    pub fn rotation_id(&self) -> i32 {
+        self.0.rotation_id
+    }
+}
+
 impl UserTask<Unknown> {
-    pub fn new(user: User<Regular>, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
+    pub fn new(user_id: i32, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
         Self(
             UserTaskModel {
                 id: -1,
-                user_id: user.id(),
+                user_id,
                 subtask_id,
                 rotation_id,
                 is_completed,
@@ -74,9 +91,7 @@ impl UserTask<Unknown> {
             PhantomData
         ))
     }
-}
 
-impl UserTask<InDatabase> {
     pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"
@@ -95,7 +110,9 @@ impl UserTask<InDatabase> {
 
         Ok(record.exists)
     }
+}
 
+impl UserTask<InDatabase> {
     pub async fn fetch_as_map(pool: &PgPool, user_id: i32, rotation_id: i32, task_cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<Option<HashMap<i32, Self>>> {        
         let user_tasks = match task_cache_timestamp {
             Some(timestamp) => {
@@ -177,17 +194,5 @@ impl UserTask<InDatabase> {
         }
 
         Ok(())
-    }
-
-    pub fn id(&self) -> i32 {
-        self.0.id
-    }
-
-    pub fn subtask_id(&self) -> i32 {
-        self.0.subtask_id
-    }
-
-    pub fn rotation_id(&self) -> i32 {
-        self.0.rotation_id
     }
 }

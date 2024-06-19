@@ -1,11 +1,11 @@
-use crate::models::{client_user::ClientUser, rotation::RotationModel, user::User};
+use crate::models::{client_user::ClientUser, rotation::Rotation, user::User};
 use crate::services::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Serialize)]
 pub struct UserSessionResponse {
     pub user: ClientUser,
-    pub rotations: HashMap<i32, RotationModel>
+    pub rotations: HashMap<i32, Rotation<InDatabase>>
 }
 
 impl UserSessionResponse {
@@ -20,9 +20,9 @@ impl UserSessionResponse {
     /// # Returns
     /// 
     /// A user session response if successful, otherwise an error.
-    pub async fn new(pool: &PgPool, user: User) -> anyhow::Result<Self> {        
+    pub async fn new(pool: &PgPool, user: User<InDatabase>) -> anyhow::Result<Self> {        
         let user = ClientUser::from(user);
-        let rotations = RotationModel::fetch_all_as_map(pool).await?;
+        let rotations = Rotation::fetch_all_as_map(pool).await?;
 
         let response = Self {
             user,
@@ -35,7 +35,10 @@ impl UserSessionResponse {
 
 #[actix_web::get("/session")]
 pub(super) async fn get_user_session(session: Session, pool: Data<PgPool>) -> impl Responder {
-    auth_user_session_with_id!(user_id, session);
+    let user_id = match User::id_from_session(&session) {
+        Some(user_id) => user_id,
+        None => return HttpResponse::Unauthorized().finish()
+    };
 
     let user = match User::fetch_by_id(&pool, user_id).await {
         Ok(user) => user,
