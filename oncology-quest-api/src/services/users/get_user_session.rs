@@ -1,11 +1,11 @@
-use crate::models::{client_user::ClientUser, rotation::Rotation, user::User};
+use crate::models::{client_user::ClientUser, rotation::RotationModel, user::User};
 use crate::services::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Serialize)]
 pub struct UserSessionResponse {
     pub user: ClientUser,
-    pub rotations: HashMap<i32, Rotation>
+    pub rotations: HashMap<i32, RotationModel>
 }
 
 impl UserSessionResponse {
@@ -22,7 +22,7 @@ impl UserSessionResponse {
     /// A user session response if successful, otherwise an error.
     pub async fn new(pool: &PgPool, user: User) -> anyhow::Result<Self> {        
         let user = ClientUser::from(user);
-        let rotations = Rotation::fetch_all_as_map(pool).await?;
+        let rotations = RotationModel::fetch_all_as_map(pool).await?;
 
         let response = Self {
             user,

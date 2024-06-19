@@ -1,5 +1,5 @@
 use crate::{models::entry_structure::{Supertask, Task, Subtask}, utilities::parsable::EntryTitle};
-use crate::models::rotation::Rotation;
+use crate::models::rotation::RotationModel;
 use crate::services::prelude::*;
 
 #[derive(Deserialize)]

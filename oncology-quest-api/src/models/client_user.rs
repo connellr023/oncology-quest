@@ -38,8 +38,8 @@ impl ClientUser {
     }
 }
 
-impl From<User<DatabaseSynced>> for ClientUser {
-    fn from(user: User<DatabaseSynced>) -> Self {
+impl From<User<InDatabase>> for ClientUser {
+    fn from(user: User<InDatabase>) -> Self {
         Self {
             id: user.id(),
             username: user.username().to_owned(),

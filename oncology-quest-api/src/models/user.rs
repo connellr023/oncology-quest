@@ -1,9 +1,11 @@
 use super::prelude::*;
 use crate::utilities::parsable::{Name, PlainTextPassword, ResetToken, Username};
+use actix_session::Session;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use anyhow::anyhow;
 
 const PASSWORD_RESET_TOKEN_LENGTH: usize = 4;
+const SESSION_USER_ID_KEY: &str = "uid";
 
 #[derive(Debug, Clone)]
 struct UserModel {
@@ -24,24 +26,127 @@ pub enum UserKind {
     Admin(User<Admin>)
 }
 
+impl UserKind {
+    /// Checks if the provided session is valid.
+    #[inline(always)]
+    pub fn is_valid_session(session: &Session) -> bool {
+        match session.get::<i32>(SESSION_USER_ID_KEY) {
+            Ok(Some(_)) => true,
+            _ => false
+        }
+    }
+
+    /// Fetches a user from the database by their ID.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `user_id` - The ID of the user to fetch.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns a Regular user if the user is not an admin, an Admin user if the user is an admin, an error otherwise.
+    pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<Self> {
+        let result = sqlx::query_as!(
+            UserModel,
+            r#"
+            SELECT id, username, name, is_admin, salt, password, login_count
+            FROM users
+            WHERE id = $1 AND is_admin = FALSE;
+            "#,
+            user_id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        let user = match result.is_admin {
+            true => Self::Admin(User::<Admin>(result, PhantomData)),
+            false => Self::Regular(User::<Regular>(result, PhantomData))
+        };
+
+        Ok(user)
+    }
+
+    pub async fn from_session(pool: &PgPool, session: &Session) -> anyhow::Result<Self> {
+        let user_id = session.get::<i32>(SESSION_USER_ID_KEY)?;
+
+        match user_id {
+            Some(user_id) => Ok(Self::fetch_by_id(pool, user_id).await?),
+            None => Err(anyhow!("User ID not found in session"))
+        }
+    }
+
+    /// Validates a user's login credentials and increments the login count.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pool` - The Postgres connection pool to use for the operation.
+    /// * `username` - The username of the user to validate.
+    /// * `plain_text_password` - The plain text password to validate.
+    /// 
+    /// # Returns
+    /// 
+    /// Returns either a Regular or Admin user if the login was successful, an error otherwise.
+    pub async fn login(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
+        let mut transaction = pool.begin().await?;
+        
+        let result = User::<Unknown>(
+            sqlx::query_as!(
+                UserModel,
+                r#"
+                UPDATE users
+                SET login_count = login_count + 1
+                WHERE username = $1
+                RETURNING id, username, name, is_admin, salt, password, login_count;
+                "#,
+                username
+            )
+            .fetch_one(&mut *transaction)
+            .await?,
+            PhantomData
+        );
+
+        if !result.is_valid_password(plain_text_password) {
+            transaction.rollback().await?;
+            return Err(anyhow!("Invalid password"));
+        }
+
+        transaction.commit().await?;
+
+        let user = match result.0.is_admin {
+            true => Self::Admin(User::<Admin>(result.0, PhantomData)),
+            false => Self::Regular(User::<Regular>(result.0, PhantomData))
+        };
+
+        Ok(user)
+    }
+
+    pub fn id(&self) -> i32 {
+        match self {
+            Self::Regular(user) => user.id(),
+            Self::Admin(user) => user.id()
+        }
+    }
+}
+
 impl<S> User<S> {
-    fn id(&self) -> i32 {
+    pub fn id(&self) -> i32 {
         self.0.id
     }
 
-    fn username(&self) -> &str {
-        self.0.username.as_str()
+    pub fn username(&self) -> &Username {
+        &self.0.username
     }
 
-    fn name(&self) -> &str {
-        self.0.name.as_str()
+    pub fn name(&self) -> &Name {
+        &self.0.name
     }
 
-    fn is_admin(&self) -> bool {
+    pub fn is_admin(&self) -> bool {
         self.0.is_admin
     }
 
-    fn login_count(&self) -> i32 {
+    pub fn login_count(&self) -> i32 {
         self.0.login_count
     }
 
@@ -166,82 +271,6 @@ impl User<Unknown> {
         ))
     }
 
-    /// Validates a user's login credentials and increments the login count.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `pool` - The Postgres connection pool to use for the operation.
-    /// * `username` - The username of the user to validate.
-    /// * `plain_text_password` - The plain text password to validate.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns either a Regular or Admin user if the login was successful, an error otherwise.
-    pub async fn login(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<UserKind> {
-        let mut transaction = pool.begin().await?;
-        
-        let result = Self(
-            sqlx::query_as!(
-                UserModel,
-                r#"
-                UPDATE users
-                SET login_count = login_count + 1
-                WHERE username = $1
-                RETURNING id, username, name, is_admin, salt, password, login_count;
-                "#,
-                username
-            )
-            .fetch_one(&mut *transaction)
-            .await?,
-            PhantomData
-        );
-
-        if !result.is_valid_password(plain_text_password) {
-            transaction.rollback().await?;
-            return Err(anyhow!("Invalid password"));
-        }
-
-        transaction.commit().await?;
-
-        let user = match result.0.is_admin {
-            true => UserKind::Admin(User::<Admin>(result.0, PhantomData)),
-            false => UserKind::Regular(User::<Regular>(result.0, PhantomData))
-        };
-
-        Ok(user)
-    }
-
-    /// Fetches a user from the database by their ID.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `pool` - The Postgres connection pool to use for the operation.
-    /// * `user_id` - The ID of the user to fetch.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns a Regular user if the user is not an admin, an Admin user if the user is an admin, an error otherwise.
-    pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<UserKind> {
-        let result = sqlx::query_as!(
-            UserModel,
-            r#"
-            SELECT id, username, name, is_admin, salt, password, login_count
-            FROM users
-            WHERE id = $1 AND is_admin = FALSE;
-            "#,
-            user_id
-        )
-        .fetch_one(pool)
-        .await?;
-
-        let user = match result.is_admin {
-            true => UserKind::Admin(User::<Admin>(result, PhantomData)),
-            false => UserKind::Regular(User::<Regular>(result, PhantomData))
-        };
-
-        Ok(user)
-    }
-
     /// Updates the user's password if the reset token is valid and has not expired.
     /// 
     /// # Arguments
@@ -254,14 +283,14 @@ impl User<Unknown> {
     /// # Returns
     /// 
     /// Returns a result containing `true` if the password was updated, `false` otherwise and an error if the operation failed.
-    pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str, reset_token: &str) -> anyhow::Result<bool> {
+    pub async fn update_password(&mut self, pool: &PgPool, plain_text_password: &str, reset_token: &str) -> anyhow::Result<bool> {
         let record = match sqlx::query!(
             r#"
             SELECT password, salt
             FROM users
             WHERE username = $1 AND password_reset_timestamp > NOW() AND password_reset_token = $2;
             "#,
-            username,
+            self.username().as_str(),
             reset_token
         )
         .fetch_optional(pool)
@@ -277,7 +306,8 @@ impl User<Unknown> {
             SET password = $1, password_reset_timestamp = NOW(), password_reset_token = NULL
             WHERE username = $2;
             "#,
-            new_hashed_password, username
+            new_hashed_password,
+            self.username().as_str()
         )
         .execute(pool)
         .await?
@@ -287,11 +317,11 @@ impl User<Unknown> {
             return Ok(false)
         }
 
+        self.0.password = new_hashed_password;
+
         Ok(true)
     }
-}
 
-impl User<Regular> {
     /// Deletes a user from the database by their ID.
     /// 
     /// # Arguments
@@ -336,30 +366,28 @@ impl User<Regular> {
     }
 }
 
-impl User<Admin> {
-    /// Checks if a given user is an admin.
-    /// 
-    /// # Arguments
-    /// 
-    /// * `pool` - The Postgres connection pool to use for the operation.
-    /// * `user_id` - The primary key of the user to check.
-    /// 
-    /// # Returns
-    /// 
-    /// Returns `true` if the user is an admin, `false` otherwise.
-    pub async fn is(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
-        let query = sqlx::query!(
-            r#"
-            SELECT is_admin FROM users WHERE id = $1;
-            "#,
-            user_id
-        )
-        .fetch_one(pool)
-        .await?;
+impl User<Regular> {
+    pub async fn from_session(pool: &PgPool, session: &Session) -> anyhow::Result<Self> {
+        let user = UserKind::from_session(pool, session).await?;
 
-        Ok(query.is_admin)
+        match user {
+            UserKind::Regular(user) => Ok(user),
+            _ => Err(anyhow!("User is not a regular user"))
+        }
+    }
+}
+
+impl User<Admin> {
+    pub async fn from_session(pool: &PgPool, session: &Session) -> anyhow::Result<Self> {
+        let user = UserKind::from_session(pool, session).await?;
+
+        match user {
+            UserKind::Admin(user) => Ok(user),
+            _ => Err(anyhow!("User is not an admin user"))
+        }
     }
 
+    /// Generates a random password reset token.
     #[inline(always)]
     fn generate_reset_token() -> ResetToken {
         let token = thread_rng()

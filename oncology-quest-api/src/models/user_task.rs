@@ -1,4 +1,4 @@
-use super::prelude::*;
+use super::{prelude::*, user::User};
 use crate::utilities::parsable::Comment;
 use std::collections::HashMap;
 use anyhow::anyhow;
@@ -17,11 +17,11 @@ struct UserTaskModel {
 pub struct UserTask<S>(UserTaskModel, PhantomData<S>);
 
 impl UserTask<Unknown> {
-    pub fn new(user_id: i32, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
+    pub fn new(user: User<Regular>, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
         Self(
             UserTaskModel {
                 id: -1,
-                user_id,
+                user_id: user.id(),
                 subtask_id,
                 rotation_id,
                 is_completed,
@@ -31,7 +31,7 @@ impl UserTask<Unknown> {
         )
     }
 
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<DatabaseSynced>> {
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<InDatabase>> {
         let mut transaction = pool.begin().await?;
         
         sqlx::query!(
@@ -76,7 +76,7 @@ impl UserTask<Unknown> {
     }
 }
 
-impl UserTask<DatabaseSynced> {
+impl UserTask<InDatabase> {
     pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
         let record = sqlx::query!(
             r#"

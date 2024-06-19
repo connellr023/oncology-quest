@@ -1,4 +1,4 @@
-use crate::models::{rotation::Rotation, entry_structure::EntryStructure};
+use crate::models::{rotation::RotationModel, entry_structure::EntryStructure, user::UserKind};
 use crate::services::prelude::*;
 
 #[derive(Deserialize)]
@@ -9,9 +9,11 @@ struct GetEntriesQuery {
 
 #[actix_web::get("/{rotation_id}")]
 pub(super) async fn get_entries(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>, query: Query<GetEntriesQuery>) -> impl Responder {
-    auth_user_session!(session);
+    if !UserKind::is_valid_session(&session) {
+        return HttpResponse::Unauthorized().finish();
+    }
 
-    match Rotation::is_cache_valid(&pool, *rotation_id, query.entries_cache_timestamp).await {
+    match RotationModel::is_cache_valid(&pool, *rotation_id, query.entries_cache_timestamp).await {
         Err(_) => return HttpResponse::InternalServerError().finish(),
         Ok(true) => return HttpResponse::NotModified().finish(),
         _ => {}

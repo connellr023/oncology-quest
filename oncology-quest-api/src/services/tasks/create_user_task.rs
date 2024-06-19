@@ -1,5 +1,5 @@
 use crate::models::entry_structure::Subtask;
-use crate::models::rotation::Rotation;
+use crate::models::rotation::RotationModel;
 use crate::models::user_task::UserTask;
 use crate::utilities::parsable::Comment;
 use crate::services::prelude::*;
@@ -20,7 +20,7 @@ struct CreateUserTaskResponse {
 
 #[actix_web::post("/create")]
 pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, create_user_task_query: Json<CreateUserTaskQuery>) -> impl Responder {
-    auth_not_admin_session!(user_id, session, pool);
+    auth_regular_session!(user_id, session, pool);
 
     let create_user_task_query = create_user_task_query.into_inner();
 
@@ -46,7 +46,7 @@ pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, creat
         Err(_) => return HttpResponse::InternalServerError().finish()
     }
 
-    match Rotation::exists(&pool, user_task.rotation_id()).await {
+    match RotationModel::exists(&pool, user_task.rotation_id()).await {
         Ok(exists) => if !exists {
             return HttpResponse::BadRequest().finish();
         },

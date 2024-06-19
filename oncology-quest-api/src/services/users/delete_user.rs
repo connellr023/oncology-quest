@@ -28,7 +28,7 @@ pub(super) async fn delete_other_user(session: Session, pool: Data<PgPool>, admi
 }
 
 #[actix_web::delete("/delete-self")]
-pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_self_query: Json<DeleteSelfQuery>) -> impl Responder {
+pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_self_query: Json<DeleteSelfQuery>) -> impl Responder {    
     auth_user_session_with_id!(user_id, session);
 
     let user = match User::fetch_by_id(&pool, user_id).await {

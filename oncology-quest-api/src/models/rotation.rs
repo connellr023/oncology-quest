@@ -1,45 +1,54 @@
+use super::prelude::*;
 use crate::query_many;
 use crate::utilities::parsable::Name;
-use chrono::{DateTime, Utc};
-use sqlx::{FromRow, PgPool};
-use serde::Serialize;
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData};
 
-#[derive(Serialize, Debug, FromRow)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Rotation {
+struct RotationModel {
     id: i32,
-    name: String,
+    name: Name,
     last_updated: DateTime<Utc>
 }
 
-impl Rotation {
-    pub fn new(name: Name) -> Self {
-        Self {
-            id: -1,
-            name: name.into(),
-            last_updated: Utc::now()
-        }
-    }
+pub struct Rotation<S>(RotationModel, PhantomData<S>);
 
-    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
+impl Rotation<Unknown> {
+    pub fn new(name: Name) -> Self {
+        Self(
+            RotationModel {
+                id: 0,
+                name,
+                last_updated: Utc::now()
+            },
+            PhantomData
+        )
+    }
+    
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<Rotation<InDatabase>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO rotations (name)
             VALUES ($1)
             RETURNING id, last_updated;
             "#,
-            self.name
+            self.0.name.as_str()
         )
         .fetch_one(pool)
         .await?;
 
-        self.id = row.id;
-        self.last_updated = row.last_updated;
-
-        Ok(())
+        Ok(Rotation(
+            RotationModel {
+                id: row.id,
+                name: self.0.name,
+                last_updated: row.last_updated
+            },
+            PhantomData
+        ))
     }
+}
 
+impl Rotation<InDatabase> {
     pub async fn delete(pool: &PgPool, rotation_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -89,7 +98,7 @@ impl Rotation {
 
     pub async fn fetch_all_as_map(pool: &PgPool) -> anyhow::Result<HashMap<i32, Self>> {
         let rotations = sqlx::query_as!(
-            Rotation,
+            RotationModel,
             r#"
             SELECT * FROM rotations;
             "#
@@ -99,7 +108,7 @@ impl Rotation {
 
         let map = rotations
             .into_iter()
-            .map(|rotation| { (rotation.id, rotation) })
+            .map(|rotation| { (rotation.id, Self(rotation, PhantomData)) })
             .collect::<HashMap<_, _>>();
 
         Ok(map)
@@ -120,10 +129,10 @@ impl Rotation {
     }
 
     pub fn id(&self) -> i32 {
-        self.id
+        self.0.id
     }
 
     pub fn last_updated(&self) -> DateTime<Utc> {
-        self.last_updated
+        self.0.last_updated
     }
 }

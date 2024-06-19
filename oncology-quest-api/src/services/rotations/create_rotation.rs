@@ -1,4 +1,4 @@
-use crate::models::rotation::Rotation;
+use crate::models::rotation::RotationModel;
 use crate::utilities::parsable::Name;
 use crate::services::prelude::*;
 
@@ -18,7 +18,7 @@ struct CreateRotationResponse {
 pub(super) async fn create_rotation(session: Session, pool: Data<PgPool>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
     auth_admin_session!(user_id, session, pool);
 
-    let mut rotation = Rotation::new(create_rotation_query.into_inner().name);
+    let mut rotation = RotationModel::new(create_rotation_query.into_inner().name);
 
     if rotation.insert(&pool).await.is_err() {
         return HttpResponse::InternalServerError().finish();

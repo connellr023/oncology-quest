@@ -12,7 +12,7 @@ struct UpdateUserTaskQuery {
 
 #[actix_web::patch("/update")]
 pub(super) async fn update_user_task(session: Session, pool: Data<PgPool>, update_user_task_query: Json<UpdateUserTaskQuery>) -> impl Responder {
-    auth_not_admin_session!(user_id, session, pool);
+    auth_regular_session!(user_id, session, pool);
 
     let update_user_task_query = update_user_task_query.into_inner();
 

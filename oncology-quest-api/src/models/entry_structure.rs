@@ -1,10 +1,9 @@
+use super::prelude::*;
 use crate::query_many;
 use crate::utilities::parsable::EntryTitle;
 use std::collections::HashMap;
-use sqlx::{FromRow, PgPool};
-use serde::Serialize;
 
-#[derive(Debug, FromRow, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Supertask {
     id: i32,
@@ -12,7 +11,7 @@ pub struct Supertask {
     rotation_id: i32,
 }
 
-#[derive(Debug, FromRow, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Task {
     id: i32,
@@ -21,7 +20,7 @@ pub struct Task {
     rotation_id: i32
 }
 
-#[derive(Debug, FromRow, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subtask {
     id: i32,
