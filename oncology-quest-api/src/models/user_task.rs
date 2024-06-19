@@ -14,9 +14,9 @@ struct UserTaskModel {
     comment: Comment
 }
 
-pub struct UserTask<SyncState>(UserTaskModel, PhantomData<SyncState>);
+pub struct UserTask<S>(UserTaskModel, PhantomData<S>);
 
-impl UserTask<DatabaseUnsynced> {
+impl UserTask<Unknown> {
     pub fn new(user_id: i32, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
         Self(
             UserTaskModel {

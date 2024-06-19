@@ -13,7 +13,7 @@ pub struct LoginUserQuery {
 
 #[actix_web::post("/login")]
 pub(super) async fn login_user(session: Session, pool: Data<PgPool>, login_user_query: Json<LoginUserQuery>) -> impl Responder {
-    let user = match User::validate_login(&pool, login_user_query.username.as_str(), login_user_query.password.as_str()).await {
+    let user = match User::login(&pool, login_user_query.username.as_str(), login_user_query.password.as_str()).await {
         Ok(user) => user,
         Err(_) => return HttpResponse::Unauthorized().finish()
     };
