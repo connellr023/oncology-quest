@@ -15,29 +15,35 @@ struct UserTaskModel {
 }
 
 #[derive(Serialize)]
-pub struct UserTask<S>(UserTaskModel, PhantomData<S>);
+pub struct UserTask<S> {
+    #[serde(flatten)]
+    model: UserTaskModel,
+
+    #[serde(skip)]
+    _marker: PhantomData<S>
+}
 
 impl<S> UserTask<S> {
     #[inline(always)]
     pub fn id(&self) -> i32 {
-        self.0.id
+        self.model.id
     }
 
     #[inline(always)]
     pub fn subtask_id(&self) -> i32 {
-        self.0.subtask_id
+        self.model.subtask_id
     }
 
     #[inline(always)]
     pub fn rotation_id(&self) -> i32 {
-        self.0.rotation_id
+        self.model.rotation_id
     }
 }
 
 impl UserTask<Unsynced> {
     pub fn new(user_id: i32, subtask_id: i32, rotation_id: i32, is_completed: bool, comment: Comment) -> Self {
-        Self(
-            UserTaskModel {
+        Self {
+            model: UserTaskModel {
                 id: -1,
                 user_id,
                 subtask_id,
@@ -45,8 +51,8 @@ impl UserTask<Unsynced> {
                 is_completed,
                 comment
             },
-            PhantomData
-        )
+            _marker: PhantomData
+        }
     }
 
     pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<Synced>> {
@@ -58,7 +64,7 @@ impl UserTask<Unsynced> {
             SET last_task_update = NOW()
             WHERE id = $1;
             "#,
-            self.0.user_id
+            self.model.user_id
         )
         .execute(&mut *transaction)
         .await?;
@@ -69,28 +75,28 @@ impl UserTask<Unsynced> {
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id;
             "#,
-            self.0.user_id,
-            self.0.subtask_id,
-            self.0.rotation_id,
-            self.0.is_completed,
-            self.0.comment.as_str()
+            self.model.user_id,
+            self.model.subtask_id,
+            self.model.rotation_id,
+            self.model.is_completed,
+            self.model.comment.as_str()
         )
         .fetch_one(&mut *transaction)
         .await?;
 
         transaction.commit().await?;
 
-        Ok(UserTask(
-            UserTaskModel {
+        Ok(UserTask {
+            model: UserTaskModel {
                 id: row.id,
-                user_id: self.0.user_id,
-                subtask_id: self.0.subtask_id,
-                rotation_id: self.0.rotation_id,
-                is_completed: self.0.is_completed,
-                comment: self.0.comment
+                user_id: self.model.user_id,
+                subtask_id: self.model.subtask_id,
+                rotation_id: self.model.rotation_id,
+                is_completed: self.model.is_completed,
+                comment: self.model.comment
             },
-            PhantomData
-        ))
+            _marker: PhantomData
+        })
     }
 
     pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
@@ -102,9 +108,9 @@ impl UserTask<Unsynced> {
                 WHERE subtask_id = $1 AND user_id = $2 AND rotation_id = $3
             ) AS "exists!";
             "#,
-            self.0.subtask_id,
-            self.0.user_id,
-            self.0.rotation_id
+            self.model.subtask_id,
+            self.model.user_id,
+            self.model.rotation_id
         )
         .fetch_one(pool)
         .await?;
@@ -114,6 +120,14 @@ impl UserTask<Unsynced> {
 }
 
 impl UserTask<Synced> {
+    #[inline(always)]
+    fn from(model: UserTaskModel) -> Self {
+        Self {
+            model,
+            _marker: PhantomData
+        }
+    }
+
     pub async fn fetch_as_map(pool: &PgPool, user_id: i32, rotation_id: i32) -> anyhow::Result<HashMap<i32, Self>> {        
         let user_tasks = sqlx::query_as!(
             UserTaskModel,
@@ -130,7 +144,7 @@ impl UserTask<Synced> {
 
         let map = user_tasks
             .into_iter()
-            .map(|task| { (task.subtask_id, Self(task, PhantomData)) })
+            .map(|task| { (task.subtask_id, Self::from(task)) })
             .collect::<HashMap<_, _>>();
 
         Ok(map)

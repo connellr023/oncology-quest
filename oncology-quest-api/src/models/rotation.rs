@@ -12,30 +12,36 @@ struct RotationModel {
 }
 
 #[derive(Serialize)]
-pub struct Rotation<S>(RotationModel, PhantomData<S>);
+pub struct Rotation<S> {
+    #[serde(flatten)]
+    model: RotationModel,
+
+    #[serde(skip)]
+    _marker: PhantomData<S>
+}
 
 impl<S> Rotation<S> {
     #[inline(always)]
     pub fn id(&self) -> i32 {
-        self.0.id
+        self.model.id
     }
 
     #[inline(always)]
     pub fn last_updated(&self) -> DateTime<Utc> {
-        self.0.last_updated
+        self.model.last_updated
     }
 }
 
 impl Rotation<Unsynced> {
     pub fn new(name: Name) -> Self {
-        Self(
-            RotationModel {
+        Self {
+            model: RotationModel {
                 id: 0,
                 name,
                 last_updated: Utc::now()
             },
-            PhantomData
-        )
+            _marker: PhantomData
+        }
     }
     
     pub async fn insert(self, pool: &PgPool) -> anyhow::Result<Rotation<Synced>> {
@@ -45,23 +51,31 @@ impl Rotation<Unsynced> {
             VALUES ($1)
             RETURNING id, last_updated;
             "#,
-            self.0.name.as_str()
+            self.model.name.as_str()
         )
         .fetch_one(pool)
         .await?;
 
-        Ok(Rotation(
-            RotationModel {
+        Ok(Rotation {
+            model: RotationModel {
                 id: row.id,
-                name: self.0.name,
+                name: self.model.name,
                 last_updated: row.last_updated
             },
-            PhantomData
-        ))
+            _marker: PhantomData
+        })
     }
 }
 
 impl Rotation<Synced> {
+    #[inline(always)]
+    fn from(model: RotationModel) -> Self {
+        Self {
+            model,
+            _marker: PhantomData
+        }
+    }
+
     pub async fn delete(pool: &PgPool, rotation_id: i32) -> anyhow::Result<()> {
         let mut transaction = pool.begin().await?;
 
@@ -121,7 +135,7 @@ impl Rotation<Synced> {
 
         let map = rotations
             .into_iter()
-            .map(|rotation| { (rotation.id, Self(rotation, PhantomData)) })
+            .map(|rotation| { (rotation.id, Self::from(rotation)) })
             .collect::<HashMap<_, _>>();
 
         Ok(map)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
-import { EntryStructure, UserTask } from "../../models/tasks"
+import { EntryStructure, UserTaskStructure } from "../../models/tasks"
 import { Rotation } from "../../models/rotation"
 
 import useProgress from "../../hooks/useProgress"
@@ -12,11 +12,10 @@ import UserTaskEntryItem from "./UserTaskEntryItem.vue"
 import ProgressableEntryItem from "./ProgressableEntryItem.vue"
 import PushStackIcon from "../vector/PushStackIcon.vue"
 import InputModal from "../InputModal.vue"
-import SelectRotationGraphic from "../vector/SelectRotationGraphic.vue"
 
 const props = defineProps<{
-  tasks: Record<number, UserTask>,
-  selectedRotation: Rotation | null
+  tasks: UserTaskStructure,
+  selectedRotation: Rotation,
   externalKey?: string | number,
 }>()
 
@@ -79,7 +78,7 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div class="entries-container" v-if="selectedRotation" :key="selectedRotation.id">
+  <div class="entries-container" :key="selectedRotation.id">
     <h1 class="section-heading">Tasks</h1>
     <ul>
       <ProgressableEntryItem
@@ -126,10 +125,6 @@ const {
       Push New CBD Phase
     </button>
   </div>
-  <div v-else class="note">
-    <SelectRotationGraphic class="graphic" />
-    <p>Select a rotation from the above list to get started.</p>
-  </div>
 </template>
 
 <style scoped lang="scss">
@@ -145,30 +140,6 @@ li.supertask {
   &:hover,
   &.focused {
     background-color: $secondary-bg-color;
-  }
-}
-
-div.note {
-  text-align: center;
-  font-size: clamp(19px, 1.3lvw, 24px);
-  text-wrap: wrap;
-  text-align: center;
-  margin-top: 10lvh;
-
-  svg {
-    width: 20lvw;
-    min-width: 240px;
-    max-width: 300px;
-    fill: $tertiary-bg-color;
-  }
-
-  &.empty-rotation {
-    padding: 30px;
-  }
-
-  &.empty-rotation,
-  p {
-    opacity: 0.8;
   }
 }
 </style>

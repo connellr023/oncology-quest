@@ -4,26 +4,42 @@ import { Rotation } from "../../models/rotation"
 import { User } from "../../models/user"
 
 import useEntries from "../../hooks/useEntries"
+import useRotations from "../../hooks/useRotations"
+import useUserTasks from "../../hooks/useUserTasks"
 
 import CheckIcon from "../vector/CheckIcon.vue"
 import EditIcon from "../vector/EditIcon.vue"
 import CancelIcon from "../vector/CancelIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
-import useRotations from "../../hooks/useRotations"
 
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 
 const { fetchEntriesWithCaching } = useEntries()
+const { fetchOwnTasksWithCaching } = useUserTasks()
 const { deleteRotation } = useRotations()
 
 const isEditing = ref(false)
 
+const seenRotations = new Set<number>()
+
 const selectRotation = async (rotation: Rotation) => {
+  if (seenRotations.has(rotation.id)) {
+    selectedRotation.value = rotation
+    return
+  }
+
   if (!await fetchEntriesWithCaching(rotation.id)) {
     console.error("Failed to fetch entries.")
     return
+  }
+
+  if (!session.value.isAdmin) {
+    if (!await fetchOwnTasksWithCaching(rotation.id)) {
+      console.error("Failed to fetch tasks.")
+      return
+    }
   }
 
   selectedRotation.value = rotation

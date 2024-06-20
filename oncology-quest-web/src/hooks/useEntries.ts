@@ -1,6 +1,7 @@
 import { Ref, inject } from "vue"
 import { EntryStructure } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
+
 import useCache from "./useCache"
 
 interface CreateEntryResponse {
@@ -237,14 +238,8 @@ const useEntries = () => {
         return false
     }
 
-    const seenRotations = new Set<number>()
-
     const fetchEntriesWithCaching = async (rotationId: number): Promise<boolean> => {
         const [cachedEntries, cacheTimestamp] = retrieveRotationEntries(rotationId)
-
-        if (seenRotations.has(rotationId)) {
-            return true
-        }
 
         const url = new URL(`${API_ENDPOINT}/api/entries/${rotationId}`)
 
@@ -261,24 +256,16 @@ const useEntries = () => {
 
         if (response.status === 304) {
             entries.value[rotationId] = cachedEntries || []
-            seenRotations.add(rotationId)
-
             return true
         }
 
         if (response.ok) {
-            try {
-                const data: EntryStructure = await response.json()
+            const data: EntryStructure = await response.json()
 
-                cacheRotationEntries(rotationId, data)
-                entries.value[rotationId] = data
-                seenRotations.add(rotationId)
+            cacheRotationEntries(rotationId, data)
+            entries.value[rotationId] = data
 
-                return true
-            }
-            catch (_) {
-                return false
-            }
+            return true
         }
 
         return false

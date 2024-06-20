@@ -1,27 +1,22 @@
-import { EntryStructure, UserTask } from "../models/tasks"
+import { EntryStructure, UserTaskStructure } from "../models/tasks"
 
 type RetrieveCacheResponse<T> = [T | null, string | null]
 
 const useCache = () => {
     const timestamp = () => new Date().toISOString()
 
-    const cacheUserTasks = (userId: number, tasks: Record<number, UserTask>) => {
-        sessionStorage.setItem("tasks", JSON.stringify(tasks))
-        sessionStorage.setItem("tasksOwner", userId.toString())
-        sessionStorage.setItem("taskCacheTimestamp", timestamp())
+    const cacheUserTasks = (userId: number, rotationId: number, tasks: UserTaskStructure) => {
+        sessionStorage.setItem(`taskCacheTimestamp.${userId}`, timestamp())
+        sessionStorage.setItem(`tasks.${rotationId}.${userId}`, JSON.stringify(tasks))
     }
 
-    const retrieveTasksOwner = (): number | null => {
-        const owner = sessionStorage.getItem("tasksOwner")
-        return owner ? parseInt(owner) : null
-    }
-
-    const retrieveUserTasks = (): RetrieveCacheResponse<Record<number, UserTask>> => {
-        const cachedTasks = sessionStorage.getItem("tasks")
+    const retrieveUserTasks = (userId: number, rotationId: number): RetrieveCacheResponse<UserTaskStructure> => {
+        const cachedTasks = sessionStorage.getItem(`tasks.${rotationId}.${userId}`)
+        const parsedTasks = cachedTasks ? JSON.parse(cachedTasks) as UserTaskStructure : null
 
         return [
-            cachedTasks ? JSON.parse(cachedTasks) : null,
-            sessionStorage.getItem("taskCacheTimestamp")
+            parsedTasks,
+            sessionStorage.getItem(`taskCacheTimestamp.${userId}`)
         ]
     }
 
@@ -40,27 +35,11 @@ const useCache = () => {
         ]
     }
 
-    const retrieveOrCacheUserTasks = (userId: number, tasks?: Record<number, UserTask>): Record<number, UserTask> => {
-        if (tasks) {
-            cacheUserTasks(userId, tasks)
-            return tasks
-        }
-
-        if (userId !== retrieveTasksOwner()) {
-            cacheUserTasks(userId, {})
-            return {}
-        }
-
-        const [cachedTasks] = retrieveUserTasks()
-        return cachedTasks || {}
-    }
-
     return {
         cacheUserTasks,
         retrieveUserTasks,
         cacheRotationEntries,
-        retrieveRotationEntries,
-        retrieveOrCacheUserTasks
+        retrieveRotationEntries
     }
 }
 

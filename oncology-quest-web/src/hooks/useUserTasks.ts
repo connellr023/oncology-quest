@@ -1,20 +1,54 @@
 import { Ref, inject } from "vue"
-import { UserTask } from "../models/tasks"
+import { UserTaskStructure } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
-import useCache from "./useCache"
 import { User } from "../models/user"
+
+import useCache from "./useCache"
 
 interface CreateUserTaskResponse {
     id: number
 }
 
 const useUserTasks = () => {
-    const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
+    const tasks = inject<Ref<Record<number, UserTaskStructure>>>("tasks")!
     const session = inject<Ref<User>>("session")!
 
-    const { cacheUserTasks } = useCache()
+    const { cacheUserTasks, retrieveUserTasks } = useCache()
 
-    const updateTask = async (subtaskId: number, isCompleted: boolean, comment: string): Promise<boolean> => {
+    const fetchOwnTasksWithCaching = async (rotationId: number): Promise<boolean> => {
+        const [cachedTasks, cacheTimestamp] = retrieveUserTasks(session.value.id, rotationId)
+
+        const url = new URL(`${API_ENDPOINT}/api/tasks/${rotationId}`)
+
+        if (cacheTimestamp) {
+            url.searchParams.append("taskCacheTimestamp", cacheTimestamp)
+        }
+
+        const response = await fetch(url, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+
+        if (response.status === 304) {
+            tasks.value[rotationId] = cachedTasks || {}
+            return true
+        }
+
+        if (response.ok) {
+            const data: UserTaskStructure = await response.json()
+
+            cacheUserTasks(session.value.id, rotationId, data)
+            tasks.value[rotationId] = data
+
+            return true
+        }
+
+        return false
+    }
+
+    const updateTask = async (rotationId: number, subtaskId: number, isCompleted: boolean, comment: string): Promise<boolean> => {
         if (tasks.value[subtaskId]) {
             const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
                 credentials: "include",
@@ -23,17 +57,17 @@ const useUserTasks = () => {
                 },
                 method: "PATCH",
                 body: JSON.stringify({
-                    id: tasks.value[subtaskId].id,
+                    id: tasks.value[rotationId][subtaskId].id,
                     isCompleted,
                     comment
                 })
             })
 
             if (response.ok) {
-                tasks.value[subtaskId].isCompleted = isCompleted
-                tasks.value[subtaskId].comment = comment
+                tasks.value[rotationId][subtaskId].isCompleted = isCompleted
+                tasks.value[rotationId][subtaskId].comment = comment
 
-                cacheUserTasks(session.value.id, tasks.value)
+                cacheUserTasks(session.value.id, rotationId, tasks.value[rotationId])
                 return true
             }
         }
@@ -46,6 +80,7 @@ const useUserTasks = () => {
                 method: "POST",
                 body: JSON.stringify({
                     subtaskId,
+                    rotationId,
                     isCompleted,
                     comment
                 })
@@ -54,7 +89,7 @@ const useUserTasks = () => {
             if (response.ok) {
                 const data: CreateUserTaskResponse = await response.json()
 
-                tasks.value[subtaskId] = {
+                tasks.value[rotationId][subtaskId] = {
                     id: data.id,
                     userId: session.value.id,
                     subtaskId,
@@ -62,7 +97,7 @@ const useUserTasks = () => {
                     comment
                 }
 
-                cacheUserTasks(session.value.id, tasks.value)
+                cacheUserTasks(session.value.id, rotationId, tasks.value[rotationId])
                 return true
             }
         }
@@ -71,6 +106,7 @@ const useUserTasks = () => {
     }
 
     return {
+        fetchOwnTasksWithCaching,
         updateTask
     }
 }

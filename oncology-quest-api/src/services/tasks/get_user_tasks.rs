@@ -3,13 +3,13 @@ use crate::services::prelude::*;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct GetUserTasksQuery {
+struct GetOwnTasksQuery {
     pub tasks_cache_timestamp: Option<DateTime<Utc>>
 }
 
 #[actix_web::get("/{rotation_id}")]
-pub(super) async fn get_user_tasks(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>, query: Query<GetUserTasksQuery>) -> impl Responder {
-    let user_id = match handle_any_session_validation(&session) {
+pub(super) async fn get_own_tasks(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>, query: Query<GetOwnTasksQuery>) -> impl Responder {
+    let user_id = match handle_regular_session_validation(&pool, &session).await {
         Ok(user_id) => user_id,
         Err(response) => return response
     };
@@ -21,6 +21,18 @@ pub(super) async fn get_user_tasks(session: Session, pool: Data<PgPool>, rotatio
     }
     
     match UserTask::fetch_as_map(&pool, user_id, *rotation_id).await {
+        Ok(user_tasks) => HttpResponse::Ok().json(user_tasks),
+        Err(_) => HttpResponse::InternalServerError().finish()
+    }
+}
+
+#[actix_web::get("/{rotation_id}/{user_id}")]
+pub(super) async fn get_user_tasks(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>, user_id: Path<i32>) -> impl Responder {
+    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+        return response;
+    }
+
+    match UserTask::fetch_as_map(&pool, *user_id, *rotation_id).await {
         Ok(user_tasks) => HttpResponse::Ok().json(user_tasks),
         Err(_) => HttpResponse::InternalServerError().finish()
     }

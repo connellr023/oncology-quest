@@ -2,7 +2,7 @@
 import { onMounted, provide, ref } from "vue"
 import { UserWithTasks } from "./models/user"
 import { Rotation } from "./models/rotation"
-import { EntryStructure } from "./models/tasks"
+import { EntryStructure, UserTaskStructure } from "./models/tasks"
 
 import useSession from "./hooks/useSession"
 
@@ -13,19 +13,20 @@ import MainLogo from "./components/vector/MainLogo.vue"
 const {
   fetchSession,
   session,
-  tasks,
   rotations,
   loading,
   connectionError
 } = useSession()
 provide("session", session)
-provide("tasks", tasks)
 provide("rotations", rotations)
 
 onMounted(fetchSession)
 
 const entries = ref<Record<number, EntryStructure>>({})
 provide("entries", entries)
+
+const tasks = ref<Record<number, UserTaskStructure>>({})
+provide("tasks", tasks)
 
 const selectedUser = ref<UserWithTasks | null>(null)
 provide("selectedUser", selectedUser)
