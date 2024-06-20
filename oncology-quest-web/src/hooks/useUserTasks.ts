@@ -12,6 +12,7 @@ interface CreateUserTaskResponse {
 const useUserTasks = () => {
     const tasks = inject<Ref<Record<number, UserTaskStructure>>>("tasks")!
     const session = inject<Ref<User>>("session")!
+    const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
 
     const { cacheUserTasks, retrieveUserTasks } = useCache()
 
@@ -41,6 +42,36 @@ const useUserTasks = () => {
 
             cacheUserTasks(session.value.id, rotationId, data)
             tasks.value[rotationId] = data
+
+            return true
+        }
+
+        return false
+    }
+
+    const userTasksMemo = new Map<string, UserTaskStructure>()
+
+    const fetchUserTasksWithMemo = async (rotationId: number, userId: number): Promise<boolean> => {
+        const key = `${userId}.${rotationId}`
+        const memo = userTasksMemo.get(key)
+        
+        if (memo) {
+            selectedUserTasks.value = memo
+            return true
+        }
+        
+        const response = await fetch(`${API_ENDPOINT}/api/tasks/${userId}/${rotationId}`, {
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+
+        if (response.ok) {
+            const data: UserTaskStructure = await response.json()
+
+            selectedUserTasks.value = data
+            userTasksMemo.set(key, data)
 
             return true
         }
@@ -107,6 +138,7 @@ const useUserTasks = () => {
 
     return {
         fetchOwnTasksWithCaching,
+        fetchUserTasks: fetchUserTasksWithMemo,
         updateTask
     }
 }

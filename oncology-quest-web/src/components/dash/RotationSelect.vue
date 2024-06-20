@@ -15,9 +15,10 @@ import DeleteIcon from "../vector/DeleteIcon.vue"
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
+const selectedUser = inject<Ref<User | null>>("selectedUser")!
 
 const { fetchEntriesWithCaching } = useEntries()
-const { fetchOwnTasksWithCaching } = useUserTasks()
+const { fetchOwnTasksWithCaching, fetchUserTasks } = useUserTasks()
 const { deleteRotation } = useRotations()
 
 const isEditing = ref(false)
@@ -25,6 +26,13 @@ const isEditing = ref(false)
 const seenRotations = new Set<number>()
 
 const selectRotation = async (rotation: Rotation) => {
+  if (session.value.isAdmin) {
+    if (selectedUser.value && !await fetchUserTasks(rotation.id, selectedUser.value.id)) {
+      console.error("Failed to fetch user tasks.")
+      return
+    }
+  }
+
   if (seenRotations.has(rotation.id)) {
     selectedRotation.value = rotation
     return
@@ -37,7 +45,7 @@ const selectRotation = async (rotation: Rotation) => {
 
   if (!session.value.isAdmin) {
     if (!await fetchOwnTasksWithCaching(rotation.id)) {
-      console.error("Failed to fetch tasks.")
+      console.error("Failed to fetch owned tasks.")
       return
     }
   }

@@ -1,5 +1,5 @@
 import { Ref, inject } from "vue"
-import { EntryStructure, UserTask } from "../models/tasks"
+import { EntryStructure, UserTaskStructure } from "../models/tasks"
 import { Rotation } from "../models/rotation"
 
 import jsPDF from "jspdf"
@@ -8,7 +8,7 @@ const useExportProgress = () => {
     const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
     const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 
-    const exportProgress = (name: string, tasks: Record<number, UserTask>) => {
+    const exportProgress = (name: string, tasks: UserTaskStructure) => {
         if (!selectedRotation.value) {
             return
         }

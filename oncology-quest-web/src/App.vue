@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue"
-import { UserWithTasks } from "./models/user"
+import { User } from "./models/user"
 import { Rotation } from "./models/rotation"
 import { EntryStructure, UserTaskStructure } from "./models/tasks"
 
@@ -28,8 +28,11 @@ provide("entries", entries)
 const tasks = ref<Record<number, UserTaskStructure>>({})
 provide("tasks", tasks)
 
-const selectedUser = ref<UserWithTasks | null>(null)
+const selectedUser = ref<User | null>(null)
 provide("selectedUser", selectedUser)
+
+const selectedUserTasks = ref<UserTaskStructure | null>(null)
+provide("selectedUserTasks", selectedUserTasks)
 
 const selectedRotation = ref<Rotation | null>(null)
 provide("selectedRotation", selectedRotation)

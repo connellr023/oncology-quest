@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, inject, watch } from "vue"
 import { UserTaskStructure } from "../models/tasks"
-import { User, UserWithTasks } from "../models/user";
+import { User } from "../models/user";
 import { Rotation } from "../models/rotation";
 
 import ManageUsersBar from "../components/ManageUsersBar.vue"
@@ -12,11 +12,12 @@ import SelectRotationGraphic from "../components/vector/SelectRotationGraphic.vu
 
 const session = inject<Ref<User>>("session")!
 const tasks = inject<Ref<Record<number, UserTaskStructure>>>("tasks")!
-const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
+const selectedUser = inject<Ref<User | null>>("selectedUser")!
+const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
-watch(() => [selectedUser.value?.user.id, selectedRotation.value?.id], () => {
+watch(() => [selectedUser.value?.id, selectedRotation.value?.id], () => {
   isEditing.value = false
 })
 </script>
@@ -28,10 +29,8 @@ watch(() => [selectedUser.value?.user.id, selectedRotation.value?.id], () => {
       <TopBar />
       <div class="dash-content">
         <RotationSelect />
-        <template v-if="selectedRotation">
-          <Entries v-if="session.isAdmin" :selectedRotation="selectedRotation" :key="`${selectedUser?.user.id}.${selectedRotation?.id}`" :tasks="selectedUser?.tasks || {}" />
-          <Entries v-else :tasks="tasks[selectedRotation.id]" :key="selectedRotation.id" :selectedRotation="selectedRotation" />
-        </template>
+        <Entries :key="`${selectedRotation.id}.${selectedUser?.id}`" v-if="session.isAdmin && selectedRotation && selectedUserTasks" :selectedRotation="selectedRotation" :tasks="selectedUserTasks" />
+        <Entries :key="selectedRotation.id" v-else-if="!session.isAdmin && selectedRotation" :tasks="tasks[selectedRotation.id]" :selectedRotation="selectedRotation" />
         <div v-else class="note">
           <SelectRotationGraphic class="graphic" />
           <p>Select a rotation from the above list to get started.</p>
