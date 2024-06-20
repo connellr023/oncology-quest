@@ -1,7 +1,7 @@
 import { Ref, inject } from "vue"
-import { EntryStructure, UserTask } from "../models/tasks"
+import { EntryStructure, UserTaskStructure } from "../models/tasks"
 
-const useProgress = (userTasks: Record<number, UserTask>) => {
+const useProgress = (userTasks: UserTaskStructure) => {
     const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
     const calculateTaskProgress = (rotationId: number, supertaskIndex: number, taskIndex: number): number => {

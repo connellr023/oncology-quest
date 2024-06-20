@@ -39,26 +39,26 @@ pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, creat
         Ok(exists) => if exists {
             return HttpResponse::Conflict().finish();
         },
-        Err(_) => return HttpResponse::InternalServerError().finish()
+        Err(_) => return HttpResponse::InternalServerError().body("Failed to check if user task exists.")
     }
 
     match Subtask::exists(&pool, user_task.subtask_id()).await {
         Ok(exists) => if !exists {
             return HttpResponse::BadRequest().finish();
         },
-        Err(_) => return HttpResponse::InternalServerError().finish()
+        Err(_) => return HttpResponse::InternalServerError().body("Failed to check if subtask exists.")
     }
 
     match Rotation::exists(&pool, user_task.rotation_id()).await {
         Ok(exists) => if !exists {
             return HttpResponse::BadRequest().finish();
         },
-        Err(_) => return HttpResponse::InternalServerError().finish()
+        Err(_) => return HttpResponse::InternalServerError().body("Failed to check if rotation exists.")
     }
 
     let user_task = match user_task.insert(&pool).await {
         Ok(user_task) => user_task,
-        Err(_) => return HttpResponse::InternalServerError().finish()
+        Err(_) => return HttpResponse::InternalServerError().body("Failed to insert user task.")
     };
 
     HttpResponse::Created().json(CreateUserTaskResponse { id: user_task.id() })

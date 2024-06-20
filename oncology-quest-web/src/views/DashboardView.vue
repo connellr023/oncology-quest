@@ -30,7 +30,7 @@ watch(() => [selectedUser.value?.user.id, selectedRotation.value?.id], () => {
         <RotationSelect />
         <template v-if="selectedRotation">
           <Entries v-if="session.isAdmin" :selectedRotation="selectedRotation" :key="`${selectedUser?.user.id}.${selectedRotation?.id}`" :tasks="selectedUser?.tasks || {}" />
-          <Entries v-else :tasks="tasks[selectedRotation.id]" :selectedRotation="selectedRotation" />
+          <Entries v-else :tasks="tasks[selectedRotation.id]" :key="selectedRotation.id" :selectedRotation="selectedRotation" />
         </template>
         <div v-else class="note">
           <SelectRotationGraphic class="graphic" />
@@ -82,7 +82,7 @@ div.dash-container {
     height: 100%;
 
     div.dash-content {
-      height: calc(100% - 85px);
+      height: calc(100% - 60px);
       overflow-y: auto;
     }
   }

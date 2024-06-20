@@ -55,7 +55,7 @@ provide("resetAll", resetAll)
       <div v-if="connectionError" class="connect-error"><b><i>Oncology Quest</i></b> is currently under maintenance</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
-        <DashboardView :resetAll="resetAll" v-else />
+        <DashboardView v-else />
       </div>
     </div>
   </main>

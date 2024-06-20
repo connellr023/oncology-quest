@@ -6,7 +6,7 @@ const useCache = () => {
     const timestamp = () => new Date().toISOString()
 
     const cacheUserTasks = (userId: number, rotationId: number, tasks: UserTaskStructure) => {
-        sessionStorage.setItem(`taskCacheTimestamp.${userId}`, timestamp())
+        sessionStorage.setItem(`tasksCacheTimestamp.${userId}`, timestamp())
         sessionStorage.setItem(`tasks.${rotationId}.${userId}`, JSON.stringify(tasks))
     }
 
@@ -16,7 +16,7 @@ const useCache = () => {
 
         return [
             parsedTasks,
-            sessionStorage.getItem(`taskCacheTimestamp.${userId}`)
+            sessionStorage.getItem(`tasksCacheTimestamp.${userId}`)
         ]
     }
 

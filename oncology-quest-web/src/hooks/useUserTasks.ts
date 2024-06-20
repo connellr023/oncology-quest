@@ -21,7 +21,7 @@ const useUserTasks = () => {
         const url = new URL(`${API_ENDPOINT}/api/tasks/${rotationId}`)
 
         if (cacheTimestamp) {
-            url.searchParams.append("taskCacheTimestamp", cacheTimestamp)
+            url.searchParams.append("tasksCacheTimestamp", cacheTimestamp)
         }
 
         const response = await fetch(url, {
@@ -49,7 +49,7 @@ const useUserTasks = () => {
     }
 
     const updateTask = async (rotationId: number, subtaskId: number, isCompleted: boolean, comment: string): Promise<boolean> => {
-        if (tasks.value[subtaskId]) {
+        if (tasks.value[rotationId][subtaskId]) {
             const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
                 credentials: "include",
                 headers: {

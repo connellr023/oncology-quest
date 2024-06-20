@@ -42,6 +42,7 @@ const selectRotation = async (rotation: Rotation) => {
     }
   }
 
+  seenRotations.add(rotation.id)
   selectedRotation.value = rotation
 }
 

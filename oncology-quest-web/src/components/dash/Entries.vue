@@ -78,7 +78,7 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div class="entries-container" :key="selectedRotation.id">
+  <div class="entries-container">
     <h1 class="section-heading">Tasks</h1>
     <ul>
       <ProgressableEntryItem
