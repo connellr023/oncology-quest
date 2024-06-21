@@ -1,5 +1,4 @@
 use super::prelude::*;
-use crate::query_many;
 use crate::utilities::parsable::Name;
 use std::{collections::HashMap, marker::PhantomData};
 
@@ -77,17 +76,14 @@ impl Rotation<Synced> {
     }
 
     pub async fn delete(pool: &PgPool, rotation_id: i32) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-
-        query_many!(&mut *transaction, rotation_id,
-            "DELETE FROM user_tasks WHERE subtask_id = ANY(SELECT id FROM subtasks WHERE rotation_id = $1)",
-            "DELETE FROM subtasks WHERE rotation_id = $1",
-            "DELETE FROM tasks WHERE rotation_id = $1",
-            "DELETE FROM supertasks WHERE rotation_id = $1",
-            "DELETE FROM rotations WHERE id = $1",
-        );
-
-        transaction.commit().await?;
+        sqlx::query!(
+            r#"
+            DELETE FROM rotations WHERE id = $1;
+            "#,
+            rotation_id
+        )
+        .execute(pool)
+        .await?;
 
         Ok(())
     }

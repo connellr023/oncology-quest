@@ -125,7 +125,7 @@ const {
         </button>
       </ProgressableEntryItem>
     </ul>
-    <div class="empty-rotation note" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
+    <div class="empty-rotation" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
     <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push highlight" v-if="session.isAdmin">
       <PushStackIcon />
       Push New CBD Phase
@@ -135,6 +135,11 @@ const {
 
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
+
+div.empty-rotation {
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
 
 button.push {
   width: 100%;

@@ -1,5 +1,4 @@
 use super::prelude::*;
-use crate::query_many;
 use crate::utilities::parsable::EntryTitle;
 use std::collections::HashMap;
 
@@ -47,7 +46,7 @@ type EntryHierarchy = EntryLevel<Supertask, EntryLevel<Task, Subtask>>;
 #[derive(Serialize, Debug)]
 pub struct EntryStructure(Vec<EntryHierarchy>);
 
-macro_rules! fetch_all {
+macro_rules! entity_operations {
     ($struct_name:ident, $table_name:literal) => {
         pub async fn fetch_all(pool: &PgPool, rotation_id: i32) -> anyhow::Result<Box<[Self]>> {
             let records = sqlx::query_as!(
@@ -60,11 +59,7 @@ macro_rules! fetch_all {
 
             Ok(records.into_boxed_slice())
         }
-    };
-}
 
-macro_rules! update_title {
-    ($struct_name:ident, $table_name:literal) => {
         pub async fn update_title(pool: &PgPool, id: i32, title: &str) -> anyhow::Result<()> {
             let mut transaction = pool.begin().await?;
 
@@ -87,12 +82,33 @@ macro_rules! update_title {
 
             Ok(())
         }
+
+        pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
+            let mut transaction = pool.begin().await?;
+
+            sqlx::query!(
+                "DELETE FROM " + $table_name + " WHERE id = $1;",
+                id
+            )
+            .execute(&mut *transaction)
+            .await?;
+
+            sqlx::query!(
+                "UPDATE rotations SET last_updated = NOW() WHERE id = (SELECT rotation_id FROM " + $table_name + " WHERE id = $1);",
+                id
+            )
+            .execute(&mut *transaction)
+            .await?;
+
+            transaction.commit().await?;
+
+            Ok(())
+        }
     };
 }
 
 impl Supertask {
-    fetch_all!(Supertask, "supertasks");
-    update_title!(Supertask, "supertasks");
+    entity_operations!(Supertask, "supertasks");
 
     pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
@@ -120,26 +136,10 @@ impl Supertask {
 
         Ok(row.id)
     }
-
-    pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-
-        query_many!(&mut *transaction, id,
-            "DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE supertask_id = $1)",
-            "DELETE FROM tasks WHERE supertask_id = $1",
-            "DELETE FROM supertasks WHERE id = $1",
-            "UPDATE rotations SET last_updated = NOW() WHERE id = (SELECT rotation_id FROM supertasks WHERE id = $1);"
-        );
-
-        transaction.commit().await?;
-
-        Ok(())
-    }
 }
 
 impl Task {
-    fetch_all!(Task, "tasks");
-    update_title!(Task, "tasks");
+    entity_operations!(Task, "tasks");
 
     pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32, supertask_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
@@ -170,25 +170,10 @@ impl Task {
 
         Ok(row.id)
     }
-
-    pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-
-        query_many!(&mut *transaction, id,
-            "DELETE FROM subtasks WHERE task_id = $1",
-            "DELETE FROM tasks WHERE id = $1",
-            "UPDATE rotations SET last_updated = NOW() WHERE id = (SELECT rotation_id FROM tasks WHERE id = $1);"
-        );
-
-        transaction.commit().await?;
-
-        Ok(())
-    }
 }
 
 impl Subtask {
-    fetch_all!(Subtask, "subtasks");
-    update_title!(Subtask, "subtasks");
+    entity_operations!(Subtask, "subtasks");
 
     pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32, task_id: i32) -> anyhow::Result<i32> {
         let mut transaction = pool.begin().await?;
@@ -230,19 +215,6 @@ impl Subtask {
         .exists;
 
         Ok(exists.unwrap_or(false))
-    }
-
-    pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-
-        query_many!(&mut *transaction, id,
-            "DELETE FROM subtasks WHERE id = $1",
-            "UPDATE rotations SET last_updated = NOW() WHERE id = (SELECT rotation_id FROM subtasks WHERE id = $1);"
-        );
-
-        transaction.commit().await?;
-
-        Ok(())
     }
 }
 

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS user_tasks(
     rotation_id INT NOT NULL,
     is_completed BOOLEAN NOT NULL,
     comment TEXT NOT NULL DEFAULT '',
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (subtask_id) REFERENCES subtasks(id),
-    FOREIGN KEY (rotation_id) REFERENCES rotations(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (subtask_id) REFERENCES subtasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (rotation_id) REFERENCES rotations(id) ON DELETE CASCADE
 );
