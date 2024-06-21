@@ -16,7 +16,7 @@ import InputModal from "../InputModal.vue"
 const props = defineProps<{
   tasks: UserTaskStructure,
   selectedRotation: Rotation,
-  externalKey?: string | number,
+  selectedUserName?: string
 }>()
 
 const session = inject<Ref<User>>("session")!
@@ -79,7 +79,13 @@ const {
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
   <div class="entries-container">
-    <h1 class="section-heading">Tasks</h1>
+    <h1 class="section-heading">
+      <template v-if="session.isAdmin">
+        <template v-if="selectedUserName">{{ selectedUserName }}'s Progress</template>
+        <template v-else>Tasks</template>
+      </template>
+      <template v-else>My Progress</template>
+    </h1>
     <ul>
       <ProgressableEntryItem
         v-for="(supertask, supertaskIndex) in entries[selectedRotation.id]"

@@ -1,24 +1,9 @@
-import { EntryStructure, UserTaskStructure } from "../models/tasks"
+import { EntryStructure } from "../models/tasks"
 
 type RetrieveCacheResponse<T> = [T | null, string | null]
 
 const useCache = () => {
     const timestamp = () => new Date().toISOString()
-
-    const cacheUserTasks = (userId: number, rotationId: number, tasks: UserTaskStructure) => {
-        sessionStorage.setItem(`tasksCacheTimestamp.${userId}`, timestamp())
-        sessionStorage.setItem(`tasks.${rotationId}.${userId}`, JSON.stringify(tasks))
-    }
-
-    const retrieveUserTasks = (userId: number, rotationId: number): RetrieveCacheResponse<UserTaskStructure> => {
-        const cachedTasks = sessionStorage.getItem(`tasks.${rotationId}.${userId}`)
-        const parsedTasks = cachedTasks ? JSON.parse(cachedTasks) as UserTaskStructure : null
-
-        return [
-            parsedTasks,
-            sessionStorage.getItem(`tasksCacheTimestamp.${userId}`)
-        ]
-    }
 
     const cacheRotationEntries = (rotationId: number, entries: EntryStructure) => {
         sessionStorage.setItem(`entries.${rotationId}`, JSON.stringify(entries))
@@ -36,8 +21,6 @@ const useCache = () => {
     }
 
     return {
-        cacheUserTasks,
-        retrieveUserTasks,
         cacheRotationEntries,
         retrieveRotationEntries
     }

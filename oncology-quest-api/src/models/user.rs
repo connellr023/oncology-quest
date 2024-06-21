@@ -387,25 +387,6 @@ impl User<Synced> {
         Ok((row.password_reset_timestamp, token))
     }
 
-    pub async fn is_task_cache_valid(pool: &PgPool, user_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<bool> {
-        let cache_timestamp = match cache_timestamp {
-            Some(cache_timestamp) => cache_timestamp,
-            None => return Ok(false)
-        };
-
-        let last_updated = sqlx::query!(
-            r#"
-            SELECT last_task_update FROM users WHERE id = $1;
-            "#,
-            user_id
-        )
-        .fetch_one(pool)
-        .await?
-        .last_task_update;
-
-        Ok(cache_timestamp >= last_updated)
-    }
-
     #[inline(always)]
     pub async fn delete_self(self, pool: &PgPool) -> anyhow::Result<bool> {
         Self::delete(pool, self.id(), true).await

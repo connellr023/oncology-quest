@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, inject, watch } from "vue"
+import { Ref, inject, ref, watch } from "vue"
 import { UserTaskStructure } from "../models/tasks"
 import { User } from "../models/user";
 import { Rotation } from "../models/rotation";
@@ -17,9 +17,22 @@ const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTas
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
-watch(() => [selectedUser.value?.id, selectedRotation.value?.id], () => {
-  isEditing.value = false
-})
+const loadedTasksUserId = ref<number | undefined>(undefined)
+
+if (session.value.isAdmin) {
+  watch(() => [selectedUser.value?.id, selectedRotation.value?.id], () => {
+    isEditing.value = false
+  })
+
+  watch(() => selectedUserTasks.value, (newVal) => {
+    if (newVal) {
+      loadedTasksUserId.value = selectedUser.value?.id
+    }
+    else {
+      loadedTasksUserId.value = undefined
+    }
+  }, { deep: true })
+}
 </script>
 
 <template>
@@ -29,7 +42,7 @@ watch(() => [selectedUser.value?.id, selectedRotation.value?.id], () => {
       <TopBar />
       <div class="dash-content">
         <RotationSelect />
-        <Entries :key="`${selectedRotation.id}.${selectedUser?.id}`" v-if="session.isAdmin && selectedRotation && selectedUserTasks" :selectedRotation="selectedRotation" :tasks="selectedUserTasks" />
+        <Entries :key="`${selectedRotation.id}.${loadedTasksUserId}`" :selectedUserName="selectedUser?.name" v-if="session.isAdmin && selectedRotation" :selectedRotation="selectedRotation" :tasks="selectedUserTasks || {}" />
         <Entries :key="selectedRotation.id" v-else-if="!session.isAdmin && selectedRotation" :tasks="tasks[selectedRotation.id]" :selectedRotation="selectedRotation" />
         <div v-else class="note">
           <SelectRotationGraphic class="graphic" />

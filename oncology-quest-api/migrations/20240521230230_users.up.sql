@@ -7,6 +7,5 @@ CREATE TABLE IF NOT EXISTS users(
     is_admin BOOLEAN NOT NULL,
     salt BIGINT NOT NULL,
     password TEXT NOT NULL,
-    login_count INT DEFAULT 0 NOT NULL,
-    last_task_update TIMESTAMPTZ DEFAULT NOW() NOT NULL
+    login_count INT DEFAULT 0 NOT NULL
 );

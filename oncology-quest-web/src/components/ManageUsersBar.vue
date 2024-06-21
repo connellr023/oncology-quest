@@ -20,7 +20,6 @@ import ExportIcon from "./vector/ExportIcon.vue"
 
 const selectedUser = inject<Ref<User | null>>("selectedUser")!
 const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
-const selectedRotation = inject<Ref<User | null>>("selectedRotation")!
 const session = inject<Ref<User | null>>("session")!
   
 const { search, results, loading, searchError } = useUserSearch()
@@ -53,7 +52,6 @@ const searchUser = () => {
 const setSelectedUser = (selection: User) => {
   selectedUser.value = selection
   showUserOptions.value = false
-  selectedRotation.value = null
 }
 
 const toggleUserOptions = () => {

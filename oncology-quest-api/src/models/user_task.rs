@@ -56,19 +56,6 @@ impl UserTask<Unsynced> {
     }
 
     pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<Synced>> {
-        let mut transaction = pool.begin().await?;
-        
-        sqlx::query!(
-            r#"
-            UPDATE users
-            SET last_task_update = NOW()
-            WHERE id = $1;
-            "#,
-            self.model.user_id
-        )
-        .execute(&mut *transaction)
-        .await?;
-
         let row = sqlx::query!(
             r#"
             INSERT INTO user_tasks (user_id, subtask_id, rotation_id, is_completed, comment)
@@ -81,10 +68,8 @@ impl UserTask<Unsynced> {
             self.model.is_completed,
             self.model.comment.as_str()
         )
-        .fetch_one(&mut *transaction)
+        .fetch_one(pool)
         .await?;
-
-        transaction.commit().await?;
 
         Ok(UserTask {
             model: UserTaskModel {
@@ -151,19 +136,6 @@ impl UserTask<Synced> {
     }
 
     pub async fn update(pool: &PgPool, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-        
-        sqlx::query!(
-            r#"
-            UPDATE users
-            SET last_task_update = NOW()
-            WHERE id = $1;
-            "#,
-            user_id
-        )
-        .execute(&mut *transaction)
-        .await?;
-        
         let update_query = sqlx::query!(
             r#"
             UPDATE user_tasks
@@ -175,10 +147,8 @@ impl UserTask<Synced> {
             id,
             user_id
         )
-        .execute(&mut *transaction)
+        .execute(pool)
         .await?;
-
-        transaction.commit().await?;
 
         if update_query.rows_affected() == 0 {
             return Err(anyhow!("User task does not exist."));
