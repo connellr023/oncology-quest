@@ -5,7 +5,7 @@ const SEARCH_LIMIT: i64 = 10;
 
 #[actix_web::get("/search/{query}")]
 pub(super) async fn search_users(session: Session, pool: Data<PgPool>, query: Path<String>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 

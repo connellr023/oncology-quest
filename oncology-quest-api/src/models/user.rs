@@ -1,11 +1,9 @@
 use super::prelude::*;
 use crate::utilities::parsable::{Name, PlainTextPassword, ResetToken, Username};
-use actix_session::Session;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use anyhow::anyhow;
 
 const PASSWORD_RESET_TOKEN_LENGTH: usize = 4;
-const SESSION_USER_ID_KEY: &str = "uid";
 
 #[derive(Debug, Clone)]
 struct UserModel {
@@ -330,10 +328,7 @@ impl User<Synced> {
         Ok(Self(result, PhantomData))
     }
 
-    pub async fn validate_admin_session(pool: &PgPool, session: &Session) -> anyhow::Result<bool> {
-        let user_id = UserSession::extract_user_id(session)
-            .ok_or_else(|| anyhow!("User ID not found in session"))?;
-
+    pub async fn is_id_admin(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
         let exists = sqlx::query!(
             r#"
             SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 AND is_admin = TRUE) AS "exists!";
@@ -397,27 +392,5 @@ impl User<Synced> {
     #[inline(always)]
     pub async fn delete_other(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
         Self::delete(pool, user_id, false).await
-    }
-}
-
-pub struct UserSession;
-
-impl UserSession {
-    /// Checks if the provided session is valid.
-    #[inline(always)]
-    pub fn extract_user_id(session: &Session) -> Option<i32> {
-        session.get::<i32>(SESSION_USER_ID_KEY)
-            .ok()?
-            .clone()
-    }
-
-    #[inline(always)]
-    pub fn is_insert_ok(session: &Session, user_id: i32) -> bool {
-        session.insert(SESSION_USER_ID_KEY, user_id).is_ok()
-    }
-
-    #[inline(always)]
-    pub fn clear(session: &Session) {
-        session.remove(SESSION_USER_ID_KEY);
     }
 }

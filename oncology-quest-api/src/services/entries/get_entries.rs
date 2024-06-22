@@ -9,7 +9,7 @@ struct GetEntriesQuery {
 
 #[actix_web::get("/{rotation_id}")]
 pub(super) async fn get_entries(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>, query: Query<GetEntriesQuery>) -> impl Responder {
-    if let Err(response) = handle_any_session_validation(&session) {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Any).await {
         return response;
     }
 

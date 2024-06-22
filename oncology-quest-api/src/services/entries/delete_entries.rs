@@ -9,7 +9,7 @@ struct DeleteEntryQuery {
 
 #[actix_web::delete("/delete")]
 pub(super) async fn delete_supertask(session: Session, pool: Data<PgPool>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 
@@ -22,7 +22,7 @@ pub(super) async fn delete_supertask(session: Session, pool: Data<PgPool>, delet
 
 #[actix_web::delete("/delete")]
 pub(super) async fn delete_task(session: Session, pool: Data<PgPool>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 
@@ -35,7 +35,7 @@ pub(super) async fn delete_task(session: Session, pool: Data<PgPool>, delete_ent
 
 #[actix_web::delete("/delete")]
 pub(super) async fn delete_subtask(session: Session, pool: Data<PgPool>, delete_entry_query: Json<DeleteEntryQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 

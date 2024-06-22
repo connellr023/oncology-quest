@@ -20,7 +20,7 @@ struct CreateUserTaskResponse {
 
 #[actix_web::post("/create")]
 pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, create_user_task_query: Json<CreateUserTaskQuery>) -> impl Responder {
-    let user_id = match handle_regular_session_validation(&pool, &session).await {
+    let user_id = match UserSession::validate(&pool, &session, UserSessionRole::Regular).await {
         Ok(user_id) => user_id,
         Err(response) => return response
     };

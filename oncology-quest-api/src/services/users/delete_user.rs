@@ -1,4 +1,3 @@
-use crate::models::user::UserSession;
 use crate::{models::user::User, utilities::parsable::PlainTextPassword};
 use crate::services::prelude::*;
 
@@ -15,7 +14,7 @@ struct DeleteSelfQuery {
 
 #[actix_web::delete("/delete-other-user")]
 pub(super) async fn delete_other_user(session: Session, pool: Data<PgPool>, admin_delete_user_query: Json<AdminDeleteUserQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 
@@ -32,7 +31,7 @@ pub(super) async fn delete_other_user(session: Session, pool: Data<PgPool>, admi
 
 #[actix_web::delete("/delete-self")]
 pub(super) async fn delete_self(session: Session, pool: Data<PgPool>, delete_self_query: Json<DeleteSelfQuery>) -> impl Responder {    
-    let user_id = match handle_any_session_validation(&session) {
+    let user_id = match UserSession::validate(&pool, &session, UserSessionRole::Any).await {
         Ok(user_id) => user_id,
         Err(response) => return response
     };

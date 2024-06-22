@@ -1,4 +1,4 @@
-use crate::{models::entry_structure::{Supertask, Task, Subtask}, utilities::parsable::EntryTitle};
+use crate::{models::{entry_structure::{Subtask, Supertask, Task}, rotation::Rotation}, utilities::parsable::EntryTitle};
 use crate::services::prelude::*;
 
 #[derive(Deserialize)]
@@ -23,8 +23,14 @@ struct CreateEntryResponse {
 }
 
 async fn handle_pre_validate(pool: &PgPool, session: &Session, entry_id: i32) -> Result<(), HttpResponse> {
-    handle_admin_session_validation(&pool, &session).await?;
-    handle_rotation_validation(&pool, entry_id).await?;
+    UserSession::validate(&pool, &session, UserSessionRole::Admin).await?;
+
+    match Rotation::exists(&pool, entry_id).await {
+        Ok(exists) => if !exists {
+            return Err(HttpResponse::BadRequest().finish());
+        },
+        Err(_) => return Err(HttpResponse::InternalServerError().finish())
+    }
 
     Ok(())
 }

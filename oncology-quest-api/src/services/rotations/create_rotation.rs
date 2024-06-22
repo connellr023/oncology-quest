@@ -16,7 +16,7 @@ struct CreateRotationResponse {
 
 #[actix_web::post("/create")]
 pub(super) async fn create_rotation(session: Session, pool: Data<PgPool>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 

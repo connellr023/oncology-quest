@@ -3,7 +3,7 @@ use crate::services::prelude::*;
 
 #[actix_web::get("/{user_id}/{rotation_id}")]
 pub(super) async fn get_user_tasks(session: Session, pool: Data<PgPool>, path: Path<(i32, i32)>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 
@@ -17,7 +17,7 @@ pub(super) async fn get_user_tasks(session: Session, pool: Data<PgPool>, path: P
 
 #[actix_web::get("/{rotation_id}")]
 pub(super) async fn get_own_tasks(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>) -> impl Responder {
-    let user_id = match handle_regular_session_validation(&pool, &session).await {
+    let user_id = match UserSession::validate(&pool, &session, UserSessionRole::Regular).await {
         Ok(user_id) => user_id,
         Err(response) => return response
     };

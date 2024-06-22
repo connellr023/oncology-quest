@@ -38,7 +38,7 @@ pub(super) async fn reset_password(pool: Data<PgPool>, reset_password_query: Jso
 
 #[actix_web::patch("/allow-reset-password")]
 pub(super) async fn allow_reset_password(session: Session, pool: Data<PgPool>, allow_reset_password_query: Json<AllowResetPasswordQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 

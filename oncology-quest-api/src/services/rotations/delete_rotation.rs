@@ -9,7 +9,7 @@ struct DeleteRotationQuery {
 
 #[actix_web::delete("/delete")]
 pub(super) async fn delete_rotation(session: Session, pool: Data<PgPool>, delete_rotation_query: Json<DeleteRotationQuery>) -> impl Responder {
-    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
         return response;
     }
 
