@@ -15,7 +15,7 @@ const useUserTasks = () => {
     const userTasksMemo = new Map<string, UserTaskStructure>()
     const genKey = (userId: number, rotationId: number) => `${userId}.${rotationId}`
 
-    const fetchOwnTasksWithMemo = async (rotationId: number): Promise<boolean> => {
+    const fetchOwnTasks = async (rotationId: number): Promise<boolean> => {
         const key = genKey(session.value.id, rotationId)
         const memo = userTasksMemo.get(key)
         
@@ -43,7 +43,7 @@ const useUserTasks = () => {
         return false
     }
 
-    const fetchUserTasksWithMemo = async (rotationId: number, userId: number): Promise<boolean> => {
+    const fetchUserTasks = async (rotationId: number, userId: number): Promise<boolean> => {
         const key = genKey(userId, rotationId)
         const memo = userTasksMemo.get(key)
         
@@ -131,8 +131,8 @@ const useUserTasks = () => {
     }
 
     return {
-        fetchOwnTasksWithMemo,
-        fetchUserTasksWithMemo,
+        fetchOwnTasks,
+        fetchUserTasks,
         updateTask
     }
 }

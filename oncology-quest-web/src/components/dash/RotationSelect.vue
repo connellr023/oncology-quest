@@ -17,16 +17,14 @@ const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const selectedUser = inject<Ref<User | null>>("selectedUser")!
 
-const { fetchEntriesWithCaching } = useEntries()
-const { fetchOwnTasksWithMemo, fetchUserTasksWithMemo } = useUserTasks()
+const { fetchEntries } = useEntries()
+const { fetchOwnTasks, fetchUserTasks } = useUserTasks()
 const { deleteRotation } = useRotations()
 
 const isEditing = ref(false)
 
-const seenRotations = new Set<number>()
-
 const handleFetchUserTasks = async (rotation: Rotation) => {
-  if (selectedUser.value && !await fetchUserTasksWithMemo(rotation.id, selectedUser.value.id)) {
+  if (selectedUser.value && !await fetchUserTasks(rotation.id, selectedUser.value.id)) {
     console.error("Failed to fetch user tasks.")
     return
   }
@@ -42,26 +40,18 @@ if (session.value.isAdmin) {
 
 const selectRotation = async (rotation: Rotation) => {
   if (session.value.isAdmin) {
-    handleFetchUserTasks(rotation)
+    await handleFetchUserTasks(rotation)
   }
-  else {
-    if (seenRotations.has(rotation.id)) {
-      selectedRotation.value = rotation
-      return
-    }
-
-    if (!await fetchOwnTasksWithMemo(rotation.id)) {
-      console.error("Failed to fetch owned tasks.")
-      return
-    }
+  else if (!await fetchOwnTasks(rotation.id)) {
+    console.error("Failed to fetch owned tasks.")
+    return
   }
 
-  if (!await fetchEntriesWithCaching(rotation.id)) {
+  if (!await fetchEntries(rotation.id)) {
     console.error("Failed to fetch entries.")
     return
   }
 
-  seenRotations.add(rotation.id)
   selectedRotation.value = rotation
 }
 

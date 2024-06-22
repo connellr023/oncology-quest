@@ -12,6 +12,12 @@ const useEntries = () => {
     const { cacheRotationEntries, retrieveRotationEntries } = useCache()
     const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
+    const entriesMemo = new Map<number, EntryStructure>()
+    const cacheAndMemoEntries = (rotationId: number, entries: EntryStructure) => {
+        cacheRotationEntries(rotationId, entries)
+        entriesMemo.set(rotationId, entries)
+    }
+
     const createSupertask = async (title: string, rotationId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/create`, {
             credentials: "include",
@@ -37,7 +43,7 @@ const useEntries = () => {
                 children: []
             })
 
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
             return true
         }
 
@@ -59,7 +65,8 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[rotationId][supertaskIndex].entry.title = title
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
@@ -80,7 +87,8 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[rotationId].splice(supertaskIndex, 1);
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
@@ -114,7 +122,7 @@ const useEntries = () => {
                 children: []
             })
 
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
             return true
         }
 
@@ -136,7 +144,8 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[rotationId][supertaskIndex].children[taskIndex].entry.title = title
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
@@ -157,7 +166,8 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[rotationId][supertaskIndex].children.splice(taskIndex, 1);
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
@@ -188,7 +198,7 @@ const useEntries = () => {
                 taskId
             })
 
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
             return true
         }
 
@@ -210,7 +220,8 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[rotationId][supertaskIndex].children[taskIndex].children[subtaskIndex].title = title
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
@@ -231,14 +242,22 @@ const useEntries = () => {
 
         if (response.ok) {
             entries.value[rotationId][supertaskIndex].children[taskIndex].children.splice(subtaskIndex, 1);
-            cacheRotationEntries(rotationId, entries.value[rotationId])
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
         return false
     }
 
-    const fetchEntriesWithCaching = async (rotationId: number): Promise<boolean> => {
+    const fetchEntries = async (rotationId: number): Promise<boolean> => {
+        const memo = entriesMemo.get(rotationId)
+
+        if (memo) {
+            entries.value[rotationId] = memo
+            return true
+        }
+
         const [cachedEntries, cacheTimestamp] = retrieveRotationEntries(rotationId)
 
         const url = new URL(`${API_ENDPOINT}/api/entries/${rotationId}`)
@@ -256,14 +275,16 @@ const useEntries = () => {
 
         if (response.status === 304) {
             entries.value[rotationId] = cachedEntries || []
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
+
             return true
         }
 
         if (response.ok) {
             const data: EntryStructure = await response.json()
 
-            cacheRotationEntries(rotationId, data)
             entries.value[rotationId] = data
+            cacheAndMemoEntries(rotationId, entries.value[rotationId])
 
             return true
         }
@@ -281,7 +302,7 @@ const useEntries = () => {
         createSubtask,
         updateSubtask,
         deleteSubtask,
-        fetchEntriesWithCaching
+        fetchEntries
     }
 }
 
