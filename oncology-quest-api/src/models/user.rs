@@ -125,13 +125,14 @@ impl User<Unsynced> {
     ///
     /// * `username` - The username of the user.
     /// * `name` - The name of the user.
+    /// * `is_admin` - A flag indicating whether the user is an admin.
     /// * `plain_text_password` - The plain text password of the user.
     ///
     /// # Returns
     ///
     /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
     /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
-    pub fn new(username: Username, name: Name, plain_text_password: PlainTextPassword) -> anyhow::Result<Self> {
+    pub fn new(username: Username, name: Name, is_admin: bool, plain_text_password: PlainTextPassword) -> anyhow::Result<Self> {
         let salt = thread_rng().gen::<i64>();
         let password = Self::gen_password_hash(salt, plain_text_password.as_str())?;
 
@@ -140,7 +141,7 @@ impl User<Unsynced> {
                 id: -1,
                 username,
                 name,
-                is_admin: false,
+                is_admin,
                 salt,
                 password,
                 login_count: 0
@@ -185,12 +186,13 @@ impl User<Unsynced> {
     pub async fn insert(self, pool: &PgPool) -> anyhow::Result<User<Synced>> {
         let row = sqlx::query!(
             r#"
-            INSERT INTO users (username, name, salt, password)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO users (username, name, is_admin, salt, password)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING id
             "#,
             self.0.username.as_str(),
             self.0.name.as_str(),
+            self.0.is_admin,
             self.0.salt,
             self.0.password.as_str()
         )

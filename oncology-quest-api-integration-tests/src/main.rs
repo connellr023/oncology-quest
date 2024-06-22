@@ -12,10 +12,10 @@ use reqwest::Client;
 use reqwest_cookie_store::CookieStoreMutex;
 use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
-use responses::{AllowResetPasswordResponse, CreateEntryResponse, CreateRotationResponse, CreateUserTaskResponse, EntryStructure, SearchResultUser, SearchUserResponse, UserSessionResponse};
 use serde_json::json;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
+use responses::*;
 
 fn main() {
     println!("Endpoint Macro: {}", endpoint!("/api/..."));
@@ -42,15 +42,10 @@ fn format_timestamp(timestamp: DateTime<Utc>) -> String {
     timestamp.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()
 }
 
-pub async fn session(client: &Client, task_cache_timestamp: Option<DateTime<Utc>>) -> Result<(StatusCode, Option<UserSessionResponse>)> {
-    let response = match task_cache_timestamp {
-        Some(timestamp) => client.get(endpoint!(format!("/api/users/session?taskCacheTimestamp={}", format_timestamp(timestamp))))
-            .send()
-            .await?,
-        None => client.get(endpoint!("/api/users/session"))
-            .send()
-            .await?,
-    };
+pub async fn session(client: &Client) -> Result<(StatusCode, Option<UserSessionResponse>)> {
+    let response = client.get(endpoint!("/api/users/session"))
+        .send()
+        .await?;
 
     Ok((response.status(), response.json().await.ok()))
 }
@@ -256,6 +251,22 @@ update_entry_fn!("supertasks", update_supertask);
 update_entry_fn!("tasks", update_task);
 update_entry_fn!("subtasks", update_subtask);
 
+pub async fn get_owned_user_tasks(client: &Client, rotation_id: i32) -> Result<(StatusCode, Option<GetUserTasksResponse>)> {
+    let response = client.get(endpoint!(format!("/api/tasks/{}", rotation_id)).as_str())
+        .send()
+        .await?;
+
+    Ok((response.status(), response.json().await.ok()))
+}
+
+pub async fn get_user_tasks(client: &Client, rotation_id: i32, user_id: i32) -> Result<(StatusCode, Option<GetUserTasksResponse>)> {
+    let response = client.get(endpoint!(format!("/api/tasks/{}/{}", rotation_id, user_id)).as_str())
+        .send()
+        .await?;
+
+    Ok((response.status(), response.json().await.ok()))
+}
+
 pub async fn get_entries(client: &Client, rotation_id: i32, entries_cache_timestamp: Option<DateTime<Utc>>) -> Result<(StatusCode, Option<EntryStructure>)> {
     let response = match entries_cache_timestamp {
         Some(timestamp) => client.get(endpoint!(format!("/api/entries/{}?entriesCacheTimestamp={}", rotation_id, format_timestamp(timestamp))).as_str())
@@ -269,11 +280,12 @@ pub async fn get_entries(client: &Client, rotation_id: i32, entries_cache_timest
     Ok((response.status(), response.json().await.ok()))
 }
 
-pub async fn create_user_task(client: &Client, subtask_id: i32, is_completed: bool, comment: &str) -> Result<(StatusCode, Option<i32>)> {
+pub async fn create_user_task(client: &Client, rotation_id: i32, subtask_id: i32, is_completed: bool, comment: &str) -> Result<(StatusCode, Option<i32>)> {
     let response = client.post(endpoint!("/api/tasks/create"))
         .json(&json!({
             "subtaskId": subtask_id,
             "isCompleted": is_completed,
+            "rotationId": rotation_id,
             "comment": comment
         }))
         .send()

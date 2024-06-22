@@ -1,14 +1,5 @@
 use crate::{
-    client,
-    try_authorized_test,
-    try_admin_authorized_test,
-    create_rotation,
-    delete_rotation,
-    create_user_task,
-    update_user_task,
-    create_supertask,
-    create_task,
-    create_subtask
+    client, create_rotation, create_subtask, create_supertask, create_task, create_user_task, delete_rotation, get_user_tasks, try_admin_authorized_test, try_authorized_test, update_user_task
 };
 use anyhow::Result;
 use reqwest::StatusCode;
@@ -37,8 +28,8 @@ async fn test_admin_cannot_have_tasks() -> Result<()> {
         let rotation_id = json.unwrap().rotation_id;
         let subtask_id = setup_subtask(&client, rotation_id).await?;
 
-        let (status, _) = create_user_task(&client, subtask_id, false, "Hi").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "Hi").await?;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let status = delete_rotation(&client, rotation_id).await?;
         assert_eq!(status, StatusCode::OK);
@@ -66,7 +57,7 @@ async fn test_invalid_task_comment_is_rejected() -> Result<()> {
     }).await?;
 
     try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, subtask_id, false, "<h1>XSS</h1>").await?;
+        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "<h1>XSS</h1>").await?;
         assert_eq!(status, StatusCode::BAD_REQUEST);
 
         Ok(())
@@ -99,10 +90,10 @@ async fn test_no_duplicate_tasks() -> Result<()> {
     }).await?;
 
     try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, subtask_id, false, "Hi").await?;
+        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "Hi").await?;
         assert_eq!(status, StatusCode::CREATED);
 
-        let (status, _) = create_user_task(&client, subtask_id, false, "Hi").await?;
+        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "Hi").await?;
         assert_eq!(status, StatusCode::CONFLICT);
 
         Ok(())
@@ -133,8 +124,8 @@ async fn test_cannot_create_task_on_nonexistent_subtask() -> Result<()> {
     }).await?;
 
     try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, 999, true, "Comment").await?;
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+        let (status, _) = create_user_task(&client, rotation_id, 999, true, "Comment").await?;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
 
         Ok(())
     }).await?;
@@ -154,8 +145,22 @@ async fn test_cannot_create_task_on_nonexistent_rotation() -> Result<()> {
     let (client, _) = client()?;
 
     try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, 999, true, "Comment").await?;
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+        let (status, _) = create_user_task(&client, 999, 999, true, "Comment").await?;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+
+        Ok(())
+    }).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_regular_user_cannot_get_other_tasks() -> Result<()> {
+    let (client, _) = client()?;
+    
+    try_authorized_test(&client, || async {
+        let (status, _) = get_user_tasks(&client, 1, 1).await?;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;

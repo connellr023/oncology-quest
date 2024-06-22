@@ -13,11 +13,7 @@ struct RegisterUserQuery {
 pub(super) async fn register_user(pool: Data<PgPool>, register_user_query: Json<RegisterUserQuery>) -> impl Responder {
     let register_user_query = register_user_query.into_inner();
     
-    let user = match User::new(
-        register_user_query.username,
-        register_user_query.name,
-        register_user_query.password
-    ) {
+    let user = match User::new(register_user_query.username, register_user_query.name, false, register_user_query.password) {
         Ok(user) => user,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
@@ -30,7 +26,7 @@ pub(super) async fn register_user(pool: Data<PgPool>, register_user_query: Json<
     }
 
     if user.insert(&pool).await.is_err() {
-        return HttpResponse::InternalServerError().finish();
+        return HttpResponse::InternalServerError().body("Failed to insert user into database");
     }
 
     HttpResponse::Created().finish()
