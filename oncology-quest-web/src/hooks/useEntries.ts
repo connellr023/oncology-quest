@@ -1,4 +1,4 @@
-import { Ref, inject } from "vue"
+import { Ref, inject, onUnmounted } from "vue"
 import { EntryStructure } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
 
@@ -17,6 +17,10 @@ const useEntries = () => {
         cacheRotationEntries(rotationId, entries)
         entriesMemo.set(rotationId, entries)
     }
+
+    onUnmounted(() => {
+        entriesMemo.clear()
+    })
 
     const createSupertask = async (title: string, rotationId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/create`, {

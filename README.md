@@ -1,13 +1,12 @@
 # $\text{Oncology Quest}$
-> An application to aid Medical Oncology Trainees.
+> A fullstack web application that aids Medical Oncology Trainees and rotation directors.
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Actix](https://img.shields.io/badge/actix-%23ffffff.svg?style=for-the-badge&logo=actix&logoColor=black)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/vue-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon&logoColor=white)
-![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonwebservices&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/connellr023/oncology-quest/ci.yml?style=for-the-badge&logo=docker)
 
@@ -17,8 +16,7 @@
  - Straightforward user registration and authentication
  - Management dashboard for administrative users
  - Responsive and dark themed front end user interface
- - Client side caching in browser session storage of rotation entry data
- - Client side memoization of user task data to avoid resending unnecassary requests
+ - Client side caching and memoization of frequently accessed data to reduce server load
 
 <br />
 
@@ -64,6 +62,27 @@ Additionally, for single container monolith use with the **API** also serving th
 ```bash
 cargo build --release --features "production monolith"
 ```
+
+<br />
+
+Next, to containerize the compiled binary run:
+```
+docker build -t oncology-quest-api:latest .
+```
+in the `oncology-quest-api` directory.
+
+
+If the frontend is to be run as a seperate **NGINX** webserver, build the front end with:
+```bash
+docker build -t oncology-quest-web:latest .
+```
+in the `oncology-quest-web` directory.
+
+To containerize as a monolith (assuming **API** was compiled with *monolith* feature) run:
+```bash
+docker build -t oncology-quest-monolith:latest . -f monolith.dockerfile
+```
+in the root project directory.
 
 <br />
 
