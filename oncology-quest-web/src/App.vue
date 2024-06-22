@@ -42,6 +42,7 @@ provide("isEditing", isEditing)
 
 const resetAll = () => {
   selectedUser.value = null
+  selectedUserTasks.value = null
   selectedRotation.value = null
   isEditing.value = false
   entries.value = {}

@@ -11,6 +11,7 @@ import CheckIcon from "../vector/CheckIcon.vue"
 import EditIcon from "../vector/EditIcon.vue"
 import CancelIcon from "../vector/CancelIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
+import MessageModal from "../MessageModal.vue"
 
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
@@ -22,10 +23,13 @@ const { fetchOwnTasks, fetchUserTasks } = useUserTasks()
 const { deleteRotation } = useRotations()
 
 const isEditing = ref(false)
+const isErrorModalVisible = ref(false)
+const errorModalTitle = ref("")
+const errorModalMessage = ref("")
 
 const handleFetchUserTasks = async (rotation: Rotation) => {
   if (selectedUser.value && !await fetchUserTasks(rotation.id, selectedUser.value.id)) {
-    console.error("Failed to fetch user tasks.")
+    displayErrorModal("Tasks Request Error", "Failed to fetch user tasks. Please try again later.")
     return
   }
 }
@@ -43,12 +47,12 @@ const selectRotation = async (rotation: Rotation) => {
     await handleFetchUserTasks(rotation)
   }
   else if (!await fetchOwnTasks(rotation.id)) {
-    console.error("Failed to fetch owned tasks.")
+    displayErrorModal("Tasks Request Error", "Failed to fetch own tasks. Please try again later.")
     return
   }
 
   if (!await fetchEntries(rotation.id)) {
-    console.error("Failed to fetch entries.")
+    displayErrorModal("Entries Request Error", "Failed to fetch entries. Please try again later.")
     return
   }
 
@@ -77,9 +81,21 @@ const onRotationClick = (rotation: Rotation) => {
     }
   }
 }
+
+const displayErrorModal = (title: string, message: string) => {
+  errorModalTitle.value = title
+  errorModalMessage.value = message
+  isErrorModalVisible.value = true
+}
 </script>
 
 <template>
+  <MessageModal
+    :title="errorModalTitle"
+    :visible="isErrorModalVisible"
+    :error="errorModalMessage"
+    @change="isErrorModalVisible = $event"
+  />
   <div class="rotation-select-container">
     <div class="heading-container">
       <h1 class="section-heading">Rotations</h1>

@@ -11,7 +11,7 @@ pub(super) async fn get_user_tasks(session: Session, pool: Data<PgPool>, path: P
 
     match UserTask::fetch_as_map(&pool, user_id, rotation_id).await {
         Ok(user_tasks) => HttpResponse::Ok().json(user_tasks),
-        Err(_) => HttpResponse::InternalServerError().finish()
+        Err(_) => HttpResponse::InternalServerError().body("Failed to fetch user tasks.")
     }
 }
 
@@ -24,6 +24,6 @@ pub(super) async fn get_own_tasks(session: Session, pool: Data<PgPool>, rotation
     
     match UserTask::fetch_as_map(&pool, user_id, *rotation_id).await {
         Ok(user_tasks) => HttpResponse::Ok().json(user_tasks),
-        Err(_) => HttpResponse::InternalServerError().finish()
+        Err(_) => HttpResponse::InternalServerError().body("Failed to fetch own user tasks.")
     }
 }

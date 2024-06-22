@@ -1,4 +1,4 @@
-import { Ref, inject, onUnmounted } from "vue"
+import { Ref, inject } from "vue"
 import { UserTaskStructure } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
 import { User } from "../models/user"
@@ -14,10 +14,6 @@ const useUserTasks = () => {
 
     const userTasksMemo = new Map<string, UserTaskStructure>()
     const genKey = (userId: number, rotationId: number) => `${userId}.${rotationId}`
-
-    onUnmounted(() => {
-        userTasksMemo.clear()
-    })
 
     const fetchOwnTasks = async (rotationId: number): Promise<boolean> => {
         const key = genKey(session.value.id, rotationId)
