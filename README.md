@@ -44,11 +44,7 @@
 
 #### Deployment Details
  - This web app is deployed for users on **AWS**
- - Chosen service is **ECS Fargate** for easy container orchestration
-    - Currently **1** container running a **NGINX** server to handle frontend static file requests
-    - Currently **1** container running backend **API** services to handle **CRUD** related requests
-    - Currently **1** **PostgreSQL** database instance running on **RDS**
-- Additionally, an **Application Load Balancer** as well as **Route 53 DNS** services are employed to route users between the **frontend** and **API** container under the same domain name
+ - An **Application Load Balancer** as well as **Route 53 DNS** services are employed to route users to the registered domain name
 
 <br />
 
@@ -95,8 +91,18 @@ DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
 ```
 
 <br />
+
+#### Screenshots
+
+![1](https://github.com/connellr023/cr023/blob/main/src/assets/oncology_quest/1.png?raw=true)
+![2](https://github.com/connellr023/cr023/blob/main/src/assets/oncology_quest/2.png?raw=true)
+![3](https://github.com/connellr023/cr023/blob/main/src/assets/oncology_quest/3.png?raw=true)
+![4](https://github.com/connellr023/cr023/blob/main/src/assets/oncology_quest/4.png?raw=true)
+![5](https://github.com/connellr023/cr023/blob/main/src/assets/oncology_quest/5.png?raw=true)
+![6](https://github.com/connellr023/cr023/blob/main/src/assets/oncology_quest/6.png?raw=true)
+
 <br />
 
 <div align="center">
-    Developed and tested by <b>Connell Reffo</b> in 2024.
+    Developed and Tested by <b>Connell Reffo</b> in 2024.
 </div>
