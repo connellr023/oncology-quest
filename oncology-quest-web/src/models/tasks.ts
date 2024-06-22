@@ -26,11 +26,11 @@ export interface Subtask {
     rotationId: number
 }
 
-type PossibleEntry = Supertask | Task | Subtask
-export interface EntryLevel<T = PossibleEntry, U = any> {
+export interface EntryLevel<T = (Supertask | Task | Subtask), U = any> {
     entry: T,
     children: U[]
 }
 
 type EntryHierarchy = EntryLevel<Supertask, EntryLevel<Task, Subtask>>
 export type EntryStructure = EntryHierarchy[]
+export type UserTaskStructure = Record<number, UserTask>

@@ -1,5 +1,4 @@
 use crate::{models::entry_structure::{Supertask, Task, Subtask}, utilities::parsable::EntryTitle};
-use crate::models::rotation::Rotation;
 use crate::services::prelude::*;
 
 #[derive(Deserialize)]
@@ -23,19 +22,18 @@ struct CreateEntryResponse {
     pub entry_id: i32
 }
 
-macro_rules! validate_session_and_entry_id {
-    ($varname:ident, $session:ident, $pool:ident, $entry_id:expr) => {
-        auth_admin_session!(user_id, $session, $pool);
+async fn handle_pre_validate(pool: &PgPool, session: &Session, entry_id: i32) -> Result<(), HttpResponse> {
+    handle_admin_session_validation(&pool, &session).await?;
+    handle_rotation_validation(&pool, entry_id).await?;
 
-        if !Rotation::exists(&$pool, $entry_id).await {
-            return HttpResponse::BadRequest().finish();
-        }
-    };
+    Ok(())
 }
 
 #[actix_web::post("/create")]
 pub(super) async fn create_supertask(session: Session, pool: Data<PgPool>, create_entry_query: Json<CreateSupertaskEntryQuery>) -> impl Responder {
-    validate_session_and_entry_id!(rotation, session, pool, create_entry_query.rotation_id);
+    if let Err(response) = handle_pre_validate(&pool, &session, create_entry_query.rotation_id).await {
+        return response;
+    }
 
     match Supertask::insert_from(&pool, create_entry_query.title.as_str(), create_entry_query.rotation_id).await {
         Ok(entry_id) => HttpResponse::Created().json(CreateEntryResponse { entry_id }),
@@ -48,7 +46,9 @@ pub(super) async fn create_supertask(session: Session, pool: Data<PgPool>, creat
 
 #[actix_web::post("/create")]
 pub(super) async fn create_task(session: Session, pool: Data<PgPool>, create_entry_query: Json<CreateLowerEntryQuery>) -> impl Responder {
-    validate_session_and_entry_id!(rotation, session, pool, create_entry_query.rotation_id);
+    if let Err(response) = handle_pre_validate(&pool, &session, create_entry_query.rotation_id).await {
+        return response;
+    }
 
     match Task::insert_from(&pool, create_entry_query.title.as_str(), create_entry_query.rotation_id, create_entry_query.parent_id).await {
         Ok(entry_id) => HttpResponse::Created().json(CreateEntryResponse { entry_id }),
@@ -58,7 +58,9 @@ pub(super) async fn create_task(session: Session, pool: Data<PgPool>, create_ent
 
 #[actix_web::post("/create")]
 pub(super) async fn create_subtask(session: Session, pool: Data<PgPool>, create_entry_query: Json<CreateLowerEntryQuery>) -> impl Responder {
-    validate_session_and_entry_id!(rotation, session, pool, create_entry_query.rotation_id);
+    if let Err(response) = handle_pre_validate(&pool, &session, create_entry_query.rotation_id).await {
+        return response;
+    }
 
     match Subtask::insert_from(&pool, create_entry_query.title.as_str(), create_entry_query.rotation_id, create_entry_query.parent_id).await {
         Ok(entry_id) => HttpResponse::Created().json(CreateEntryResponse { entry_id }),

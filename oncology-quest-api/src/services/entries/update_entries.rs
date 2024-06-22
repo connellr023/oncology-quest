@@ -10,7 +10,9 @@ struct UpdateEntryQuery {
 
 #[actix_web::patch("/update")]
 pub(super) async fn update_supertask(session: Session, pool: Data<PgPool>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
+    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+        return response;
+    }
 
     if Supertask::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -21,7 +23,9 @@ pub(super) async fn update_supertask(session: Session, pool: Data<PgPool>, updat
 
 #[actix_web::patch("/update")]
 pub(super) async fn update_task(session: Session, pool: Data<PgPool>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
+    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+        return response;
+    }
 
     if Task::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();
@@ -32,7 +36,9 @@ pub(super) async fn update_task(session: Session, pool: Data<PgPool>, update_ent
 
 #[actix_web::patch("/update")]
 pub(super) async fn update_subtask(session: Session, pool: Data<PgPool>, update_entry_query: Json<UpdateEntryQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
+    if let Err(response) = handle_admin_session_validation(&pool, &session).await {
+        return response;
+    }
 
     if Subtask::update_title(&pool, update_entry_query.entry_id, update_entry_query.title.as_str()).await.is_err() {
         return HttpResponse::InternalServerError().finish();

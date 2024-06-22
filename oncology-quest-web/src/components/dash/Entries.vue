@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, inject, ref } from "vue"
 import { User } from "../../models/user"
-import { EntryStructure, UserTask } from "../../models/tasks"
+import { EntryStructure, UserTaskStructure } from "../../models/tasks"
 import { Rotation } from "../../models/rotation"
 
 import useProgress from "../../hooks/useProgress"
@@ -12,12 +12,11 @@ import UserTaskEntryItem from "./UserTaskEntryItem.vue"
 import ProgressableEntryItem from "./ProgressableEntryItem.vue"
 import PushStackIcon from "../vector/PushStackIcon.vue"
 import InputModal from "../InputModal.vue"
-import SelectRotationGraphic from "../vector/SelectRotationGraphic.vue"
 
 const props = defineProps<{
-  tasks: Record<number, UserTask>,
-  selectedRotation: Rotation | null
-  externalKey?: string | number,
+  tasks: UserTaskStructure,
+  selectedRotation: Rotation,
+  selectedUserName?: string
 }>()
 
 const session = inject<Ref<User>>("session")!
@@ -79,8 +78,14 @@ const {
     :onConfirm="createEntryCallback"
     :onCancel="() => { isCreateEntryModalVisible = false }"
   />
-  <div class="entries-container" v-if="selectedRotation" :key="selectedRotation.id">
-    <h1 class="section-heading">Tasks</h1>
+  <div class="entries-container">
+    <h1 class="section-heading">
+      <template v-if="session.isAdmin">
+        <template v-if="selectedUserName">{{ selectedUserName }}'s Progress</template>
+        <template v-else>Tasks</template>
+      </template>
+      <template v-else>My Progress</template>
+    </h1>
     <ul>
       <ProgressableEntryItem
         v-for="(supertask, supertaskIndex) in entries[selectedRotation.id]"
@@ -120,20 +125,21 @@ const {
         </button>
       </ProgressableEntryItem>
     </ul>
-    <div class="empty-rotation note" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
+    <div class="empty-rotation" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
     <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push highlight" v-if="session.isAdmin">
       <PushStackIcon />
       Push New CBD Phase
     </button>
   </div>
-  <div v-else class="note">
-    <SelectRotationGraphic class="graphic" />
-    <p>Select a rotation from the above list to get started.</p>
-  </div>
 </template>
 
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
+
+div.empty-rotation {
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
 
 button.push {
   width: 100%;
@@ -145,30 +151,6 @@ li.supertask {
   &:hover,
   &.focused {
     background-color: $secondary-bg-color;
-  }
-}
-
-div.note {
-  text-align: center;
-  font-size: clamp(19px, 1.3lvw, 24px);
-  text-wrap: wrap;
-  text-align: center;
-  margin-top: 10lvh;
-
-  svg {
-    width: 20lvw;
-    min-width: 240px;
-    max-width: 300px;
-    fill: $tertiary-bg-color;
-  }
-
-  &.empty-rotation {
-    padding: 30px;
-  }
-
-  &.empty-rotation,
-  p {
-    opacity: 0.8;
   }
 }
 </style>

@@ -1,57 +1,89 @@
-use crate::query_many;
+use super::prelude::*;
 use crate::utilities::parsable::Name;
-use chrono::{DateTime, Utc};
-use sqlx::{FromRow, PgPool};
-use serde::Serialize;
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData};
 
-#[derive(Serialize, Debug, FromRow)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Rotation {
+struct RotationModel {
     id: i32,
-    name: String,
+    name: Name,
     last_updated: DateTime<Utc>
 }
 
-impl Rotation {
-    pub fn new(name: Name) -> Self {
-        Self {
-            id: -1,
-            name: name.into(),
-            last_updated: Utc::now()
-        }
+#[derive(Serialize)]
+pub struct Rotation<S> {
+    #[serde(flatten)]
+    model: RotationModel,
+
+    #[serde(skip)]
+    _marker: PhantomData<S>
+}
+
+impl<S> Rotation<S> {
+    #[inline(always)]
+    pub fn id(&self) -> i32 {
+        self.model.id
     }
 
-    pub async fn insert(&mut self, pool: &PgPool) -> anyhow::Result<()> {
+    #[inline(always)]
+    pub fn last_updated(&self) -> DateTime<Utc> {
+        self.model.last_updated
+    }
+}
+
+impl Rotation<Unsynced> {
+    pub fn new(name: Name) -> Self {
+        Self {
+            model: RotationModel {
+                id: 0,
+                name,
+                last_updated: Utc::now()
+            },
+            _marker: PhantomData
+        }
+    }
+    
+    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<Rotation<Synced>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO rotations (name)
             VALUES ($1)
             RETURNING id, last_updated;
             "#,
-            self.name
+            self.model.name.as_str()
         )
         .fetch_one(pool)
         .await?;
 
-        self.id = row.id;
-        self.last_updated = row.last_updated;
+        Ok(Rotation {
+            model: RotationModel {
+                id: row.id,
+                name: self.model.name,
+                last_updated: row.last_updated
+            },
+            _marker: PhantomData
+        })
+    }
+}
 
-        Ok(())
+impl Rotation<Synced> {
+    #[inline(always)]
+    fn from(model: RotationModel) -> Self {
+        Self {
+            model,
+            _marker: PhantomData
+        }
     }
 
     pub async fn delete(pool: &PgPool, rotation_id: i32) -> anyhow::Result<()> {
-        let mut transaction = pool.begin().await?;
-
-        query_many!(&mut *transaction, rotation_id,
-            "DELETE FROM user_tasks WHERE subtask_id = ANY(SELECT id FROM subtasks WHERE rotation_id = $1)",
-            "DELETE FROM subtasks WHERE rotation_id = $1",
-            "DELETE FROM tasks WHERE rotation_id = $1",
-            "DELETE FROM supertasks WHERE rotation_id = $1",
-            "DELETE FROM rotations WHERE id = $1",
-        );
-
-        transaction.commit().await?;
+        sqlx::query!(
+            r#"
+            DELETE FROM rotations WHERE id = $1;
+            "#,
+            rotation_id
+        )
+        .execute(pool)
+        .await?;
 
         Ok(())
     }
@@ -89,7 +121,7 @@ impl Rotation {
 
     pub async fn fetch_all_as_map(pool: &PgPool) -> anyhow::Result<HashMap<i32, Self>> {
         let rotations = sqlx::query_as!(
-            Rotation,
+            RotationModel,
             r#"
             SELECT * FROM rotations;
             "#
@@ -99,13 +131,13 @@ impl Rotation {
 
         let map = rotations
             .into_iter()
-            .map(|rotation| { (rotation.id, rotation) })
+            .map(|rotation| { (rotation.id, Self::from(rotation)) })
             .collect::<HashMap<_, _>>();
 
         Ok(map)
     }
 
-    pub async fn exists(pool: &PgPool, rotation_id: i32) -> bool {
+    pub async fn exists(pool: &PgPool, rotation_id: i32) -> anyhow::Result<bool> {
         let exists_query = sqlx::query!(
             r#"
             SELECT EXISTS(SELECT id FROM rotations WHERE id = $1);
@@ -113,16 +145,9 @@ impl Rotation {
             rotation_id
         )
         .fetch_one(pool)
-        .await;
+        .await?
+        .exists;
 
-        exists_query.map_or(false, |query| { query.exists.unwrap_or(false) })
-    }
-
-    pub fn id(&self) -> i32 {
-        self.id
-    }
-
-    pub fn last_updated(&self) -> DateTime<Utc> {
-        self.last_updated
+        Ok(exists_query.unwrap_or(false))
     }
 }

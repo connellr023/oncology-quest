@@ -17,9 +17,8 @@
  - Straightforward user registration and authentication
  - Management dashboard for administrative users
  - Responsive and dark themed front end user interface
- - Client side caching in browser session storage of frequently required data that is possibly large
-    - Rotation entry data
-    - User task data
+ - Client side caching in browser session storage of rotation entry data
+ - Client side memoization of user task data to avoid resending unnecassary requests
 
 <br />
 

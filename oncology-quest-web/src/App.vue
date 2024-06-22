@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue"
-import { UserWithTasks } from "./models/user"
+import { User } from "./models/user"
 import { Rotation } from "./models/rotation"
-import { EntryStructure } from "./models/tasks"
+import { EntryStructure, UserTaskStructure } from "./models/tasks"
 
 import useSession from "./hooks/useSession"
 
@@ -13,13 +13,11 @@ import MainLogo from "./components/vector/MainLogo.vue"
 const {
   fetchSession,
   session,
-  tasks,
   rotations,
   loading,
   connectionError
 } = useSession()
 provide("session", session)
-provide("tasks", tasks)
 provide("rotations", rotations)
 
 onMounted(fetchSession)
@@ -27,8 +25,14 @@ onMounted(fetchSession)
 const entries = ref<Record<number, EntryStructure>>({})
 provide("entries", entries)
 
-const selectedUser = ref<UserWithTasks | null>(null)
+const tasks = ref<Record<number, UserTaskStructure>>({})
+provide("tasks", tasks)
+
+const selectedUser = ref<User | null>(null)
 provide("selectedUser", selectedUser)
+
+const selectedUserTasks = ref<UserTaskStructure | null>(null)
+provide("selectedUserTasks", selectedUserTasks)
 
 const selectedRotation = ref<Rotation | null>(null)
 provide("selectedRotation", selectedRotation)
@@ -54,7 +58,7 @@ provide("resetAll", resetAll)
       <div v-if="connectionError" class="connect-error"><b><i>Oncology Quest</i></b> is currently under maintenance</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
-        <DashboardView :resetAll="resetAll" v-else />
+        <DashboardView v-else />
       </div>
     </div>
   </main>

@@ -28,30 +28,16 @@ async fn test_get_session_not_logged_in() -> Result<()> {
     Ok(())
 }
 
+
 #[tokio::test]
-async fn test_get_session_logged_in_invalid_cache() -> Result<()> {
+async fn test_get_session_logged_in() -> Result<()> {
     let (client, _) = client()?;
 
     try_authorized_test(&client, || async {
-        let (status, json) = session(&client, None).await?;
+        let (status, json) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
-        assert!(json.unwrap().tasks.is_some());
-    
-        Ok(())
-    }).await?;
+        assert!(!json.unwrap().user.is_admin);
 
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_get_session_logged_in_valid_cache() -> Result<()> {
-    let (client, _) = client()?;
-
-    try_authorized_test(&client, || async {
-        let (status, json) = session(&client, Some(Utc::now())).await?;
-        assert_eq!(status, StatusCode::OK);
-        assert!(json.unwrap().tasks.is_none());
-    
         Ok(())
     }).await?;
 
@@ -69,14 +55,14 @@ async fn test_logout() -> Result<()> {
     assert_eq!(status, StatusCode::OK);
 
     // Check that the session is active
-    let (status, _) = session(&client, None).await?;
+    let (status, _) = session(&client).await?;
     assert_eq!(status, StatusCode::OK);
 
     // Logout
     logout(&client).await?;
 
     // Check that the session is inactive
-    let (status, _) = session(&client, None).await?;
+    let (status, _) = session(&client).await?;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 
     // Log back in
@@ -164,7 +150,7 @@ async fn test_cannot_search_user_if_not_admin() -> Result<()> {
     let (client, _) = client()?;
     try_authorized_test(&client, || async {
         let (status, _) = search_users(&client, "test").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -177,7 +163,7 @@ async fn test_cannot_delete_user_if_not_admin() -> Result<()> {
     let (client, _) = client()?;
     try_authorized_test(&client, || async {
         let status = delete_user(&client, 1).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -284,7 +270,7 @@ async fn test_admin_cannot_delete_admin() -> Result<()> {
     let (client, _) = client()?;
 
     try_admin_authorized_test(&client, || async {
-        let (status, json) = session(&client, None).await?;
+        let (status, json) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
 
         let admin_id = json.unwrap().user.id;
@@ -293,7 +279,7 @@ async fn test_admin_cannot_delete_admin() -> Result<()> {
         assert_eq!(status, StatusCode::FORBIDDEN);
 
         // Assert the acccount still exists
-        let (status, _) = session(&client, None).await?;
+        let (status, _) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())

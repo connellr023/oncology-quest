@@ -14,7 +14,7 @@ async fn test_non_admin_cannot_create_rotation() -> Result<()> {
 
     try_authorized_test(&client, || async {
         let (status, _) = create_rotation(&client, "Test Rotation").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;

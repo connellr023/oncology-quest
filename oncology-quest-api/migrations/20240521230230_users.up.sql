@@ -4,9 +4,8 @@ CREATE TABLE IF NOT EXISTS users(
     name TEXT NOT NULL,
     password_reset_timestamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     password_reset_token TEXT DEFAULT NULL,
-    is_admin BOOLEAN NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     salt BIGINT NOT NULL,
     password TEXT NOT NULL,
-    login_count INT DEFAULT 0 NOT NULL,
-    last_task_update TIMESTAMPTZ DEFAULT NOW() NOT NULL
+    login_count INT DEFAULT 0 NOT NULL
 );

@@ -14,8 +14,3 @@ export interface Session {
     rotations: Record<number, Rotation>,
     tasks?: Record<number, UserTask>
 }
-
-export interface UserWithTasks {
-    user: User,
-    tasks: Record<number, UserTask>
-}

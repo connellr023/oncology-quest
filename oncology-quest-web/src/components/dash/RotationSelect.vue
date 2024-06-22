@@ -1,31 +1,67 @@
 <script setup lang="ts">
-import { Ref, inject, ref } from "vue"
+import { Ref, inject, ref, watch } from "vue"
 import { Rotation } from "../../models/rotation"
 import { User } from "../../models/user"
 
 import useEntries from "../../hooks/useEntries"
+import useRotations from "../../hooks/useRotations"
+import useUserTasks from "../../hooks/useUserTasks"
 
 import CheckIcon from "../vector/CheckIcon.vue"
 import EditIcon from "../vector/EditIcon.vue"
 import CancelIcon from "../vector/CancelIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
-import useRotations from "../../hooks/useRotations"
 
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
+const selectedUser = inject<Ref<User | null>>("selectedUser")!
 
 const { fetchEntriesWithCaching } = useEntries()
+const { fetchOwnTasksWithMemo, fetchUserTasksWithMemo } = useUserTasks()
 const { deleteRotation } = useRotations()
 
 const isEditing = ref(false)
 
+const seenRotations = new Set<number>()
+
+const handleFetchUserTasks = async (rotation: Rotation) => {
+  if (selectedUser.value && !await fetchUserTasksWithMemo(rotation.id, selectedUser.value.id)) {
+    console.error("Failed to fetch user tasks.")
+    return
+  }
+}
+
+if (session.value.isAdmin) {
+  watch(() => selectedUser.value, () => {
+    if (selectedRotation.value) {
+      handleFetchUserTasks(selectedRotation.value)
+    }
+  })
+}
+
 const selectRotation = async (rotation: Rotation) => {
+  if (session.value.isAdmin) {
+    handleFetchUserTasks(rotation)
+  }
+  else {
+    if (seenRotations.has(rotation.id)) {
+      selectedRotation.value = rotation
+      return
+    }
+
+    if (!await fetchOwnTasksWithMemo(rotation.id)) {
+      console.error("Failed to fetch owned tasks.")
+      return
+    }
+  }
+
   if (!await fetchEntriesWithCaching(rotation.id)) {
     console.error("Failed to fetch entries.")
     return
   }
 
+  seenRotations.add(rotation.id)
   selectedRotation.value = rotation
 }
 
@@ -86,6 +122,10 @@ const onRotationClick = (rotation: Rotation) => {
 
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
+
+div.rotation-select-container {
+  margin-bottom: 40px;
+}
 
 p.no-rotations {
   text-align: center;

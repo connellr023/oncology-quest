@@ -12,7 +12,6 @@ div {
   font-size: clamp(16px, 2lvw, 18px);
   bottom: 17px;
   animation: fade-in 1.5s ease-out;
-  opacity: 0.7;
 
   span.divider {
     $side-margin: 10px;

@@ -49,6 +49,9 @@ pub fn config(cfg: &mut ServiceConfig) {
                 scope("/tasks")
                     .service(tasks::create_user_task::create_user_task)
                     .service(tasks::update_user_task::update_user_task)
+                    .service(tasks::get_user_tasks::get_user_tasks)
+                    .service(tasks::get_user_tasks::get_own_tasks)
+                       .wrap(governor(1, 15))
             )
             .service(
                 scope("/entries")
