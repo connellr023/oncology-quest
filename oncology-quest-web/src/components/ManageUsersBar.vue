@@ -2,6 +2,7 @@
 import { Ref, inject, onMounted, onUnmounted, ref } from "vue"
 import { User } from "../models/user"
 import { UserTaskStructure } from "../models/tasks"
+import { Rotation } from "../models/rotation"
 
 import useUserSearch from "../hooks/useUserSearch"
 import useDeleteUser from "../hooks/useDeleteUser"
@@ -20,6 +21,7 @@ import ExportIcon from "./vector/ExportIcon.vue"
 
 const selectedUser = inject<Ref<User | null>>("selectedUser")!
 const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
+const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const session = inject<Ref<User | null>>("session")!
   
 const { search, results, loading, searchError } = useUserSearch()
@@ -134,7 +136,7 @@ onUnmounted(() => {
             <UserProfileIcon :initials="result.name.substring(0, 2)" @click.stop="() => { if (selectedUser?.id === result.id) { toggleUserOptions() } else { setSelectedUser(result) } }" />
             <Dropdown :isVisible="showUserOptions && selectedUser?.id === result.id" @change="showUserOptions = $event">
               <span class="login-count"><b>{{ result.loginCount }}</b>Login(s)</span>
-              <button class="bubble" @click="onExportProgressClicked">
+              <button class="bubble" @click="onExportProgressClicked" :disabled="selectedUserTasks === null || selectedRotation === null">
                 <ExportIcon />
                 Export Progress
               </button>
