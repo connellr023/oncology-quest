@@ -1,6 +1,9 @@
 # $\text{Oncology Quest}$
 > A fullstack web application that aids Medical Oncology Trainees and rotation directors.
 
+> [!IMPORTANT]
+> This app is only meant for trainees. If that is not you, then *please* do **not** try using this service as it will place unnecassary load on the webserver and illegitimate accounts will be removed.
+
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Actix](https://img.shields.io/badge/actix-%23ffffff.svg?style=for-the-badge&logo=actix&logoColor=black)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
@@ -9,6 +12,17 @@
 ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonwebservices&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/connellr023/oncology-quest/ci.yml?style=for-the-badge&logo=docker)
+
+<br />
+
+#### Table of Contents
+ - [Features](#features)
+ - [Security Measures](#security-measures)
+ - [API Testing](#api-integration-and-penetration-testing)
+ - [Deployment Details](#deployment-details)
+ - [Building](#building-api-for-production)
+ - [Environment Variables](#backend-development-environment-variables)
+ - [Screenshots](#screenshots)
 
 <br />
 
@@ -26,6 +40,12 @@
  - Simple rate limiter on sensitive **API** routes
  - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
  - **REGEX** patterns that filter every user input to prevent **XSS** attacks as well as **SQL** injection but the backend already uses prepared statements anyway
+
+
+<br />
+
+> [!WARNING]
+> While the security measures in place are sufficient for the data sensitivity of this app, be smart with choosing passwords. Use one that is unique to this service.
 
 <br />
 
