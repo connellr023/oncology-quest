@@ -231,7 +231,7 @@ impl EntryStructure {
     /// 
     /// The entry structure.
     pub fn build(supertasks: &[Supertask], tasks: &[Task], subtasks: &[Subtask]) -> anyhow::Result<Self> {
-        let mut task_map: HashMap<i32, Vec<Subtask>> = HashMap::new();
+        let mut task_map: HashMap<i32, Vec<Subtask>> = HashMap::with_capacity(subtasks.len());
         for subtask in subtasks.iter() {
             task_map
                 .entry(subtask.task_id)
@@ -239,7 +239,7 @@ impl EntryStructure {
                 .push(subtask.to_owned());
         }
 
-        let mut supertask_map: HashMap<i32, Vec<EntryLevel<Task, Subtask>>> = HashMap::new();
+        let mut supertask_map: HashMap<i32, Vec<EntryLevel<Task, Subtask>>> = HashMap::with_capacity(tasks.len());
         for task in tasks.iter() {
             let subtasks = task_map
                 .remove(&task.id)

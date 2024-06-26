@@ -40,6 +40,7 @@
  - Simple rate limiter on sensitive **API** routes
  - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
  - **REGEX** patterns that filter every user input to prevent **XSS** attacks as well as **SQL** injection but the backend already uses prepared statements anyway
+ - Writing the backend in **Rust** is a security feature in itself
 
 
 <br />
@@ -63,7 +64,7 @@
 <br />
 
 #### Deployment Details
- - This web app is deployed for users on **AWS**
+ - This web app is deployed for users on **AWS** via **Elastic Container Service**
  - An **Application Load Balancer** as well as **Route 53 DNS** services are employed to route users to the registered domain name
 
 <br />

@@ -36,7 +36,7 @@ div.dropdown-container {
   z-index: 1;
   background-color: $tertiary-bg-color;
   border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
   left: 2px;
 
   & > * {
