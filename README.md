@@ -4,6 +4,9 @@
 > [!IMPORTANT]
 > This app is only meant for trainees. If that is not you, then *please* do **not** try using this service as it will place unnecassary load on the webserver and illegitimate accounts will be removed.
 
+> [!NOTE]
+> A flutter client is in development to facilitate a mobile app and *possibly* replace the web client in the future so that the client code lives on a single code base.
+
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Actix](https://img.shields.io/badge/actix-%23ffffff.svg?style=for-the-badge&logo=actix&logoColor=black)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
@@ -15,6 +18,35 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![API CI Status](https://img.shields.io/github/actions/workflow/status/connellr023/oncology-quest/ci.yml?style=for-the-badge&logo=docker)
 ![Flutter Client CI Status](https://img.shields.io/github/actions/workflow/status/connellr023/oncology-quest/ci_flutter.yml?style=for-the-badge&logo=flutter)
+
+<br />
+
+#### Table of Contents
+ - [Features](#features)
+ - [Security Measures](#security-measures)
+ - [API Testing](#api-integration-and-penetration-testing)
+ - [Deployment Details](#deployment-details)
+ - [Building](#building-api-for-production)
+ - [Environment Variables](#backend-development-environment-variables)
+ - [Screenshots](#screenshots)
+
+<br />
+
+#### Features
+ - Straightforward user registration and authentication
+ - Management dashboard for administrative users
+ - Responsive and dark themed front end user interface
+ - Client side caching and memoization of frequently accessed data to reduce server load
+
+<br />
+
+#### Security Measures
+ - Role based authentication for admins and regular users
+ - Password hashing with **BCRYPT** combined with 64-bit integer nonce used as a **salt**
+ - Simple rate limiter on sensitive **API** routes
+ - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
+ - **REGEX** patterns that filter every user input to prevent **XSS** attacks as well as **SQL** injection but the backend already uses prepared statements anyway
+ - Writing the backend in **Rust** is a security feature in itself
 
 <br />
 
