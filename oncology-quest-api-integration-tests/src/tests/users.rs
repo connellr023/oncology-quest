@@ -4,7 +4,6 @@ use crate::{
     delete_user,
     login,
     logout,
-    rand_email,
     rand_password,
     register,
     search_users,
@@ -29,30 +28,16 @@ async fn test_get_session_not_logged_in() -> Result<()> {
     Ok(())
 }
 
+
 #[tokio::test]
-async fn test_get_session_logged_in_invalid_cache() -> Result<()> {
+async fn test_get_session_logged_in() -> Result<()> {
     let (client, _) = client()?;
 
     try_authorized_test(&client, || async {
-        let (status, json) = session(&client, None).await?;
+        let (status, json) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
-        assert!(json.unwrap().tasks.is_some());
-    
-        Ok(())
-    }).await?;
+        assert!(!json.unwrap().user.is_admin);
 
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_get_session_logged_in_valid_cache() -> Result<()> {
-    let (client, _) = client()?;
-
-    try_authorized_test(&client, || async {
-        let (status, json) = session(&client, Some(Utc::now())).await?;
-        assert_eq!(status, StatusCode::OK);
-        assert!(json.unwrap().tasks.is_none());
-    
         Ok(())
     }).await?;
 
@@ -63,21 +48,21 @@ async fn test_get_session_logged_in_valid_cache() -> Result<()> {
 async fn test_logout() -> Result<()> {
     let (client, _) = client()?;
     
-    let status = register(&client, "logout-user", "Logout User", "logout@test.com", "whatthesigma").await?;
+    let status = register(&client, "logout-user", "Logout User", "whatthesigma").await?;
     assert_eq!(status, StatusCode::CREATED);
     
     let (status, _) = login(&client, "logout-user", "whatthesigma").await?;
     assert_eq!(status, StatusCode::OK);
 
     // Check that the session is active
-    let (status, _) = session(&client, None).await?;
+    let (status, _) = session(&client).await?;
     assert_eq!(status, StatusCode::OK);
 
     // Logout
     logout(&client).await?;
 
     // Check that the session is inactive
-    let (status, _) = session(&client, None).await?;
+    let (status, _) = session(&client).await?;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 
     // Log back in
@@ -105,10 +90,10 @@ async fn test_no_duplicate_users() -> Result<()> {
 
     let (client, _) = client()?;
 
-    let status = register(&client, "test", "Test User", "grimace@englishorspanish.com", PASSWORD).await?;
+    let status = register(&client, "test", "Test User", PASSWORD).await?;
     assert_eq!(status, StatusCode::CREATED);
 
-    let status = register(&client, "test", "Tester", "brokensigma@hotmail.com", PASSWORD).await?;
+    let status = register(&client, "test", "Tester", PASSWORD).await?;
     assert_eq!(status, StatusCode::CONFLICT);
 
     // Delete the user
@@ -125,7 +110,7 @@ async fn test_no_duplicate_users() -> Result<()> {
 async fn test_invalid_username_is_rejected() -> Result<()> {
     let (client, _) = client()?;
 
-    match register(&client, "test<script></script>", "Test User", "test@test.com", "goodpass2189389").await {
+    match register(&client, "test<script></script>", "Test User", "goodpass2189389").await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -138,20 +123,7 @@ async fn test_invalid_username_is_rejected() -> Result<()> {
 async fn test_invalid_name_is_rejected() -> Result<()> {
     let (client, _) = client()?;
 
-    match register(&client, "test", "Test User123", "test@test.com", "goodpass2189389").await {
-        Ok(status) if status == StatusCode::BAD_REQUEST => (),
-        Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
-        Err(error) => return Err(error),
-    }
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_invalid_email_is_rejected() -> Result<()> {
-    let (client, _) = client()?;
-
-    match register(&client, "test", "Test User", "notanemail", "goodpass2189389").await {
+    match register(&client, "test", "Test User123", "goodpass2189389").await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -164,7 +136,7 @@ async fn test_invalid_email_is_rejected() -> Result<()> {
 async fn test_invalid_password_is_rejected() -> Result<()> {
     let (client, _) = client()?;
 
-    match register(&client, "test", "Test User", "notanemail", "").await {
+    match register(&client, "test", "Test User", "").await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -178,7 +150,7 @@ async fn test_cannot_search_user_if_not_admin() -> Result<()> {
     let (client, _) = client()?;
     try_authorized_test(&client, || async {
         let (status, _) = search_users(&client, "test").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -191,7 +163,7 @@ async fn test_cannot_delete_user_if_not_admin() -> Result<()> {
     let (client, _) = client()?;
     try_authorized_test(&client, || async {
         let status = delete_user(&client, 1).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -209,10 +181,9 @@ async fn test_search_users() -> Result<()> {
     for i in 0..USER_COUNT {
         let username = format!("search-test-{}", i);
         let name = "Search Test User";
-        let email = rand_email();
         let password = rand_password();
 
-        match register(&client, username.as_str(), name, email.as_str(), password.as_str()).await {
+        match register(&client, username.as_str(), name, password.as_str()).await {
             Ok(status) if status == StatusCode::CREATED => (),
             Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
             Err(error) => return Err(error),
@@ -250,7 +221,7 @@ async fn test_reset_password() -> Result<()> {
     const NEW_PASSWORD: &str = "newpass69420";
 
     // Create a dummy user
-    let status = register(&client, USERNAME, "Reset Password", "resetpass@skibidi.net", ORIGINAL_PASSWORD).await?;
+    let status = register(&client, USERNAME, "Reset Password", ORIGINAL_PASSWORD).await?;
     assert_eq!(status, StatusCode::CREATED);
 
     // Login as the dummy user
@@ -263,16 +234,20 @@ async fn test_reset_password() -> Result<()> {
     let status = logout(&client).await?;
     assert_eq!(status, StatusCode::OK);
 
+    let mut token = None;
+
     // Give the dummy user ability to reset their password as admin
     try_admin_authorized_test(&client, || async {
-        let status = allow_reset_password(&client, dummy_user_id).await?;
-        assert_eq!(status, StatusCode::OK);
+        let result = allow_reset_password(&client, dummy_user_id).await?;
+        assert_eq!(result.0, StatusCode::OK);
+
+        token = Some(result.1.unwrap().reset_token);
 
         Ok(())
     }).await?;
 
     // Reset the dummy user's password
-    let status = reset_password(&client, USERNAME, NEW_PASSWORD).await?;
+    let status = reset_password(&client, USERNAME, NEW_PASSWORD, token.unwrap().as_str()).await?;
     assert_eq!(status, StatusCode::OK);
 
     // Ensure old password is rejected
@@ -295,17 +270,16 @@ async fn test_admin_cannot_delete_admin() -> Result<()> {
     let (client, _) = client()?;
 
     try_admin_authorized_test(&client, || async {
-        let (status, json) = session(&client, None).await?;
+        let (status, json) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
 
         let admin_id = json.unwrap().user.id;
 
-        // Query will go through, but it won't actually delete the admin
         let status = delete_user(&client, admin_id).await?;
-        assert_eq!(status, StatusCode::OK);
+        assert_eq!(status, StatusCode::FORBIDDEN);
 
         // Assert the acccount still exists
-        let (status, _) = session(&client, None).await?;
+        let (status, _) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())

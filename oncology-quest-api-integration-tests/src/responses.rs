@@ -8,7 +8,6 @@ pub struct User {
     pub id: i32,
     pub username: String,
     pub name: String,
-    pub email: String,
     pub is_admin: bool,
     pub login_count: i32
 }
@@ -23,6 +22,8 @@ pub struct UserTask {
     pub comment: String
 }
 
+pub type GetUserTasksResponse = HashMap<i32, UserTask>;
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Rotation {
@@ -31,19 +32,12 @@ pub struct Rotation {
     last_updated: DateTime<Utc>
 }
 
-#[derive(Deserialize, Debug)]
-pub struct SearchResultUser {
-    pub user: User,
-    pub tasks: HashMap<i32, UserTask>
-}
-
-pub type SearchUserResponse = HashMap<i32, SearchResultUser>;
+pub type SearchUserResponse = HashMap<i32, User>;
 
 #[derive(Deserialize, Debug)]
 pub struct UserSessionResponse {
     pub user: User,
-    pub rotations: HashMap<i32, Rotation>,
-    pub tasks: Option<HashMap<i32, UserTask>>
+    pub rotations: HashMap<i32, Rotation>
 }
 
 #[derive(Deserialize, Debug)]
@@ -100,4 +94,11 @@ pub struct CreateEntryResponse {
 #[derive(Deserialize)]
 pub struct CreateUserTaskResponse {
     pub id: i32
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AllowResetPasswordResponse {
+    pub password_reset_timestamp: DateTime<Utc>,
+    pub reset_token: String
 }

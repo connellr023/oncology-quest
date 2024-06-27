@@ -2,6 +2,7 @@
 import { Ref, VNodeRef, inject, nextTick, onMounted, onUpdated, ref } from "vue"
 import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
+import { Rotation } from "../../models/rotation";
 
 import useUserTasks from "../../hooks/useUserTasks";
 
@@ -18,6 +19,7 @@ const props = defineProps<{
 }>()
 
 const session = inject<Ref<User>>("session")!
+const selectedRotation = inject<Ref<Rotation>>("selectedRotation")!
 
 const isComplete = ref(false)
 const isSaved = ref(true)
@@ -35,7 +37,7 @@ onMounted(() => {
 })
 
 const saveTask = async (): Promise<boolean> => {
-  if (await updateTask(props.subtaskId, isComplete.value, comment.value)) {
+  if (await updateTask(selectedRotation.value.id, props.subtaskId, isComplete.value, comment.value)) {
     isSaved.value = true
     return true
   }
@@ -67,21 +69,27 @@ onUpdated(() => nextTick(adjustHeight))
 </script>
 
 <template>
-  <div class="container">
-    <div class="task-heading-container">
-      <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
-      <button :disabled="commentError ? true : false" v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
-        <CheckIcon />
-        {{ isSaved ? "Saved" : "Not Saved" }}
-      </button>
-      <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
+  <li>
+    <div class="container">
+      <div class="task-heading-container">
+        <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
+        <button :disabled="commentError ? true : false" v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
+          <CheckIcon />
+          {{ isSaved ? "Saved" : "Not Saved" }}
+        </button>
+        <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
+      </div>
+      <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
     </div>
-    <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
-  </div>
+  </li>
 </template>
 
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
+
+li {
+  margin-bottom: 5px;
+}
 
 button.check {
   $size: 13px;

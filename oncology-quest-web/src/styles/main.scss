@@ -280,8 +280,16 @@ input {
 }
 
 h1 {
+  $side-padding: 15px;
+
+  padding-left: $side-padding;
+  padding-right: $side-padding;
   font-weight: normal;
   font-size: clamp(25px, 2.4lvw, 32px);
+
+  &.section-heading {
+    padding-left: 0;
+  }
 }
 
 form,
@@ -358,15 +366,14 @@ svg.spinner {
 
 span.login-count {
   cursor: auto;
+  margin: auto;
   padding: 10px;
   padding-top: 15px;
-  margin-left: 20px;
 
   b {
     margin-right: 10px;
   }
 }
-
 
 div.modal {
   position: fixed;
@@ -398,6 +405,10 @@ div.modal {
       margin: 8px;
     }
 
+    p { 
+      white-space: pre-wrap;
+    }
+
     p.error {
       $side-padding: 10px;
 
@@ -405,7 +416,6 @@ div.modal {
       padding-right: $side-padding;
       color: $theme-color-red;
       margin: auto;
-      white-space: pre-wrap;
     }
 
     div.modal-buttons {
@@ -418,6 +428,11 @@ div.modal {
       }
     }
   }
+}
+
+ul {
+  list-style-type: none;
+  padding-left: 0;
 }
 
 ::-webkit-scrollbar {

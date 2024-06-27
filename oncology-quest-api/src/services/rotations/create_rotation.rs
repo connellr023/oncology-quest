@@ -1,12 +1,6 @@
-use crate::auth_admin_session;
 use crate::models::rotation::Rotation;
 use crate::utilities::parsable::Name;
-use actix_session::Session;
-use actix_web::web::{Data, Json};
-use actix_web::{HttpResponse, Responder};
-use chrono::{DateTime, Utc};
-use serde::{Serialize, Deserialize};
-use sqlx::PgPool;
+use crate::services::prelude::*;
 
 #[derive(Deserialize)]
 struct CreateRotationQuery {
@@ -22,13 +16,15 @@ struct CreateRotationResponse {
 
 #[actix_web::post("/create")]
 pub(super) async fn create_rotation(session: Session, pool: Data<PgPool>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
-    auth_admin_session!(user_id, session, pool);
-
-    let mut rotation = Rotation::new(create_rotation_query.into_inner().name);
-
-    if rotation.insert(&pool).await.is_err() {
-        return HttpResponse::InternalServerError().finish();
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
+        return response;
     }
+
+    let rotation = Rotation::new(create_rotation_query.into_inner().name);
+    let rotation = match rotation.insert(&pool).await {
+        Ok(rotation) => rotation,
+        Err(_) => return HttpResponse::InternalServerError().finish()
+    };
 
     HttpResponse::Created().json(CreateRotationResponse {
         rotation_id: rotation.id(),

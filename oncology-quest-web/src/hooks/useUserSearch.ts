@@ -1,9 +1,9 @@
 import { ref } from "vue"
-import { UserWithTasks } from "../models/user"
+import { User } from "../models/user"
 import { API_ENDPOINT } from "../utilities"
 
 const useUserSearch = () => {
-    const results = ref<Record<number, UserWithTasks>>({})
+    const results = ref<Record<number, User>>({})
     const loading = ref(false)
     const searchError = ref(false)
 
@@ -25,7 +25,7 @@ const useUserSearch = () => {
             }
             else {
                 try {
-                    const users: Record<number, UserWithTasks> = await response.json()
+                    const users: Record<number, User> = await response.json()
                     results.value = users
                 }
                 catch (_) {

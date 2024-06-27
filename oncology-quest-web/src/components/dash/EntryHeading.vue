@@ -107,7 +107,7 @@ onUnmounted(() => {
 
 h3.entry-heading {
   font-size: clamp(14px, 1.5lvw, 17px);
-  font-weight: bold;
+  font-weight: normal;
   color: $main-txt-color;
   display: inline-block;
   padding-right: 15px;

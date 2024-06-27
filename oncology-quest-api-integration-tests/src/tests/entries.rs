@@ -26,13 +26,13 @@ async fn test_cannot_create_entry_if_not_admin() -> Result<()> {
 
     try_authorized_test(&client, || async {
         let (status, _) = create_supertask(&client, "Test Supertask", 0).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let (status, _) = create_task(&client, "Test Task", 0, 0).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let (status, _) = create_subtask(&client, "Test Subtask", 0, 0).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -46,13 +46,13 @@ async fn test_cannot_update_entry_if_not_admin() -> Result<()> {
 
     try_authorized_test(&client, || async {
         let status = update_subtask(&client, 0, "Updated Subtask").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let status = update_task(&client, 0, "Updated Task").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let status = update_supertask(&client, 0, "Updated Supertask").await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -66,13 +66,13 @@ async fn test_cannot_delete_entry_if_not_admin() -> Result<()> {
 
     try_authorized_test(&client, || async {
         let status = delete_subtask(&client, 0).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let status = delete_task(&client, 0).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         let status = delete_supertask(&client, 0).await?;
-        assert_eq!(status, StatusCode::FORBIDDEN);
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
     }).await?;
@@ -158,7 +158,7 @@ async fn test_get_entries_caching() -> Result<()> {
     }).await?;
 
     try_authorized_test(&client, || async {
-        let (status, json) = session(&client, None).await?;
+        let (status, json) = session(&client).await?;
         let json = json.unwrap();
         assert_eq!(status, StatusCode::OK);
         assert!(json.rotations.contains_key(&rotation_id));
@@ -171,7 +171,7 @@ async fn test_get_entries_caching() -> Result<()> {
         assert_eq!(status, StatusCode::NOT_MODIFIED);
         assert!(json.is_none());
 
-        let (status, _) = session(&client, None).await?;
+        let (status, _) = session(&client).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())

@@ -1,9 +1,8 @@
-version: "3.8"
 services:
   api:
     build:
       context: ./oncology-quest-api
-      dockerfile: dockerfile.test
+      dockerfile: test.dockerfile
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/oncology-quest
       HOST_PORT: 8000
@@ -19,7 +18,7 @@ services:
     depends_on:
       - api
   db:
-    image: postgres:13
+    image: postgres:16
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password

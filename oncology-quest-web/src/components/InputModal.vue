@@ -22,12 +22,12 @@ defineProps<{
     <div class="modal-content">
       <h3>{{ title }}</h3>
       <div class="input-container">
-        <input @keyup.enter="onConfirm" :type="`${isPassword ? 'password' : 'text'}`" :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
+        <input @keyup.enter="() => { if (!error) { onConfirm() } }" :type="`${isPassword ? 'password' : 'text'}`" :class="`bubble ${error ? 'error' : ''}`" v-model="model" :placeholder="placeholder" />
         <Spinner class="spinner" v-show="loading" />
       </div>
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
-        <button class="bubble green" @click="onConfirm">
+        <button class="bubble green" @click="onConfirm" :disabled="error ? true : false">
           <CheckIcon />
           Confirm
         </button>

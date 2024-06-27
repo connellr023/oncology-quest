@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, provide, ref } from "vue"
-import { UserWithTasks } from "./models/user"
+import { User } from "./models/user"
 import { Rotation } from "./models/rotation"
-import { EntryStructure } from "./models/tasks"
+import { EntryStructure, UserTaskStructure } from "./models/tasks"
 
 import useSession from "./hooks/useSession"
 
@@ -13,13 +13,11 @@ import MainLogo from "./components/vector/MainLogo.vue"
 const {
   fetchSession,
   session,
-  tasks,
   rotations,
   loading,
   connectionError
 } = useSession()
 provide("session", session)
-provide("tasks", tasks)
 provide("rotations", rotations)
 
 onMounted(fetchSession)
@@ -27,8 +25,14 @@ onMounted(fetchSession)
 const entries = ref<Record<number, EntryStructure>>({})
 provide("entries", entries)
 
-const selectedUser = ref<UserWithTasks | null>(null)
+const tasks = ref<Record<number, UserTaskStructure>>({})
+provide("tasks", tasks)
+
+const selectedUser = ref<User | null>(null)
 provide("selectedUser", selectedUser)
+
+const selectedUserTasks = ref<UserTaskStructure | null>(null)
+provide("selectedUserTasks", selectedUserTasks)
 
 const selectedRotation = ref<Rotation | null>(null)
 provide("selectedRotation", selectedRotation)
@@ -38,6 +42,7 @@ provide("isEditing", isEditing)
 
 const resetAll = () => {
   selectedUser.value = null
+  selectedUserTasks.value = null
   selectedRotation.value = null
   isEditing.value = false
   entries.value = {}
@@ -48,11 +53,13 @@ provide("resetAll", resetAll)
 <template>
   <main>
     <div class="flex-wrapper">
-      <MainLogo :class="`logo ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`" />
-      <div v-if="connectionError" class="connect-error"><b><i>bq</i></b> is currently under maintenance.</div>
+      <div :class="`logo-container ${session ? 'fade-out' : ''} ${(!loading && !connectionError) ? 'fade-up' : ''}`">
+        <MainLogo class="logo" />
+      </div>
+      <div v-if="connectionError" class="connect-error"><b><i>Oncology Quest</i></b> is currently under maintenance</div>
       <div v-else-if="!loading">
         <NoSessionView v-if="!session" />
-        <DashboardView :resetAll="resetAll" v-else />
+        <DashboardView v-else />
       </div>
     </div>
   </main>
@@ -71,51 +78,65 @@ div.connect-error {
 
 $logo-vert-offset: 170px;
 
+.fade-up {
+  transform: translateY($logo-vert-offset);
+  animation: move-up 0.8s;
+}
+
+.fade-out {
+  animation: fade-out 0.5s;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+}
+
+.fade-up,
+.fade-out {
+  animation-fill-mode: forwards;
+  animation-delay: 0.13s;
+}
+
 svg {
   width: 15lvw;
-  min-width: 50px;
-  max-width: 80px;
-  margin: 0 auto;
-  display: block;
-  animation: pulse 4s infinite ease-out;
-  
+  min-width: 100px;
+  max-width: 125px;
+
   &.logo {
+    margin: 0 auto;
+    display: block;
     fill: $theme-color-1;
   }
 
-  &.fade-up {
-    transform: translateY($logo-vert-offset);
-    animation: move-up 0.8s;
-  }
+  &.logo-effect {
+    fill: $theme-color-1;
+    opacity: 0.2;
+    animation: pulse 9s infinite ease-out;
+    position: absolute;
+    filter: blur(45px);
+    z-index: 2;
 
-  &.fade-out {
-    animation: fade-out 0.5s;
-    position: fixed;
-    transform: translate(-50%, -50%);
-    left: 50%;
-    top: 50%;
-  }
+    $start-scale: 1;
+    $end-scale: 1.6;
 
-  &.fade-up,
-  &.fade-out {
-    animation-fill-mode: forwards;
-    animation-delay: 0.13s;
+    @keyframes pulse {
+      0% {
+        transform: scale($start-scale);
+      }
+      50% {
+        transform: scale($end-scale);
+      }
+      100% {
+        transform: scale($start-scale);
+      }
+    }
   }
 }
 
-$max-opacity: 0.65;
-$min-opacity: 0.45;
-
-@keyframes pulse {
-  0% {
-    opacity: $min-opacity;
-  }
-  50% {
-    opacity: $max-opacity;
-  }
-  100% {
-    opacity: $min-opacity;
-  }
+div.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes move-up {

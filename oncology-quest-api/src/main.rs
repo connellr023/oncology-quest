@@ -15,6 +15,19 @@ use services::config::config;
 use actix_cors::Cors;
 use sqlx::PgPool;
 
+const SESSION_COOKIE_NAME: &str = "oncology-quest-session";
+const SESSION_COOKIE_DURATION: i64 = 6;
+
+#[cfg(feature = "production")]
+mod prod_config {
+    use actix_web::http::header::{self, HeaderName};
+
+    pub const ALLOWED_ORIGIN: &str = "https://www.oncologyquest.net";
+    pub const ALLOWED_METHODS: [&str; 4] = ["GET", "PATCH", "POST", "DELETE"];
+    pub const ALLOWED_HEADERS: [HeaderName; 2] = [header::ACCEPT, header::AUTHORIZATION];
+    pub const ALLOWED_HEADER: HeaderName = header::CONTENT_TYPE;
+}
+
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     // Load from .env file
@@ -22,7 +35,6 @@ async fn main() -> io::Result<()> {
 
     // Load environment variables.
     let env = Environment::new().expect("Failed to read environment variables");
-    let env_clone = env.clone();
 
     // Setup Postgres connection pool
     let pool = PgPool::connect(env.database_url())
@@ -30,7 +42,7 @@ async fn main() -> io::Result<()> {
         .expect("Failed to create database connection pool");
 
     // Print server details.
-    println!("Starting server at http://{}:{}", env.host_ip(), env.host_port());
+    println!("{}", env);
 
     // Generate session key.
     let mut key = [0u8; 64];
@@ -38,6 +50,7 @@ async fn main() -> io::Result<()> {
 
     // Start HTTP server.
     HttpServer::new(move || {
+        
         // Initialize the application.
         App::new()
             .app_data(Data::new(pool.clone()))
@@ -46,30 +59,64 @@ async fn main() -> io::Result<()> {
             .wrap(cors())
     })
     .bind(format!("{}:{}",
-        env_clone.host_ip(),
-        env_clone.host_port()
+        env.host_ip(),
+        env.host_port()
     ))?
     .run()
     .await
 }
 
+#[cfg(not(feature = "production"))]
+#[inline(always)]
 fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
     SessionMiddleware::builder(
         CookieSessionStore::default(),
         Key::from(key)
     )
-    .cookie_name(String::from("oncology-quest-session"))
+    .cookie_name(String::from(SESSION_COOKIE_NAME))
     .cookie_secure(false)
     .cookie_same_site(SameSite::None)
     .cookie_http_only(true)
     .session_lifecycle(
         PersistentSession::default()
-            .session_ttl(Duration::hours(6))
+            .session_ttl(Duration::hours(SESSION_COOKIE_DURATION))
     )
     .build()
 }
 
+#[cfg(feature = "production")]
+#[inline(always)]
+fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
+    SessionMiddleware::builder(
+        CookieSessionStore::default(),
+        Key::from(key)
+    )
+    .cookie_name(String::from(SESSION_COOKIE_NAME))
+    .cookie_secure(true)
+    .cookie_same_site(SameSite::Lax)
+    .cookie_http_only(true)
+    .session_lifecycle(
+        PersistentSession::default()
+            .session_ttl(Duration::hours(SESSION_COOKIE_DURATION))
+    )
+    .build()
+}
+
+#[cfg(not(feature = "production"))]
+#[inline(always)]
 fn cors() -> Cors {
-    Cors::permissive() // For now
+    Cors::permissive()
         .supports_credentials()
+}
+
+#[cfg(feature = "production")]
+#[inline(always)]
+fn cors() -> Cors {
+    Cors::default()
+        .allowed_origin(prod_config::ALLOWED_ORIGIN)
+        .allowed_methods(prod_config::ALLOWED_METHODS)
+        .allowed_headers(prod_config::ALLOWED_HEADERS)
+        .allowed_header(prod_config::ALLOWED_HEADER)
+        .supports_credentials()
+        .max_age(3600)
 }

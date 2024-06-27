@@ -1,11 +1,12 @@
 import { API_ENDPOINT } from "../utilities"
 
-interface AllowResetPasswordResponse {
-    passwordResetTimestamp: string
+interface AllowResetPasswordResponse<D = string | Date> {
+    passwordResetTimestamp: D,
+    resetToken: string
 }
 
 const useAllowResetPassword = () => {
-    const allowReset = async (userId: number): Promise<Date | false> => {
+    const allowReset = async (userId: number): Promise<AllowResetPasswordResponse<Date> | false> => {
         const response = await fetch(`${API_ENDPOINT}/api/users/allow-reset-password`, {
             credentials: "include",
             method: "PATCH",
@@ -16,8 +17,11 @@ const useAllowResetPassword = () => {
         })
 
         if (response.ok) {
-            const data: AllowResetPasswordResponse = await response.json()
-            return new Date(data.passwordResetTimestamp)
+            const data: AllowResetPasswordResponse<string> = await response.json()
+            return {
+                passwordResetTimestamp: new Date(data.passwordResetTimestamp),
+                resetToken: data.resetToken
+            }
         }
         
         return false

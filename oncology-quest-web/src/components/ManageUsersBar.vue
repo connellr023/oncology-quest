@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Ref, inject, onMounted, onUnmounted, ref } from "vue"
-import { UserWithTasks, User } from "../models/user"
+import { User } from "../models/user"
+import { UserTaskStructure } from "../models/tasks"
+import { Rotation } from "../models/rotation"
 
 import useUserSearch from "../hooks/useUserSearch"
 import useDeleteUser from "../hooks/useDeleteUser"
@@ -17,7 +19,9 @@ import ConfirmationModal from "./ConfirmationModal.vue"
 import MessageModal from "./MessageModal.vue"
 import ExportIcon from "./vector/ExportIcon.vue"
 
-const selectedUser = inject<Ref<UserWithTasks | null>>("selectedUser")!
+const selectedUser = inject<Ref<User | null>>("selectedUser")!
+const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
+const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const session = inject<Ref<User | null>>("session")!
   
 const { search, results, loading, searchError } = useUserSearch()
@@ -29,6 +33,7 @@ const query = ref("")
 const deleteUserError = ref("")
 const allowResetError = ref("")
 const allowResetExpiryDate = ref("")
+const resetToken = ref("")
 
 const isCollapsed = ref(true)
 const showUserOptions = ref(false)
@@ -46,7 +51,7 @@ const searchUser = () => {
   }
 }
 
-const setSelectedUser = (selection: UserWithTasks) => {
+const setSelectedUser = (selection: User) => {
   selectedUser.value = selection
   showUserOptions.value = false
 }
@@ -62,7 +67,7 @@ const onDeleteUserClicked = () => {
 }
 
 const onExportProgressClicked = () => {
-  exportProgress(selectedUser.value!.user.name, selectedUser.value!.tasks)
+  exportProgress(selectedUser.value!.name, selectedUserTasks.value!)
   showUserOptions.value = false
 }
 
@@ -70,8 +75,8 @@ const confirmDeleteUser = () => {
   const confirm = async () => {
     if (!selectedUser.value) return
 
-    if (await deleteUser(selectedUser.value.user.id)) {
-      delete results.value[selectedUser.value.user.id]
+    if (await deleteUser(selectedUser.value.id)) {
+      delete results.value[selectedUser.value.id]
       selectedUser.value = null
       showConfirmationModal.value = false
     }
@@ -84,7 +89,7 @@ const confirmDeleteUser = () => {
 }
 
 const onAllowResetClicked = async () => {
-  const result = await allowReset(selectedUser.value!.user.id)
+  const result = await allowReset(selectedUser.value!.id)
 
   allowResetError.value = ""
   showUserOptions.value = false
@@ -94,7 +99,8 @@ const onAllowResetClicked = async () => {
     allowResetError.value = "Failed to enable password reset."
   }
   else {
-    allowResetExpiryDate.value = result.toLocaleTimeString()
+    allowResetExpiryDate.value = result.passwordResetTimestamp.toLocaleTimeString()
+    resetToken.value = result.resetToken
   }
 }
 
@@ -126,11 +132,11 @@ onUnmounted(() => {
         <div v-if="searchError" class="status">An error occurred while searching for users.</div>
         <div v-else-if="Object.keys(results).length === 0" class="status">No results found.</div>
         <div v-else>
-          <div v-for="result in results" :key="result.user.id" :class="`user-option ${selectedUser?.user.id === result.user.id ? 'selected' : ''}`" @click="setSelectedUser(result)">
-            <UserProfileIcon :initials="result.user.name.substring(0, 2)" @click.stop="() => { if (selectedUser?.user.id === result.user.id) { toggleUserOptions() } else { setSelectedUser(result) } }" />
-            <Dropdown :isVisible="showUserOptions && selectedUser?.user.id === result.user.id" @change="showUserOptions = $event">
-              <span class="login-count"><b>{{ result.user.loginCount }}</b>Login(s)</span>
-              <button class="bubble" @click="onExportProgressClicked">
+          <div v-for="result in results" :key="result.id" :class="`user-option ${selectedUser?.id === result.id ? 'selected' : ''}`" @click="setSelectedUser(result)">
+            <UserProfileIcon :initials="result.name.substring(0, 2)" @click.stop="() => { if (selectedUser?.id === result.id) { toggleUserOptions() } else { setSelectedUser(result) } }" />
+            <Dropdown :isVisible="showUserOptions && selectedUser?.id === result.id" @change="showUserOptions = $event">
+              <span class="login-count"><b>{{ result.loginCount }}</b>Login(s)</span>
+              <button class="bubble" @click="onExportProgressClicked" :disabled="selectedUserTasks === null || selectedRotation === null">
                 <ExportIcon />
                 Export Progress
               </button>
@@ -144,7 +150,7 @@ onUnmounted(() => {
               </button>
             </Dropdown>
             <div class="user-info">
-              <span class="name"><b>{{ result.user.name }}</b> ({{ result.user.username }})</span>
+              <span class="name"><b>{{ result.name }}</b> ({{ result.username }})</span>
             </div>
           </div>
         </div>
@@ -165,11 +171,12 @@ onUnmounted(() => {
   />
   <MessageModal
     title="Allow Password Reset"
-    :message="`${selectedUser?.user.name} has until ${allowResetExpiryDate} to reset their password.`"
     :error="allowResetError"
     :visible="showAllowResetModal"
     @change="showAllowResetModal = $event"
-  />
+  >
+    <template #message><b>{{ selectedUser?.name }}</b> has until <b>{{ allowResetExpiryDate }}</b> to reset their password with the following token: <b>{{ resetToken }}</b>. Make sure to provide this information to the user.</template>
+  </MessageModal>
 </template>
 
 <style scoped lang="scss">
@@ -184,7 +191,7 @@ div.collapse-indicator-container {
   cursor: pointer;
   position: absolute;
   top: 50%;
-  left: calc(100% + 7px);
+  left: calc(100% + 4px);
   transform: translateY(-50%);
   opacity: 0.5;
   transition: opacity 0.3s ease;
@@ -219,6 +226,7 @@ div.collapse-indicator-container {
 div.results-container {
   margin-top: 25px;
   height: fit-content;
+  overflow-x: hidden;
   overflow-y: auto;
   height: calc(100% - 155px);
 

@@ -1,9 +1,5 @@
-use crate::{auth_user_session, models::{rotation::Rotation, entry_structure::EntryStructure}};
-use actix_web::{web::{Data, Path, Query}, HttpResponse, Responder};
-use actix_session::Session;
-use chrono::{DateTime, Utc};
-use sqlx::PgPool;
-use serde::Deserialize;
+use crate::models::{rotation::Rotation, entry_structure::EntryStructure};
+use crate::services::prelude::*;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -13,7 +9,9 @@ struct GetEntriesQuery {
 
 #[actix_web::get("/{rotation_id}")]
 pub(super) async fn get_entries(session: Session, pool: Data<PgPool>, rotation_id: Path<i32>, query: Query<GetEntriesQuery>) -> impl Responder {
-    auth_user_session!(session);
+    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Any).await {
+        return response;
+    }
 
     match Rotation::is_cache_valid(&pool, *rotation_id, query.entries_cache_timestamp).await {
         Err(_) => return HttpResponse::InternalServerError().finish(),

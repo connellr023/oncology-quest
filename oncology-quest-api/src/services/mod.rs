@@ -1,3 +1,4 @@
+pub mod prelude;
 mod rotations;
 mod entries;
 mod tasks;

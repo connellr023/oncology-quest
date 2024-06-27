@@ -3,13 +3,11 @@ import { API_ENDPOINT, isPasswordBanned } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidateName from "./validation/useValidateName"
-import useValidateEmail from "./validation/useValidateEmail"
 import useValidateConfirmedPassword from "./validation/useValidateConfirmedPassword"
 
 const useRegister = () => {
     const { username, usernameError } = useValidateUsername()
     const { name, nameError } = useValidateName()
-    const { email, emailError } = useValidateEmail()
     const {
         password,
         passwordError,
@@ -37,7 +35,6 @@ const useRegister = () => {
                     body: JSON.stringify({
                         username: username.value,
                         name: name.value,
-                        email: email.value,
                         password: password.value,
                     }),
                 })
@@ -49,6 +46,9 @@ const useRegister = () => {
                             break
                         case 409:
                             serverError.value = "That username is already taken. Please choose another."
+                            break
+                        case 429:
+                            serverError.value = "Too many requests. Please try again later."
                             break
                         default:
                             serverError.value = "Server error. Please try again later."
@@ -69,8 +69,6 @@ const useRegister = () => {
         usernameError,
         name,
         nameError,
-        email,
-        emailError,
         password,
         passwordError,
         confirmedPassword,

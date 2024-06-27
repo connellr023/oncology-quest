@@ -21,7 +21,7 @@ macro_rules! parsable {
         }
 
         impl<'de> Deserialize<'de> for $t {
-            fn deserialize<D>(deserializer: D) -> Result<$t, D::Error>
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where D: Deserializer<'de> {
                 let s = String::deserialize(deserializer)?;
                 $t::parse(s).map_err(serde::de::Error::custom)
@@ -48,10 +48,10 @@ macro_rules! parsable {
 
 parsable!(Username, USERNAME_REGEX);
 parsable!(Name, NAME_REGEX);
-parsable!(Email, EMAIL_REGEX);
 parsable!(PlainTextPassword, PASSWORD_REGEX);
 parsable!(Comment, COMMENT_REGEX);
 parsable!(EntryTitle, ENTRY_TITLE_REGEX);
+parsable!(ResetToken, RESET_TOKEN_REGEX);
 
 #[cfg(test)]
 mod tests {
@@ -78,18 +78,6 @@ mod tests {
     #[test]
     fn test_parse_name_invalid() {
         let result = Name::parse("John123".to_string());
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_parse_email_valid() {
-        let email = Email::parse("john@example.com".to_string()).unwrap();
-        assert_eq!(email.as_str(), "john@example.com");
-    }
-
-    #[test]
-    fn test_parse_email_invalid() {
-        let result = Email::parse("john@example".to_string());
         assert!(result.is_err());
     }
 
@@ -133,5 +121,17 @@ mod tests {
     fn test_whitespace_trim() {
         let username = Username::parse(" john_doe ".to_string()).unwrap();
         assert_eq!(username.as_str(), "john_doe");
+    }
+
+    #[test]
+    fn test_parse_reset_token_valid() {
+        let reset_token = ResetToken::parse("abcd".to_string()).unwrap();
+        assert_eq!(reset_token.as_str(), "abcd");
+    }
+
+    #[test]
+    fn test_parse_reset_token_invalid() {
+        let result = ResetToken::parse("abc".to_string());
+        assert!(result.is_err());
     }
 }
