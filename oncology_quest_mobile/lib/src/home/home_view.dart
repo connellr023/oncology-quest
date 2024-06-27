@@ -17,12 +17,9 @@ class HomeView extends StatelessWidget {
               'assets/images/logo.svg',
               width: 130,
               height: 130,
-              color: Theme.of(context).primaryColor,
+              colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
             ),
             const SizedBox(height: 16),
-            // const Text(
-            //   'Get started with Oncology Quest below.'
-            // ),
             RichText(
               text: TextSpan(
                 text: 'Get started with ',
@@ -35,6 +32,18 @@ class HomeView extends StatelessWidget {
                   TextSpan(text: ' below.'),
                 ],
               ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text('Login'),
             ),
           ],
         )
