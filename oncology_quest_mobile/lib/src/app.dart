@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'home/home_view.dart';
 
@@ -15,10 +16,12 @@ class App extends StatelessWidget {
       theme: ThemeData(
         primaryColor: const Color(0xFF331BBF),
         scaffoldBackgroundColor: const Color(0xFF030303),
-        textTheme: const TextTheme(
-          bodySmall: TextStyle(color: Color(0xFFE7E7E7)),
-          bodyMedium: TextStyle(color: Color(0xFFE7E7E7)),
-          bodyLarge: TextStyle(color: Color(0xFFE7E7E7))
+        textTheme: GoogleFonts.interTextTheme(
+          Theme.of(context).textTheme.copyWith(
+            bodySmall: const TextStyle(color: Color(0xFFE7E7E7)),
+            bodyMedium: const TextStyle(color: Color(0xFFE7E7E7)),
+            bodyLarge: const TextStyle(color: Color(0xFFE7E7E7)) 
+          )
         )
       ),
       restorationScopeId: 'app',

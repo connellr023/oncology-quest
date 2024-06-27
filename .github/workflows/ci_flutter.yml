@@ -1,0 +1,32 @@
+name: Flutter Client CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v1
+      with:
+        flutter-version: '3.22.2'
+
+    - name: Go to Flutter project directory
+      run: cd oncology_quest_mobile
+
+    - name: Get Flutter dependencies
+      run: flutter pub get
+      working-directory: oncology_quest_mobile
+
+    - name: Run Flutter tests
+      run: flutter test
+      working-directory: oncology_quest_mobile
