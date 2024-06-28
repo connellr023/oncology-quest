@@ -13,7 +13,7 @@ class MonotoneElevatedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double fontSize = MediaQuery.of(context).size.width * 0.05;
-    double buttonWidth = MediaQuery.of(context).size.width * 0.7;
+    double buttonWidth = MediaQuery.of(context).size.width * 0.8;
     const double buttonHeight = 60;
 
     return SizedBox(
