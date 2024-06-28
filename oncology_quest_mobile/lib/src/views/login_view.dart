@@ -5,8 +5,28 @@ import '../widgets/main_logo.dart';
 import '../widgets/form_text_field.dart';
 import '../utilities/regex.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  bool _isUsernameValid = false;
+  bool _isPasswordValid = false;
+
+  void _updateUsernameError(bool isError) {
+    setState(() {
+      _isUsernameValid = !isError;
+    });
+  }
+
+  void _updatePasswordError(bool isError) {
+    setState(() {
+      _isPasswordValid = !isError;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,17 +76,20 @@ class LoginView extends StatelessWidget {
                 obscureText: false,
                 labelText: 'Username',
                 validationRegex: usernameRegex,
-                errorMessage: 'Invalid username'
+                errorMessage: 'Invalid username',
+                onErrorChanged: _updateUsernameError,
               ),
               const SizedBox(height: 12),
               FormTextField(
                 obscureText: true,
                 labelText: 'Password',
                 validationRegex: passwordRegex,
-                errorMessage: 'Invalid password'
+                errorMessage: 'Password must be at withing 8 to 200 characters long',
+                onErrorChanged: _updatePasswordError,
               ),
               const SizedBox(height: 25),
               ThematicElevatedButton(
+                isDisabled: !_isUsernameValid || !_isPasswordValid,
                 text: 'Ok',
                 onPressed: () => {}
               )

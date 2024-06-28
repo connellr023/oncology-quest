@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ThematicElevatedButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
+  final bool isDisabled;
 
   const ThematicElevatedButton({
     super.key,
     required this.text,
     required this.onPressed,
+    this.isDisabled = false,
   });
 
   @override
@@ -20,9 +22,9 @@ class ThematicElevatedButton extends StatelessWidget {
       width: buttonWidth,
       height: buttonHeight,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: () => { if (!isDisabled) onPressed() },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: isDisabled ? Theme.of(context).primaryColor.withOpacity(0.4) : Theme.of(context).primaryColor,
           foregroundColor: Theme.of(context).textTheme.bodySmall!.color,
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
           textStyle: TextStyle(

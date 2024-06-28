@@ -5,13 +5,15 @@ class FormTextField extends StatefulWidget {
   final RegExp validationRegex;
   final String errorMessage;
   final bool obscureText;
+  final void Function(bool isError) onErrorChanged;
 
   const FormTextField({
     super.key,
     required this.labelText,
     required this.validationRegex,
     required this.errorMessage,
-    required this.obscureText
+    required this.obscureText,
+    required this.onErrorChanged,
   });
 
   @override
@@ -19,16 +21,22 @@ class FormTextField extends StatefulWidget {
 }
 
 class _FormTextFieldState extends State<FormTextField> {
+  final Color errorColor = const Color(0xFFE60A1C);
+  final int unselectedAlpha = 150;
+
   String? errorMessage;
 
   void _validateInput(String input) {
     if (!widget.validationRegex.hasMatch(input)) {
       setState(() {
         errorMessage = widget.errorMessage;
+        widget.onErrorChanged(true);
       });
-    } else {
+    }
+    else {
       setState(() {
         errorMessage = null;
+        widget.onErrorChanged(false);
       });
     }
   }
@@ -43,19 +51,27 @@ class _FormTextFieldState extends State<FormTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          widget.labelText,
-          style: TextStyle(
-            fontStyle: FontStyle.italic,
-            color: Theme.of(context).textTheme.bodySmall!.color,
-            fontSize: fontSize
-          ),
-        ),
-        if (errorMessage != null) Text(
-          errorMessage!,
-          style: TextStyle(
-            color: Colors.red,
-            fontSize: fontSize,
+        SizedBox(
+          width: fieldWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                widget.labelText,
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).textTheme.bodySmall!.color,
+                  fontSize: fontSize
+                )
+              ),
+              if (errorMessage != null) Text(
+                errorMessage!,
+                style: TextStyle(
+                  color: errorColor,
+                  fontSize: fontSize,
+                )
+              ),
+            ]
           )
         ),
         const SizedBox(height: 6),
@@ -72,14 +88,14 @@ class _FormTextFieldState extends State<FormTextField> {
             decoration: InputDecoration(
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: Theme.of(context).primaryColor.withAlpha(150),
+                  color: errorMessage != null ? errorColor.withAlpha(unselectedAlpha) : Theme.of(context).primaryColor.withAlpha(unselectedAlpha),
                   width: 3,
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: Theme.of(context).primaryColor,
+                  color: errorMessage != null ? errorColor : Theme.of(context).primaryColor,
                   width: 3,
                 ),
                 borderRadius: BorderRadius.circular(10),
