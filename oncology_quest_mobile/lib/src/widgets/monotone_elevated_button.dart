@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ThematicElevatedButton extends StatelessWidget {
+class MonotoneElevatedButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
 
-  const ThematicElevatedButton({
+  const MonotoneElevatedButton({
     super.key,
     required this.text,
     required this.onPressed,
@@ -19,11 +19,12 @@ class ThematicElevatedButton extends StatelessWidget {
     return SizedBox(
       width: buttonWidth,
       height: buttonHeight,
-      child: ElevatedButton(
+      child: OutlinedButton(
         onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Theme.of(context).textTheme.bodySmall!.color,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          side: const BorderSide(color: Colors.white, width: 3),
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
           textStyle: TextStyle(
             fontSize: fontSize,
@@ -31,7 +32,7 @@ class ThematicElevatedButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          overlayColor: Colors.black
+          overlayColor: Colors.white
         ),
         child: Text(text),
       )
