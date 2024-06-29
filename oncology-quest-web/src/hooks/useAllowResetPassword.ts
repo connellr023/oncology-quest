@@ -1,5 +1,7 @@
 import { API_ENDPOINT } from "../utilities"
 
+import useJwt from "./useJwt"
+
 interface AllowResetPasswordResponse<D = string | Date> {
     passwordResetTimestamp: D,
     resetToken: string
@@ -7,12 +9,12 @@ interface AllowResetPasswordResponse<D = string | Date> {
 
 const useAllowResetPassword = () => {
     const allowReset = async (userId: number): Promise<AllowResetPasswordResponse<Date> | false> => {
+        const { defaultHeaders } = useJwt()
+        
         const response = await fetch(`${API_ENDPOINT}/api/users/allow-reset-password`, {
             credentials: "include",
             method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             body: JSON.stringify({ userId })
         })
 

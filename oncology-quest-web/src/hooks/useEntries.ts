@@ -3,6 +3,7 @@ import { EntryStructure } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
 
 import useCache from "./useCache"
+import useJwt from "./useJwt"
 
 interface CreateEntryResponse {
     entryId: number
@@ -10,6 +11,8 @@ interface CreateEntryResponse {
 
 const useEntries = () => {
     const { cacheRotationEntries, retrieveRotationEntries } = useCache()
+    const { defaultHeaders } = useJwt()
+
     const entries = inject<Ref<Record<number, EntryStructure>>>("entries")!
 
     const entriesMemo = new Map<number, EntryStructure>()
@@ -21,9 +24,7 @@ const useEntries = () => {
     const createSupertask = async (title: string, rotationId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/create`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "POST", 
             body: JSON.stringify({
                 title,
@@ -53,9 +54,7 @@ const useEntries = () => {
     const updateSupertask = async (rotationId: number, supertaskIndex: number, supertaskId: number, title: string): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/update`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "PATCH",
             body: JSON.stringify({
                 entryId: supertaskId,
@@ -76,9 +75,7 @@ const useEntries = () => {
     const deleteSupertask = async (rotationId: number, supertaskIndex: number, supertaskId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/supertasks/delete`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "DELETE",
             body: JSON.stringify({
                 entryId: supertaskId
@@ -98,9 +95,7 @@ const useEntries = () => {
     const createTask = async (title: string, rotationId: number, supertaskId: number, supertaskIndex: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/tasks/create`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "POST",
             body: JSON.stringify({
                 title,
@@ -132,9 +127,7 @@ const useEntries = () => {
     const updateTask = async (rotationId: number, supertaskIndex: number, taskIndex: number, taskId: number, title: string): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/tasks/update`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "PATCH",
             body: JSON.stringify({
                 entryId: taskId,
@@ -155,9 +148,7 @@ const useEntries = () => {
     const deleteTask = async (rotationId: number, supertaskIndex: number, taskIndex: number, taskId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/tasks/delete`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "DELETE",
             body: JSON.stringify({
                 entryId: taskId
@@ -177,9 +168,7 @@ const useEntries = () => {
     const createSubtask = async (title: string, rotationId: number, taskId: number, supertaskIndex: number, taskIndex: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/subtasks/create`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "POST",
             body: JSON.stringify({
                 title,
@@ -208,9 +197,7 @@ const useEntries = () => {
     const updateSubtask = async (rotationId: number, supertaskIndex: number, taskIndex: number, subtaskIndex: number, subtaskId: number, title: string): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/subtasks/update`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "PATCH",
             body: JSON.stringify({
                 entryId: subtaskId,
@@ -231,9 +218,7 @@ const useEntries = () => {
     const deleteSubtask = async (rotationId: number, supertaskIndex: number, taskIndex: number, subtaskIndex: number, subtaskId: number): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/entries/subtasks/delete`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             method: "DELETE",
             body: JSON.stringify({
                 entryId: subtaskId
@@ -268,9 +253,7 @@ const useEntries = () => {
 
         const response = await fetch(url, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
+            headers: defaultHeaders()
         })
 
         if (response.status === 304) {

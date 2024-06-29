@@ -1,11 +1,10 @@
 use crate::models::client_user::ClientUser;
 use std::{future::{ready, Ready}, env::var};
-use actix_web::{dev::Payload, error::{Error, ErrorUnauthorized}, FromRequest, HttpRequest};
-use jsonwebtoken::{encode, decode, EncodingKey, Header, DecodingKey, Validation, Algorithm};
+use actix_web::{dev::Payload, error::{Error, ErrorInternalServerError, ErrorUnauthorized}, http::header, FromRequest, HttpRequest};
+use jsonwebtoken::{encode, decode, EncodingKey, Header, DecodingKey, Validation};
 use chrono::{Utc, Duration};
 use serde::{Deserialize, Serialize};
 
-const HASH_ALGORITHM: Algorithm = Algorithm::HS256;
 const EXPIRATION_WEEKS: i64 = 1;
 
 #[inline(always)]
@@ -14,19 +13,19 @@ fn secret_key() -> String {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct JwtUserClaim {
-    pub sub: ClientUser,
+pub struct JwtClaim<T> {
+    pub sub: T,
     pub exp: i64
 }
 
-impl JwtUserClaim {
+impl JwtClaim<String> {
     pub fn encode(user: ClientUser) -> String {
         let exp = (Utc::now() + Duration::weeks(EXPIRATION_WEEKS)).timestamp();
 
         encode(
-            &Header::new(HASH_ALGORITHM),
-            &JwtUserClaim {
-                sub: user,
+            &Header::default(),
+            &JwtClaim {
+                sub: serde_json::to_string(&user).unwrap(),
                 exp
             },
             &EncodingKey::from_secret(secret_key().as_ref())
@@ -34,32 +33,38 @@ impl JwtUserClaim {
     }
 }
 
-impl FromRequest for JwtUserClaim {
+impl From<JwtClaim<String>> for JwtClaim<ClientUser> {
+    fn from(claims: JwtClaim<String>) -> Self {
+        Self {
+            sub: serde_json::from_str(&claims.sub).unwrap(),
+            exp: claims.exp
+        }
+    }
+}
+
+impl FromRequest for JwtClaim<ClientUser> {
     type Error = Error;
     type Future = Ready<Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
-        if let Some(auth_header) = req.headers().get("Authorization") {
-            if let Ok(auth_str) = auth_header.to_str() {
-                if auth_str.starts_with("Bearer ") {
-                    let token = auth_str.trim_start_matches("Bearer ");
-                    let token_data = decode::<JwtUserClaim>(
-                        token,
-                        &DecodingKey::from_secret(secret_key().as_ref()),
-                        &Validation::new(HASH_ALGORITHM),
-                    );
+        if let Some(auth_header) = req.headers().get(header::AUTHORIZATION) {
+            if let Ok(token) = auth_header.to_str() {
+                let token_data = decode::<JwtClaim<String>>(
+                    token,
+                    &DecodingKey::from_secret(secret_key().as_ref()),
+                    &Validation::default(),
+                );
 
-                    return match token_data {
-                        Ok(data) => {
-                            if data.claims.exp < Utc::now().timestamp() {
-                                return ready(Err(ErrorUnauthorized("Token has expired.")));
-                            }
+                return match token_data {
+                    Ok(data) => {
+                        if data.claims.exp < Utc::now().timestamp() {
+                            return ready(Err(ErrorUnauthorized("Token has expired.")));
+                        }
 
-                            ready(Ok(data.claims))
-                        },
-                        Err(_) => ready(Err(ErrorUnauthorized("Invalid token."))),
-                    };
-                }
+                        ready(Ok(data.claims.into()))
+                    },
+                    Err(e) => ready(Err(ErrorInternalServerError(format!("Failed to decode token: {}", e.to_string())))),
+                };
             }
         }
 

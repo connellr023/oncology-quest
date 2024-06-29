@@ -2,6 +2,8 @@ import { ref } from "vue"
 import { User } from "../models/user"
 import { API_ENDPOINT } from "../utilities"
 
+import useJwt from "./useJwt"
+
 const useUserSearch = () => {
     const results = ref<Record<number, User>>({})
     const loading = ref(false)
@@ -11,13 +13,13 @@ const useUserSearch = () => {
         loading.value = true
         searchError.value = false
 
+        const { defaultHeaders } = useJwt()
+
         try {
             searchError.value = false
             const response = await fetch(`${API_ENDPOINT}/api/users/search/${query}`, {
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                }
+                headers: defaultHeaders()
             })
 
             if (!response.ok) {

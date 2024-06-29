@@ -1,13 +1,15 @@
 import { API_ENDPOINT } from "../utilities"
 
+import useJwt from "./useJwt"
+
 const useDeleteUser = () => {
+    const { defaultHeaders } = useJwt()
+
     const deleteSelf = async (password: string): Promise<boolean> => {
         const response = await fetch(`${API_ENDPOINT}/api/users/delete-self`, {
             credentials: "include",
             method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: defaultHeaders(),
             body: JSON.stringify({ password })
         })
 
@@ -18,9 +20,7 @@ const useDeleteUser = () => {
         const response = await fetch(`${API_ENDPOINT}/api/users/delete-other-user`, {
             credentials: "include",
             method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: defaultHeaders(),
             body: JSON.stringify({ userId })
         })
 
