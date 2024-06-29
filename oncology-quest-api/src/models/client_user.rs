@@ -2,7 +2,7 @@ use super::{user::User, prelude::*};
 use crate::utilities::parsable::{Name, Username};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
     pub id: i32,

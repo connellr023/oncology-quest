@@ -1,1 +1,1 @@
-pub mod jwt_extractor_middleware;
+pub mod jwt_extractor;

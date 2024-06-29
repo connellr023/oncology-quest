@@ -9,6 +9,7 @@
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Actix](https://img.shields.io/badge/actix-%23ffffff.svg?style=for-the-badge&logo=actix&logoColor=black)
+![JWT](https://img.shields.io/badge/JWT-red?style=for-the-badge&logo=JSON%20web%20tokens)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/vue-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
@@ -42,6 +43,7 @@
 
 #### Security Measures
  - Role based authentication for admins and regular users
+ - **JWT (JSON Web Token)** to handle user authentication
  - Password hashing with **BCRYPT** combined with 64-bit integer nonce used as a **salt**
  - Simple rate limiter on sensitive **API** routes
  - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
@@ -144,6 +146,7 @@ in the root project directory.
 HOST_IP=127.0.0.1
 HOST_PORT=8080
 DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
+JWT_SECRET=...
 ```
 
 <br />

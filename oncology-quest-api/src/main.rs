@@ -7,8 +7,7 @@ mod utilities;
 mod middlewares;
 
 use actix_web::{web::Data, App, HttpServer};
-use utilities::environment::Environment;
-use std::io;
+use std::{io, env::var};
 use dotenv::dotenv;
 use services::config::config;
 use actix_cors::Cors;
@@ -29,16 +28,17 @@ async fn main() -> io::Result<()> {
     // Load from .env file
     dotenv().ok();
 
-    // Load environment variables.
-    let env = Environment::new().expect("Failed to read environment variables");
+    let host_ip = var("HOST_IP").expect("Expected host IP.");
+    let host_port = var("HOST_PORT").expect("Expected host port.");
+    let database_url = var("DATABASE_URL").expect("Expected database URL.");
 
     // Setup Postgres connection pool
-    let pool = PgPool::connect(env.database_url())
+    let pool = PgPool::connect(database_url.as_str())
         .await
-        .expect("Failed to create database connection pool");
+        .expect("Failed to create database connection pool.");
 
     // Print server details.
-    println!("{}", env);
+    println!("Server running on: {}:{}", host_ip, host_port);
 
     // Start HTTP server.
     HttpServer::new(move || {
@@ -50,8 +50,8 @@ async fn main() -> io::Result<()> {
             .wrap(cors())
     })
     .bind(format!("{}:{}",
-        env.host_ip(),
-        env.host_port()
+        host_ip,
+        host_port
     ))?
     .run()
     .await
