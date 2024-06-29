@@ -1,9 +1,10 @@
+use std::rc::Rc;
+
 use crate::{
     client,
     delete_self,
     delete_user,
     login,
-    logout,
     rand_password,
     register,
     search_users,
@@ -21,20 +22,19 @@ use anyhow::{Result, anyhow};
 
 #[tokio::test]
 async fn test_get_session_not_logged_in() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
     let response = client.get(endpoint!("/api/users/session")).send().await?;
 
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     Ok(())
 }
 
-
 #[tokio::test]
 async fn test_get_session_logged_in() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
 
-    try_authorized_test(&client, || async {
-        let (status, json) = session(&client).await?;
+    try_authorized_test(client.clone(), |token| async move {
+        let (status, json) = session(client, Some(token.as_str())).await?;
         assert_eq!(status, StatusCode::OK);
         assert!(!json.unwrap().user.is_admin);
 
@@ -45,62 +45,22 @@ async fn test_get_session_logged_in() -> Result<()> {
 }
 
 #[tokio::test]
-async fn test_logout() -> Result<()> {
-    let (client, _) = client()?;
-    
-    let status = register(&client, "logout-user", "Logout User", "whatthesigma").await?;
-    assert_eq!(status, StatusCode::CREATED);
-    
-    let (status, _) = login(&client, "logout-user", "whatthesigma").await?;
-    assert_eq!(status, StatusCode::OK);
-
-    // Check that the session is active
-    let (status, _) = session(&client).await?;
-    assert_eq!(status, StatusCode::OK);
-
-    // Logout
-    logout(&client).await?;
-
-    // Check that the session is inactive
-    let (status, _) = session(&client).await?;
-    assert_eq!(status, StatusCode::UNAUTHORIZED);
-
-    // Log back in
-    let (status, _) = login(&client, "logout-user", "whatthesigma").await?;
-    assert_eq!(status, StatusCode::OK);
-
-    // Delete account
-    let status = delete_self(&client, "whatthesigma").await?;
-    assert_eq!(status, StatusCode::OK);
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_register_login_delete() -> Result<()> {
-    let (client, _) = client()?;
-    try_authorized_test(&client, || async { Ok(()) }).await?;
-
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_no_duplicate_users() -> Result<()> {
     const PASSWORD: &str = "goodpass2189389";
 
-    let (client, _) = client()?;
+    let client = client()?;
 
-    let status = register(&client, "test", "Test User", PASSWORD).await?;
+    let status = register(client.clone(), "test", "Test User", PASSWORD).await?;
     assert_eq!(status, StatusCode::CREATED);
 
-    let status = register(&client, "test", "Tester", PASSWORD).await?;
+    let status = register(client.clone(), "test", "Tester", PASSWORD).await?;
     assert_eq!(status, StatusCode::CONFLICT);
 
     // Delete the user
-    let status = login(&client, "test", PASSWORD).await?;
-    assert_eq!(status.0, StatusCode::OK);
+    let (status, token, _) = login(client.clone(), "test", PASSWORD).await?;
+    assert_eq!(status, StatusCode::OK);
 
-    let status = delete_self(&client, PASSWORD).await?;
+    let status = delete_self(client.clone(), token.unwrap().as_str(), PASSWORD).await?;
     assert_eq!(status, StatusCode::OK);
 
     Ok(())
@@ -108,9 +68,9 @@ async fn test_no_duplicate_users() -> Result<()> {
 
 #[tokio::test]
 async fn test_invalid_username_is_rejected() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
 
-    match register(&client, "test<script></script>", "Test User", "goodpass2189389").await {
+    match register(client, "test<script></script>", "Test User", "goodpass2189389").await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -121,9 +81,9 @@ async fn test_invalid_username_is_rejected() -> Result<()> {
 
 #[tokio::test]
 async fn test_invalid_name_is_rejected() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
 
-    match register(&client, "test", "Test User123", "goodpass2189389").await {
+    match register(client, "test", "Test User123", "goodpass2189389").await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -134,9 +94,9 @@ async fn test_invalid_name_is_rejected() -> Result<()> {
 
 #[tokio::test]
 async fn test_invalid_password_is_rejected() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
 
-    match register(&client, "test", "Test User", "").await {
+    match register(client, "test", "Test User", "").await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -147,9 +107,10 @@ async fn test_invalid_password_is_rejected() -> Result<()> {
 
 #[tokio::test]
 async fn test_cannot_search_user_if_not_admin() -> Result<()> {
-    let (client, _) = client()?;
-    try_authorized_test(&client, || async {
-        let (status, _) = search_users(&client, "test").await?;
+    let client = client()?;
+
+    try_authorized_test(client.clone(), |token| async move {
+        let (status, _) = search_users(client, token.as_str(), "test").await?;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
@@ -160,9 +121,10 @@ async fn test_cannot_search_user_if_not_admin() -> Result<()> {
 
 #[tokio::test]
 async fn test_cannot_delete_user_if_not_admin() -> Result<()> {
-    let (client, _) = client()?;
-    try_authorized_test(&client, || async {
-        let status = delete_user(&client, 1).await?;
+    let client = client()?;
+
+    try_authorized_test(client.clone(), |token| async move {
+        let status = delete_user(client, 1, token.as_str()).await?;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
@@ -176,14 +138,14 @@ async fn test_search_users() -> Result<()> {
     const USER_COUNT: usize = 4;
 
     let mut cleanup = Vec::<(String, String)>::with_capacity(USER_COUNT);
-    let (client, _) = client()?;
+    let client = client()?;
 
     for i in 0..USER_COUNT {
         let username = format!("search-test-{}", i);
         let name = "Search Test User";
         let password = rand_password();
 
-        match register(&client, username.as_str(), name, password.as_str()).await {
+        match register(client.clone(), username.as_str(), name, password.as_str()).await {
             Ok(status) if status == StatusCode::CREATED => (),
             Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
             Err(error) => return Err(error),
@@ -192,8 +154,9 @@ async fn test_search_users() -> Result<()> {
         cleanup.push((username, password));
     }
 
-    try_admin_authorized_test(&client, || async {
-        let (status, users) = search_users(&client, "search-test").await?;
+    let client_clone = client.clone();
+    try_admin_authorized_test(client_clone.clone(), |token| async move {
+        let (status, users) = search_users(client_clone, token.as_str(), "search-test").await?;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(users.unwrap().len(), USER_COUNT);
 
@@ -202,10 +165,12 @@ async fn test_search_users() -> Result<()> {
 
     // Login to each user and delete them
     for (username, password) in cleanup.iter() {
-        let (status, _) = login(&client, username, password).await?;
+        let client_clone = client.clone();
+
+        let (status, token, _) = login(client_clone.clone(), username, password).await?;
         assert_eq!(status, StatusCode::OK);
 
-        let status = delete_self(&client, password).await?;
+        let status = delete_self(client_clone, password, token.unwrap().as_str()).await?;
         assert_eq!(status, StatusCode::OK);
     }
 
@@ -214,52 +179,48 @@ async fn test_search_users() -> Result<()> {
 
 #[tokio::test]
 async fn test_reset_password() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
 
     const USERNAME: &str = "reset-password-user";
     const ORIGINAL_PASSWORD: &str = "resetpass69420";
     const NEW_PASSWORD: &str = "newpass69420";
 
     // Create a dummy user
-    let status = register(&client, USERNAME, "Reset Password", ORIGINAL_PASSWORD).await?;
+    let status = register(client.clone(), USERNAME, "Reset Password", ORIGINAL_PASSWORD).await?;
     assert_eq!(status, StatusCode::CREATED);
 
     // Login as the dummy user
-    let (status, json) = login(&client, USERNAME, ORIGINAL_PASSWORD).await?;
+    let (status, auth_token, json) = login(client.clone(), USERNAME, ORIGINAL_PASSWORD).await?;
     assert_eq!(status, StatusCode::OK);
 
     let dummy_user_id = json.unwrap().user.id;
 
-    // Logout
-    let status = logout(&client).await?;
-    assert_eq!(status, StatusCode::OK);
-
-    let mut token = None;
+    let mut reset_token = None;
 
     // Give the dummy user ability to reset their password as admin
-    try_admin_authorized_test(&client, || async {
-        let result = allow_reset_password(&client, dummy_user_id).await?;
+    try_admin_authorized_test(client.clone(), |token| async move {
+        let result = allow_reset_password(&client, dummy_user_id, token.as_str()).await?;
         assert_eq!(result.0, StatusCode::OK);
 
-        token = Some(result.1.unwrap().reset_token);
+        reset_token = Some(result.1.unwrap().reset_token);
 
         Ok(())
     }).await?;
 
     // Reset the dummy user's password
-    let status = reset_password(&client, USERNAME, NEW_PASSWORD, token.unwrap().as_str()).await?;
+    let status = reset_password(client.clone(), USERNAME, NEW_PASSWORD, reset_token.unwrap().as_str(), auth_token.unwrap().as_str()).await?;
     assert_eq!(status, StatusCode::OK);
 
     // Ensure old password is rejected
-    let (status, _) = login(&client, USERNAME, ORIGINAL_PASSWORD).await?;
+    let (status, _, _) = login(client.clone(), USERNAME, ORIGINAL_PASSWORD).await?;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 
     // Ensure new password is accepted
-    let (status, _) = login(&client, USERNAME, NEW_PASSWORD).await?;
+    let (status, auth_token, _) = login(client.clone(), USERNAME, NEW_PASSWORD).await?;
     assert_eq!(status, StatusCode::OK);
 
     // Cleanup
-    let status = delete_self(&client, NEW_PASSWORD).await?;
+    let status = delete_self(client, NEW_PASSWORD, auth_token.unwrap().as_str()).await?;
     assert_eq!(status, StatusCode::OK);
 
     Ok(())
@@ -267,7 +228,7 @@ async fn test_reset_password() -> Result<()> {
 
 #[tokio::test]
 async fn test_admin_cannot_delete_admin() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
 
     try_admin_authorized_test(&client, || async {
         let (status, json) = session(&client).await?;

@@ -8,8 +8,8 @@ mod responses;
 
 use std::{sync::Arc, future::Future, collections::HashMap};
 use chrono::{DateTime, Utc};
-use reqwest::Client;
-use reqwest_cookie_store::CookieStoreMutex;
+use reqwest::header::AUTHORIZATION;
+use reqwest::{Client, Response};
 use anyhow::{Result, anyhow};
 use reqwest::StatusCode;
 use serde_json::json;
@@ -42,15 +42,19 @@ fn format_timestamp(timestamp: DateTime<Utc>) -> String {
     timestamp.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()
 }
 
-pub async fn session(client: &Client) -> Result<(StatusCode, Option<UserSessionResponse>)> {
-    let response = client.get(endpoint!("/api/users/session"))
-        .send()
-        .await?;
+pub async fn session(client: Client, token: Option<&str>) -> Result<(StatusCode, Option<UserSessionResponse>)> {
+    let mut response = client.get(endpoint!("/api/users/session"));
+
+    if let Some(token) = token {
+        response = response.header(AUTHORIZATION, token);
+    }
+
+    let response = response.send().await?;
 
     Ok((response.status(), response.json().await.ok()))
 }
 
-pub async fn register(client: &Client, username: &str, name: &str, password: &str) -> Result<StatusCode> {
+pub async fn register(client: Client, username: &str, name: &str, password: &str) -> Result<StatusCode> {
     let response = client.post(endpoint!("/api/users/register"))
         .json(&json!({
             "username": username,
@@ -63,7 +67,7 @@ pub async fn register(client: &Client, username: &str, name: &str, password: &st
     Ok(response.status())
 }
 
-pub async fn login(client: &Client, username: &str, password: &str) -> Result<(StatusCode, Option<UserSessionResponse>)> {
+pub async fn login(client: Client, username: &str, password: &str) -> Result<(StatusCode, Option<String>, Option<UserSessionResponse>)> {
     let response = client.post(endpoint!("/api/users/login"))
         .json(&json!({
             "username": username,
@@ -72,101 +76,100 @@ pub async fn login(client: &Client, username: &str, password: &str) -> Result<(S
         .send()
         .await?;
 
-    Ok((response.status(), response.json().await.ok()))
+    Ok((response.status(), extract_token(&response), response.json().await.ok()))
 }
 
-pub async fn delete_self(client: &Client, password: &str) -> Result<StatusCode> {
+pub async fn delete_self(client: Client, password: &str, token: &str) -> Result<StatusCode> {
     let response = client.delete(endpoint!("/api/users/delete-self"))
         .json(&json!({
             "password": password
         }))
+        .header(AUTHORIZATION, token)
         .send()
         .await?;
 
     Ok(response.status())
 }
 
-pub async fn logout(client: &Client) -> Result<StatusCode> {
-    let response = client.post(endpoint!("/api/users/logout"))
-        .send()
-        .await?;
-
-    Ok(response.status())
-}
-
-pub async fn search_users(client: &Client, query: &str) -> Result<(StatusCode, Option<SearchUserResponse>)> {
+pub async fn search_users(client: Client, query: &str, token: &str) -> Result<(StatusCode, Option<SearchUserResponse>)> {
     let endpoint = format!("{}/{}", endpoint!("/api/users/search"), query);
 
     let response = client.get(endpoint)
+        .header(AUTHORIZATION, token)
         .send()
         .await?;
 
     Ok((response.status(), response.json().await.ok()))
 }
 
-pub async fn delete_user(client: &Client, user_id: i32) -> Result<StatusCode> {
+pub async fn delete_user(client: Client, user_id: i32, token: &str) -> Result<StatusCode> {
     let response = client.delete(endpoint!("/api/users/delete-other-user"))
         .json(&json!({
             "userId": user_id
         }))
+        .header(AUTHORIZATION, token)
         .send()
         .await?;
 
     Ok(response.status())
 }
 
-pub async fn reset_password(client: &Client, username: &str, password: &str, token: &str) -> Result<StatusCode> {
+pub async fn reset_password(client: Client, username: &str, password: &str, reset_token: &str, auth_token: &str) -> Result<StatusCode> {
     let response = client.post(endpoint!("/api/users/reset-password"))
         .json(&json!({
             "username": username,
             "password": password,
-            "resetToken": token
+            "resetToken": reset_token
         }))
+        .header(AUTHORIZATION, auth_token)
         .send()
         .await?;
 
     Ok(response.status())
 }
 
-pub async fn allow_reset_password(client: &Client, user_id: i32) -> Result<(StatusCode, Option<AllowResetPasswordResponse>)> {
+pub async fn allow_reset_password(client: &Client, user_id: i32, token: &str) -> Result<(StatusCode, Option<AllowResetPasswordResponse>)> {
     let response = client.patch(endpoint!("/api/users/allow-reset-password"))
         .json(&json!({ "userId": user_id }))
+        .header(AUTHORIZATION, token)
         .send()
         .await?;
 
     Ok((response.status(), response.json().await.ok()))
 }
 
-pub async fn try_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>
+pub async fn try_authorized_test<F, T>(client: Client, callback: T) -> Result<()>
 where
     F: Future<Output = Result<()>>,
-    T: FnOnce() -> F,
+    T: FnOnce(String) -> F,
 {
     let username = rand_username();
     let name = "Test User";
     let password = rand_password();
 
-    match register(client, username.as_str(), name, password.as_str()).await {
+    match register(client.clone(), username.as_str(), name, password.as_str()).await {
         Ok(status) if status == StatusCode::CREATED => (),
         Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
         Err(error) => return Err(error),
     }
 
-    match login(client, username.as_str(), password.as_str()).await {
-        Ok((status, _)) if status == StatusCode::OK => (),
-        Ok((status, _)) => return Err(anyhow!("Unexpected login status code: {}", status)),
-        Err(error) => return Err(error),
+    match login(client.clone(), username.as_str(), password.as_str()).await {
+        Ok((status, token, _)) if status == StatusCode::OK => {
+            let token = token.ok_or_else(|| anyhow!("No token in login response"))?;
+
+            callback(token.clone()).await?;
+
+            match delete_self(client, token.as_str(), password.as_str()).await {
+                Ok(status) if status == StatusCode::OK => (),
+                Ok(status) => return Err(anyhow!("Unexpected delete status code: {}", status)),
+                Err(error) => return Err(error),
+            }
+        
+            Ok(())
+        },
+        Ok((status, _, _)) => Err(anyhow!("Unexpected login status code: {}", status)),
+        Err(error) => Err(error),
     }
-
-    callback().await?;
-
-    match delete_self(client, password.as_str()).await {
-        Ok(status) if status == StatusCode::OK => (),
-        Ok(status) => return Err(anyhow!("Unexpected delete status code: {}", status)),
-        Err(error) => return Err(error),
-    }
-
-    Ok(())
 }
 
 pub async fn create_rotation(client: &Client, name: &str) -> Result<(StatusCode, Option<CreateRotationResponse>)> {
@@ -313,37 +316,43 @@ pub async fn update_user_task(client: &Client, user_task_id: i32, is_completed: 
     Ok(response.status())
 }
 
-pub async fn try_admin_authorized_test<F, T>(client: &Client, callback: T) -> Result<()>
+pub async fn try_admin_authorized_test<F, T>(client: Client, callback: T) -> Result<()>
 where
     F: Future<Output = Result<()>>,
-    T: FnOnce() -> F,
+    T: FnOnce(String) -> F,
 {
     // Admin account is assumed to exist in the test database
     const ADMIN_USERNAME: &str = "admin";
     const ADMIN_PASSWORD: &str = "complexpass123";
 
-    match login(client, ADMIN_USERNAME, ADMIN_PASSWORD).await {
-        Ok((status, _)) if status == StatusCode::OK => (),
-        Ok((status, _)) => return Err(anyhow!("Unexpected admin login status code: {}", status)),
-        Err(error) => return Err(error),
+    match login(client.clone(), ADMIN_USERNAME, ADMIN_PASSWORD).await {
+        Ok((status, token, _)) if status == StatusCode::OK => {
+            let token = token.ok_or_else(|| anyhow!("No token in login response"))?;
+
+            callback(token.clone()).await?;
+
+            match session(client, Some(token.as_str())).await {
+                Ok((status, _)) if status == StatusCode::OK => (),
+                Ok((status, _)) => return Err(anyhow!("Unexpected admin session status code: {}", status)),
+                Err(error) => return Err(error),
+            }
+
+            Ok(())
+        }
+        Ok((status, _, _)) => Err(anyhow!("Unexpected admin login status code: {}", status)),
+        Err(error) => Err(error),
     }
-
-    callback().await?;
-
-    match logout(client).await {
-        Ok(status) if status == StatusCode::OK => (),
-        Ok(status) => return Err(anyhow!("Unexpected admin logout status code: {}", status)),
-        Err(error) => return Err(error),
-    }
-
-    Ok(())
 }
 
-pub fn client() -> Result<(Client, Arc<CookieStoreMutex>)> {
-    let cookie_store = Arc::new(CookieStoreMutex::default());
-    let client = Client::builder()
-        .cookie_provider(cookie_store.clone())
-        .build()?;
+#[inline(always)]
+pub fn extract_token(res: &Response) -> Option<String> {
+    match res.headers().get(AUTHORIZATION) {
+        Some(header) => header.to_str().ok().map(|s| { s.to_string() }),
+        None => None,
+    }
+}
 
-    Ok((client, cookie_store))
+#[inline(always)]
+pub fn client() -> Result<Client> {
+    Ok(Client::builder().build()?)
 }

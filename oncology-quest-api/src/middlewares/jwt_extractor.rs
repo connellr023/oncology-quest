@@ -4,6 +4,7 @@ use actix_web::{dev::Payload, error::{Error, ErrorInternalServerError, ErrorUnau
 use jsonwebtoken::{encode, decode, EncodingKey, Header, DecodingKey, Validation};
 use chrono::{Utc, Duration};
 use serde::{Deserialize, Serialize};
+use anyhow::Result;
 
 const EXPIRATION_WEEKS: i64 = 1;
 
@@ -18,6 +19,8 @@ pub struct JwtClaim<T> {
     pub exp: i64
 }
 
+pub type JwtUserClaim = JwtClaim<ClientUser>;
+
 impl JwtClaim<String> {
     pub fn encode(user: ClientUser) -> String {
         let exp = (Utc::now() + Duration::weeks(EXPIRATION_WEEKS)).timestamp();
@@ -31,14 +34,12 @@ impl JwtClaim<String> {
             &EncodingKey::from_secret(secret_key().as_ref())
         ).unwrap()
     }
-}
 
-impl From<JwtClaim<String>> for JwtClaim<ClientUser> {
-    fn from(claims: JwtClaim<String>) -> Self {
-        Self {
-            sub: serde_json::from_str(&claims.sub).unwrap(),
-            exp: claims.exp
-        }
+    pub fn deserialize(self) -> Result<JwtClaim<ClientUser>> {
+        Ok(JwtClaim {
+            sub: serde_json::from_str(&self.sub)?,
+            exp: self.exp
+        })
     }
 }
 
@@ -61,9 +62,14 @@ impl FromRequest for JwtClaim<ClientUser> {
                             return ready(Err(ErrorUnauthorized("Token has expired.")));
                         }
 
-                        ready(Ok(data.claims.into()))
+                        let claim = match data.claims.deserialize() {
+                            Ok(claim) => claim,
+                            Err(e) => return ready(Err(ErrorInternalServerError(e.to_string())))
+                        };
+
+                        ready(Ok(claim))
                     },
-                    Err(e) => ready(Err(ErrorInternalServerError(format!("Failed to decode token: {}", e.to_string())))),
+                    Err(e) => ready(Err(ErrorInternalServerError(e.to_string())))
                 };
             }
         }

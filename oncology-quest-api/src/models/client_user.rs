@@ -13,7 +13,7 @@ pub struct ClientUser {
 }
 
 impl ClientUser {
-    pub async fn text_search_as_map(pool: &PgPool, query: &str, limit: i64) -> anyhow::Result<HashMap<i32, Self>> {
+    pub async fn text_search_as_map(pool: &PgPool, query: &str, limit: i64) -> Result<HashMap<i32, Self>> {
         let users = sqlx::query_as!(
             Self,
             r#"

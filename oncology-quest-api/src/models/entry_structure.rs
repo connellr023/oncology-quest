@@ -48,7 +48,7 @@ pub struct EntryStructure(Vec<EntryHierarchy>);
 
 macro_rules! entity_operations {
     ($struct_name:ident, $table_name:literal) => {
-        pub async fn fetch_all(pool: &PgPool, rotation_id: i32) -> anyhow::Result<Box<[Self]>> {
+        pub async fn fetch_all(pool: &PgPool, rotation_id: i32) -> Result<Box<[Self]>> {
             let records = sqlx::query_as!(
                 $struct_name,
                 "SELECT * FROM " + $table_name + " WHERE rotation_id = $1 ORDER BY id;",
@@ -60,7 +60,7 @@ macro_rules! entity_operations {
             Ok(records.into_boxed_slice())
         }
 
-        pub async fn update_title(pool: &PgPool, id: i32, title: &str) -> anyhow::Result<()> {
+        pub async fn update_title(pool: &PgPool, id: i32, title: &str) -> Result<()> {
             let mut transaction = pool.begin().await?;
 
             sqlx::query!(
@@ -83,7 +83,7 @@ macro_rules! entity_operations {
             Ok(())
         }
 
-        pub async fn delete(pool: &PgPool, id: i32) -> anyhow::Result<()> {
+        pub async fn delete(pool: &PgPool, id: i32) -> Result<()> {
             let mut transaction = pool.begin().await?;
 
             sqlx::query!(
@@ -110,7 +110,7 @@ macro_rules! entity_operations {
 impl Supertask {
     entity_operations!(Supertask, "supertasks");
 
-    pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32) -> anyhow::Result<i32> {
+    pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32) -> Result<i32> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(
@@ -141,7 +141,7 @@ impl Supertask {
 impl Task {
     entity_operations!(Task, "tasks");
 
-    pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32, supertask_id: i32) -> anyhow::Result<i32> {
+    pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32, supertask_id: i32) -> Result<i32> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(
@@ -175,7 +175,7 @@ impl Task {
 impl Subtask {
     entity_operations!(Subtask, "subtasks");
 
-    pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32, task_id: i32) -> anyhow::Result<i32> {
+    pub async fn insert_from(pool: &PgPool, title: &str, rotation_id: i32, task_id: i32) -> Result<i32> {
         let mut transaction = pool.begin().await?;
 
         sqlx::query!(
@@ -205,7 +205,7 @@ impl Subtask {
         Ok(row.id)
     }
 
-    pub async fn exists(pool: &PgPool, id: i32) -> anyhow::Result<bool> {
+    pub async fn exists(pool: &PgPool, id: i32) -> Result<bool> {
         let exists = sqlx::query!(
             "SELECT EXISTS(SELECT 1 FROM subtasks WHERE id = $1) AS exists;",
             id
@@ -230,7 +230,7 @@ impl EntryStructure {
     /// # Returns
     /// 
     /// The entry structure.
-    pub fn build(supertasks: &[Supertask], tasks: &[Task], subtasks: &[Subtask]) -> anyhow::Result<Self> {
+    pub fn build(supertasks: &[Supertask], tasks: &[Task], subtasks: &[Subtask]) -> Result<Self> {
         let mut task_map: HashMap<i32, Vec<Subtask>> = HashMap::with_capacity(subtasks.len());
         for subtask in subtasks.iter() {
             task_map
@@ -273,7 +273,7 @@ impl EntryStructure {
         Ok(Self(entry_structure))
     }
 
-    pub async fn fetch(pool: &PgPool, rotation_id: i32) -> anyhow::Result<Self> {
+    pub async fn fetch(pool: &PgPool, rotation_id: i32) -> Result<Self> {
         let supertasks = Supertask::fetch_all(pool, rotation_id).await?;
         let tasks = Task::fetch_all(pool, rotation_id).await?;
         let subtasks = Subtask::fetch_all(pool, rotation_id).await?;

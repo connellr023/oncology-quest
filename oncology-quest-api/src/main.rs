@@ -7,7 +7,7 @@ mod utilities;
 mod middlewares;
 
 use actix_web::{web::Data, App, HttpServer};
-use std::{io, env::var};
+use std::{io::Result, env::var};
 use dotenv::dotenv;
 use services::config::config;
 use actix_cors::Cors;
@@ -24,7 +24,7 @@ mod prod_config {
 }
 
 #[actix_web::main]
-async fn main() -> io::Result<()> {
+async fn main() -> Result<()> {
     // Load from .env file
     dotenv().ok();
 
