@@ -4,19 +4,15 @@
 mod services;
 mod models;
 mod utilities;
+mod middlewares;
 
-use rand::{thread_rng, RngCore};
+use actix_web::{web::Data, App, HttpServer};
 use utilities::environment::Environment;
-use actix_web::{cookie::{time::Duration, Key, SameSite}, web::Data, App, HttpServer};
-use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
 use std::io;
 use dotenv::dotenv;
 use services::config::config;
 use actix_cors::Cors;
 use sqlx::PgPool;
-
-const SESSION_COOKIE_NAME: &str = "oncology-quest-session";
-const SESSION_COOKIE_DURATION: i64 = 6;
 
 #[cfg(feature = "production")]
 mod prod_config {
@@ -44,18 +40,13 @@ async fn main() -> io::Result<()> {
     // Print server details.
     println!("{}", env);
 
-    // Generate session key.
-    let mut key = [0u8; 64];
-    thread_rng().fill_bytes(&mut key);
-
     // Start HTTP server.
     HttpServer::new(move || {
-        
+
         // Initialize the application.
         App::new()
             .app_data(Data::new(pool.clone()))
             .configure(config)
-            .wrap(session_middleware(&key))
             .wrap(cors())
     })
     .bind(format!("{}:{}",
@@ -64,42 +55,6 @@ async fn main() -> io::Result<()> {
     ))?
     .run()
     .await
-}
-
-#[cfg(not(feature = "production"))]
-#[inline(always)]
-fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
-    SessionMiddleware::builder(
-        CookieSessionStore::default(),
-        Key::from(key)
-    )
-    .cookie_name(String::from(SESSION_COOKIE_NAME))
-    .cookie_secure(false)
-    .cookie_same_site(SameSite::None)
-    .cookie_http_only(true)
-    .session_lifecycle(
-        PersistentSession::default()
-            .session_ttl(Duration::hours(SESSION_COOKIE_DURATION))
-    )
-    .build()
-}
-
-#[cfg(feature = "production")]
-#[inline(always)]
-fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
-    SessionMiddleware::builder(
-        CookieSessionStore::default(),
-        Key::from(key)
-    )
-    .cookie_name(String::from(SESSION_COOKIE_NAME))
-    .cookie_secure(true)
-    .cookie_same_site(SameSite::Lax)
-    .cookie_http_only(true)
-    .session_lifecycle(
-        PersistentSession::default()
-            .session_ttl(Duration::hours(SESSION_COOKIE_DURATION))
-    )
-    .build()
 }
 
 #[cfg(not(feature = "production"))]

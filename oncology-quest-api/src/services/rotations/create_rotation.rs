@@ -15,9 +15,9 @@ struct CreateRotationResponse {
 }
 
 #[actix_web::post("/create")]
-pub(super) async fn create_rotation(session: Session, pool: Data<PgPool>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
-    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
-        return response;
+pub(super) async fn create_rotation(claim: JwtUserClaim, pool: Data<PgPool>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
+    if !claim.sub.is_admin {
+        return HttpResponse::Unauthorized().finish();
     }
 
     let rotation = Rotation::new(create_rotation_query.into_inner().name);

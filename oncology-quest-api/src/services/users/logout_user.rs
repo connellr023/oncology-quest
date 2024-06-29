@@ -1,8 +1,7 @@
-use actix_web::{HttpResponse, Responder};
-use actix_session::Session;
+use crate::services::prelude::*;
 
 #[actix_web::post("/logout")]
-pub(super) async fn logout_user(session: Session) -> impl Responder {
-    session.remove("uid");
+pub(super) async fn logout_user(claim: JwtUserClaim) -> impl Responder {
+    // TODO: Implement logout_user
     HttpResponse::Ok().finish()
 }

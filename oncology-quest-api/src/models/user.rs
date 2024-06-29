@@ -328,20 +328,6 @@ impl User<Synced> {
         Ok(Self(result, PhantomData))
     }
 
-    pub async fn is_id_admin(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
-        let exists = sqlx::query!(
-            r#"
-            SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 AND is_admin = TRUE) AS "exists!";
-            "#,
-            user_id
-        )
-        .fetch_one(pool)
-        .await?
-        .exists;
-
-        Ok(exists)
-    }
-
     /// Generates a random password reset token.
     #[inline(always)]
     fn generate_reset_token() -> ResetToken {
