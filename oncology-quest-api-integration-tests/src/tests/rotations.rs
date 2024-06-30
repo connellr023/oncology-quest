@@ -10,10 +10,11 @@ use reqwest::StatusCode;
 
 #[tokio::test]
 async fn test_non_admin_cannot_create_rotation() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_authorized_test(&client, || async {
-        let (status, _) = create_rotation(&client, "Test Rotation").await?;
+    try_authorized_test(&client, |jwt| async move {
+        let (status, _) = create_rotation(&client_clone, "Test Rotation", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())
@@ -24,10 +25,11 @@ async fn test_non_admin_cannot_create_rotation() -> Result<()> {
 
 #[tokio::test]
 async fn test_invalid_rotation_name_is_rejected() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_admin_authorized_test(&client, || async {
-        let (status, _) = create_rotation(&client, "<h1>Sneaky</h1>").await?;
+    try_admin_authorized_test(&client, |jwt| async move {
+        let (status, _) = create_rotation(&client_clone, "<h1>Sneaky</h1>", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::BAD_REQUEST);
 
         Ok(())
@@ -38,13 +40,14 @@ async fn test_invalid_rotation_name_is_rejected() -> Result<()> {
 
 #[tokio::test]
 async fn test_create_and_delete_rotation() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
+    let client_clone = client.clone();
     
-    try_admin_authorized_test(&client, || async {
-        let (status, json) = create_rotation(&client, "Test Rotation").await?;
+    try_admin_authorized_test(&client, |jwt| async move {
+        let (status, json) = create_rotation(&client_clone, "Test Rotation", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CREATED);
 
-        let status = delete_rotation(&client, json.unwrap().rotation_id).await?;
+        let status = delete_rotation(&client_clone, json.unwrap().rotation_id, jwt.as_str()).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())
