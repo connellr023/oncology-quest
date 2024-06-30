@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/session.dart';
+import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
 import 'package:oncology_quest_mobile/src/widgets/thematic_elevated_button.dart';
+import 'package:http/http.dart' as http;
+
+import 'dart:convert';
 
 import '../widgets/main_logo.dart';
 import '../widgets/form_text_field.dart';
@@ -16,6 +21,8 @@ class _LoginViewState extends State<LoginView> {
   bool _isUsernameValid = false;
   bool _isPasswordValid = false;
 
+  String? _loginError;
+
   void _updateUsernameError(bool isError) {
     setState(() {
       _isUsernameValid = !isError;
@@ -26,6 +33,51 @@ class _LoginViewState extends State<LoginView> {
     setState(() {
       _isPasswordValid = !isError;
     });
+  }
+
+  void _updateLoginError(String? error) {
+    setState(() {
+      _loginError = error;
+    });
+  }
+
+  Future<void> _login(String username, String plaintextPassword) async {
+    try {
+      _updateLoginError(null);
+
+      final response = await http.post(apiEndpoint.resolve('/api/users/login'), body: {
+        'username': username,
+        'password': plaintextPassword
+      });
+
+      if (response.statusCode == 200) {
+        final session = Session.deserialize(json.decode(response.body));
+
+        if (session.isErr) {
+          _updateLoginError('Failed to deserialize session response.');
+          return;
+        }
+      }
+      else {
+        switch (response.statusCode) {
+          case 401:
+            _updateLoginError('Invalid username or password');
+            break;
+          case 429:
+            _updateLoginError('Too many login attempts. Please try again later.');
+            break;
+          case 500:
+            _updateLoginError('Internal server error. Please try again later.');
+            break;
+          default:
+            _updateLoginError('An unknown error occurred. Please try again later.');
+            break;
+        }
+      }
+    }
+    catch (_) {
+      _updateLoginError('Failed to connect to server. Please try again later.');
+    }
   }
 
   @override
@@ -92,6 +144,13 @@ class _LoginViewState extends State<LoginView> {
                 isDisabled: !_isUsernameValid || !_isPasswordValid,
                 text: 'Ok',
                 onPressed: () => {}
+              ),
+              if (_loginError != null) Text(
+                _loginError!,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodySmall!.color,
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                )
               )
             ],
           ),
