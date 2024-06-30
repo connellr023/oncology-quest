@@ -3,6 +3,8 @@ import { API_ENDPOINT } from "../utilities"
 import { User, Session } from "../models/user"
 import { Rotation } from "../models/rotation"
 
+import useJwt from "./useJwt"
+
 const useSession = () => {
     const session = ref<User | null>(null)
     const rotations = ref<Record<number, Rotation>>({}) // Maps rotation ID to Rotation
@@ -13,12 +15,11 @@ const useSession = () => {
     const fetchSession = async () => {
         try {
             const url = new URL(`${API_ENDPOINT}/api/users/session`)
+            const { defaultHeaders } = useJwt()
 
             const response = await fetch(url, {
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                }
+                headers: defaultHeaders()
             })
             
             if (response.ok) {

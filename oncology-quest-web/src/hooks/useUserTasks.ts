@@ -3,11 +3,15 @@ import { UserTaskStructure } from "../models/tasks"
 import { API_ENDPOINT } from "../utilities"
 import { User } from "../models/user"
 
+import useJwt from "./useJwt"
+
 interface CreateUserTaskResponse {
     id: number
 }
 
 const useUserTasks = () => {
+    const { defaultHeaders } = useJwt()
+
     const tasks = inject<Ref<Record<number, UserTaskStructure>>>("tasks")!
     const session = inject<Ref<User>>("session")!
     const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
@@ -26,9 +30,7 @@ const useUserTasks = () => {
 
         const response = await fetch(`${API_ENDPOINT}/api/tasks/${rotationId}`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
+            headers: defaultHeaders()
         })
 
         if (response.ok) {
@@ -54,9 +56,7 @@ const useUserTasks = () => {
         
         const response = await fetch(`${API_ENDPOINT}/api/tasks/${userId}/${rotationId}`, {
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
+            headers: defaultHeaders()
         })
 
         if (response.ok) {
@@ -77,9 +77,7 @@ const useUserTasks = () => {
         if (tasks.value[rotationId][subtaskId]) {
             const response = await fetch(`${API_ENDPOINT}/api/tasks/update`, {
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: defaultHeaders(),
                 method: "PATCH",
                 body: JSON.stringify({
                     id: tasks.value[rotationId][subtaskId].id,
@@ -99,9 +97,7 @@ const useUserTasks = () => {
         else {
             const response = await fetch(`${API_ENDPOINT}/api/tasks/create`, {
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: defaultHeaders(),
                 method: "POST",
                 body: JSON.stringify({
                     subtaskId,

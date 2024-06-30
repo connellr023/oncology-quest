@@ -37,9 +37,9 @@ pub(super) async fn reset_password(pool: Data<PgPool>, reset_password_query: Jso
 }
 
 #[actix_web::patch("/allow-reset-password")]
-pub(super) async fn allow_reset_password(session: Session, pool: Data<PgPool>, allow_reset_password_query: Json<AllowResetPasswordQuery>) -> impl Responder {
-    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
-        return response;
+pub(super) async fn allow_reset_password(claim: JwtUserClaim, pool: Data<PgPool>, allow_reset_password_query: Json<AllowResetPasswordQuery>) -> impl Responder {
+    if !claim.sub.is_admin {
+        return HttpResponse::Unauthorized().finish();
     }
 
     match User::allow_reset_password(&pool, allow_reset_password_query.user_id, PASSWORD_RESET_EXPIRATION_HOURS).await {

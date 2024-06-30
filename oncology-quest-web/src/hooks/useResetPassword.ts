@@ -4,6 +4,7 @@ import { API_ENDPOINT } from "../utilities"
 import useValidateConfirmedPassword from "./validation/useValidateConfirmedPassword"
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidateResetToken from "./validation/useValidateResetToken"
+import useJwt from "./useJwt"
 
 const useResetPassword = () => {
     const resetError = ref("")
@@ -22,12 +23,12 @@ const useResetPassword = () => {
         resetError.value = ""
         loading.value = true
 
+        const { defaultHeaders } = useJwt()
+
         const response = await fetch(`${API_ENDPOINT}/api/users/reset-password`, {
             credentials: "include",
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: defaultHeaders(),
             body: JSON.stringify({
                 username: username.value,
                 password: password.value,

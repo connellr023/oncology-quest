@@ -55,7 +55,7 @@ impl<S> User<S> {
     /// # Returns
     /// 
     /// Returns the hashed password if successful, an error otherwise.
-    pub fn gen_password_hash(salt: i64, password: &str) -> anyhow::Result<String> {
+    pub fn gen_password_hash(salt: i64, password: &str) -> Result<String> {
         Ok(bcrypt::hash(format!("{}{}", password, salt), bcrypt::DEFAULT_COST)?)
     }
 
@@ -83,7 +83,7 @@ impl<S> User<S> {
     /// # Returns
     /// 
     /// Returns a result containing `true` if the user was deleted, `false` otherwise and an error if the operation failed.
-    async fn delete(pool: &PgPool, user_id: i32, include_admins: bool) -> anyhow::Result<bool> {
+    async fn delete(pool: &PgPool, user_id: i32, include_admins: bool) -> Result<bool> {
         let mut transaction = pool.begin().await?;
 
         let rows_affected_tasks = sqlx::query!(
@@ -130,7 +130,7 @@ impl User<Unsynced> {
     ///
     /// Returns a new User instance if the password was successfully hashed, `None` otherwise.
     /// The ID of the user will be set to -1 indicating that it is not present in the database yet.
-    pub fn new(username: Username, name: Name, is_admin: bool, plain_text_password: PlainTextPassword) -> anyhow::Result<Self> {
+    pub fn new(username: Username, name: Name, is_admin: bool, plain_text_password: PlainTextPassword) -> Result<Self> {
         let salt = thread_rng().gen::<i64>();
         let password = Self::gen_password_hash(salt, plain_text_password.as_str())?;
 
@@ -157,7 +157,7 @@ impl User<Unsynced> {
     /// # Returns
     /// 
     /// Returns `true` if the user exists, `false` otherwise.
-    pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
+    pub async fn exists(&self, pool: &PgPool) -> Result<bool> {
         let record = sqlx::query!(
             r#"
             SELECT
@@ -181,7 +181,7 @@ impl User<Unsynced> {
     /// # Returns
     /// 
     /// Returns an error if the insert operation fails.
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<User<Synced>> {
+    pub async fn insert(self, pool: &PgPool) -> Result<User<Synced>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO users (username, name, is_admin, salt, password)
@@ -223,7 +223,7 @@ impl User<Unsynced> {
     /// # Returns
     /// 
     /// Returns a result containing `true` if the password was updated, `false` otherwise and an error if the operation failed.
-    pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str, reset_token: &str) -> anyhow::Result<bool> {
+    pub async fn update_password(pool: &PgPool, username: &str, plain_text_password: &str, reset_token: &str) -> Result<bool> {
         let record = match sqlx::query!(
             r#"
             SELECT password, salt
@@ -273,7 +273,7 @@ impl User<Synced> {
     /// # Returns
     /// 
     /// Returns either a Regular or Admin user if the login was successful, an error otherwise.
-    pub async fn login(pool: &PgPool, username: &str, plain_text_password: &str) -> anyhow::Result<Self> {
+    pub async fn login(pool: &PgPool, username: &str, plain_text_password: &str) -> Result<Self> {
         let mut transaction = pool.begin().await?;
         
         let result = Self(
@@ -312,7 +312,7 @@ impl User<Synced> {
     /// # Returns
     /// 
     /// Returns a Regular user if the user is not an admin, an Admin user if the user is an admin, an error otherwise.
-    pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> anyhow::Result<Self> {
+    pub async fn fetch_by_id(pool: &PgPool, user_id: i32) -> Result<Self> {
         let result = sqlx::query_as!(
             UserModel,
             r#"
@@ -326,20 +326,6 @@ impl User<Synced> {
         .await?;
 
         Ok(Self(result, PhantomData))
-    }
-
-    pub async fn is_id_admin(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
-        let exists = sqlx::query!(
-            r#"
-            SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 AND is_admin = TRUE) AS "exists!";
-            "#,
-            user_id
-        )
-        .fetch_one(pool)
-        .await?
-        .exists;
-
-        Ok(exists)
     }
 
     /// Generates a random password reset token.
@@ -365,7 +351,7 @@ impl User<Synced> {
     /// # Returns
     /// 
     /// Returns a tuple containing the expiration time and the reset token if successful, an error otherwise.
-    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> anyhow::Result<(DateTime<Utc>, ResetToken)> {
+    pub async fn allow_reset_password(pool: &PgPool, user_id: i32, expiration_hours: i32) -> Result<(DateTime<Utc>, ResetToken)> {
         let token = Self::generate_reset_token();
         let row = sqlx::query!(
             r#"
@@ -385,12 +371,12 @@ impl User<Synced> {
     }
 
     #[inline(always)]
-    pub async fn delete_self(self, pool: &PgPool) -> anyhow::Result<bool> {
+    pub async fn delete_self(self, pool: &PgPool) -> Result<bool> {
         Self::delete(pool, self.id(), true).await
     }
 
     #[inline(always)]
-    pub async fn delete_other(pool: &PgPool, user_id: i32) -> anyhow::Result<bool> {
+    pub async fn delete_other(pool: &PgPool, user_id: i32) -> Result<bool> {
         Self::delete(pool, user_id, false).await
     }
 }

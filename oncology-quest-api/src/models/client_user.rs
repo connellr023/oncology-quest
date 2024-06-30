@@ -2,7 +2,7 @@ use super::{user::User, prelude::*};
 use crate::utilities::parsable::{Name, Username};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all="camelCase")]
 pub struct ClientUser {
     pub id: i32,
@@ -13,7 +13,7 @@ pub struct ClientUser {
 }
 
 impl ClientUser {
-    pub async fn text_search_as_map(pool: &PgPool, query: &str, limit: i64) -> anyhow::Result<HashMap<i32, Self>> {
+    pub async fn text_search_as_map(pool: &PgPool, query: &str, limit: i64) -> Result<HashMap<i32, Self>> {
         let users = sqlx::query_as!(
             Self,
             r#"

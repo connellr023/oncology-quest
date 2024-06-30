@@ -55,7 +55,7 @@ impl UserTask<Unsynced> {
         }
     }
 
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<UserTask<Synced>> {
+    pub async fn insert(self, pool: &PgPool) -> Result<UserTask<Synced>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO user_tasks (user_id, subtask_id, rotation_id, is_completed, comment)
@@ -84,7 +84,7 @@ impl UserTask<Unsynced> {
         })
     }
 
-    pub async fn exists(&self, pool: &PgPool) -> anyhow::Result<bool> {
+    pub async fn exists(&self, pool: &PgPool) -> Result<bool> {
         let record = sqlx::query!(
             r#"
             SELECT EXISTS(
@@ -113,7 +113,7 @@ impl UserTask<Synced> {
         }
     }
 
-    pub async fn fetch_as_map(pool: &PgPool, user_id: i32, rotation_id: i32) -> anyhow::Result<HashMap<i32, Self>> {        
+    pub async fn fetch_as_map(pool: &PgPool, user_id: i32, rotation_id: i32) -> Result<HashMap<i32, Self>> {        
         let user_tasks = sqlx::query_as!(
             UserTaskModel,
             r#"
@@ -135,7 +135,7 @@ impl UserTask<Synced> {
         Ok(map)
     }
 
-    pub async fn update(pool: &PgPool, id: i32, user_id: i32, is_completed: bool, comment: &str) -> anyhow::Result<()> {
+    pub async fn update(pool: &PgPool, id: i32, user_id: i32, is_completed: bool, comment: &str) -> Result<()> {
         let update_query = sqlx::query!(
             r#"
             UPDATE user_tasks

@@ -8,9 +8,9 @@ struct DeleteRotationQuery {
 }
 
 #[actix_web::delete("/delete")]
-pub(super) async fn delete_rotation(session: Session, pool: Data<PgPool>, delete_rotation_query: Json<DeleteRotationQuery>) -> impl Responder {
-    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
-        return response;
+pub(super) async fn delete_rotation(claim: JwtUserClaim, pool: Data<PgPool>, delete_rotation_query: Json<DeleteRotationQuery>) -> impl Responder {
+    if !claim.sub.is_admin {
+        return HttpResponse::Unauthorized().finish();
     }
 
     if Rotation::delete(&pool, delete_rotation_query.rotation_id).await.is_err() {

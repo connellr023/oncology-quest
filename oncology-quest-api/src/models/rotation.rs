@@ -43,7 +43,7 @@ impl Rotation<Unsynced> {
         }
     }
     
-    pub async fn insert(self, pool: &PgPool) -> anyhow::Result<Rotation<Synced>> {
+    pub async fn insert(self, pool: &PgPool) -> Result<Rotation<Synced>> {
         let row = sqlx::query!(
             r#"
             INSERT INTO rotations (name)
@@ -75,7 +75,7 @@ impl Rotation<Synced> {
         }
     }
 
-    pub async fn delete(pool: &PgPool, rotation_id: i32) -> anyhow::Result<()> {
+    pub async fn delete(pool: &PgPool, rotation_id: i32) -> Result<()> {
         sqlx::query!(
             r#"
             DELETE FROM rotations WHERE id = $1;
@@ -99,7 +99,7 @@ impl Rotation<Synced> {
     /// # Returns
     /// 
     /// A boolean wrapped in a Result indicating whether the cache is valid. There will be an error if a database error occurs.
-    pub async fn is_cache_valid(pool: &PgPool, rotation_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> anyhow::Result<bool> {        
+    pub async fn is_cache_valid(pool: &PgPool, rotation_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> Result<bool> {        
         let cache_timestamp = match cache_timestamp {
             Some(cache_timestamp) => cache_timestamp,
             None => return Ok(false)
@@ -119,7 +119,7 @@ impl Rotation<Synced> {
         Ok(cache_timestamp >= last_updated)
     }
 
-    pub async fn fetch_all_as_map(pool: &PgPool) -> anyhow::Result<HashMap<i32, Self>> {
+    pub async fn fetch_all_as_map(pool: &PgPool) -> Result<HashMap<i32, Self>> {
         let rotations = sqlx::query_as!(
             RotationModel,
             r#"
@@ -137,7 +137,7 @@ impl Rotation<Synced> {
         Ok(map)
     }
 
-    pub async fn exists(pool: &PgPool, rotation_id: i32) -> anyhow::Result<bool> {
+    pub async fn exists(pool: &PgPool, rotation_id: i32) -> Result<bool> {
         let exists_query = sqlx::query!(
             r#"
             SELECT EXISTS(SELECT id FROM rotations WHERE id = $1);

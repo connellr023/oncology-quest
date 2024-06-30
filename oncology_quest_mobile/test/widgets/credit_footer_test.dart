@@ -5,7 +5,7 @@ import 'package:oncology_quest_mobile/src/widgets/credit_footer.dart';
 void main() {
   group('Credit Footer Widget', () {
     testWidgets('should display developer name', (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: Footer())));
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: CreditFooter())));
       expect(find.textContaining('Connell Reffo'), findsOneWidget);
     });
   });

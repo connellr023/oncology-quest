@@ -4,14 +4,14 @@ use crate::{
 use anyhow::Result;
 use reqwest::StatusCode;
 
-async fn setup_subtask(client: &reqwest::Client, rotation_id: i32) -> Result<i32> {
-    let (status, id) = create_supertask(&client, "Test Supertask", rotation_id).await?;
+async fn setup_subtask(client: &reqwest::Client, rotation_id: i32, jwt: &str) -> Result<i32> {
+    let (status, id) = create_supertask(&client, "Test Supertask", rotation_id, jwt).await?;
     assert_eq!(status, StatusCode::CREATED);
 
-    let (status, id) = create_task(&client, "Test Task", rotation_id, id.unwrap()).await?;
+    let (status, id) = create_task(&client, "Test Task", rotation_id, id.unwrap(), jwt).await?;
     assert_eq!(status, StatusCode::CREATED);
 
-    let (status, id) = create_subtask(&client, "Test Subtask", rotation_id, id.unwrap()).await?;
+    let (status, id) = create_subtask(&client, "Test Subtask", rotation_id, id.unwrap(), jwt).await?;
     assert_eq!(status, StatusCode::CREATED);
 
     Ok(id.unwrap())
@@ -19,19 +19,20 @@ async fn setup_subtask(client: &reqwest::Client, rotation_id: i32) -> Result<i32
 
 #[tokio::test]
 async fn test_admin_cannot_have_tasks() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_admin_authorized_test(&client, || async {
-        let (status, json) = create_rotation(&client, "Test Rotation Comments").await?;
+    try_admin_authorized_test(&client, |jwt| async move {
+        let (status, json) = create_rotation(&client_clone, "Test Rotation Comments", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CREATED);
 
         let rotation_id = json.unwrap().rotation_id;
-        let subtask_id = setup_subtask(&client, rotation_id).await?;
+        let subtask_id = setup_subtask(&client_clone, rotation_id, jwt.as_str()).await?;
 
-        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "Hi").await?;
+        let (status, _) = create_user_task(&client_clone, rotation_id, subtask_id, false, "Hi", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
 
-        let status = delete_rotation(&client, rotation_id).await?;
+        let status = delete_rotation(&client_clone, rotation_id, jwt.as_str()).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())
@@ -42,29 +43,32 @@ async fn test_admin_cannot_have_tasks() -> Result<()> {
 
 #[tokio::test]
 async fn test_invalid_task_comment_is_rejected() -> Result<()> {
-    let (client, _) = client()?;
-    let mut rotation_id = -1;
-    let mut subtask_id = -1;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_admin_authorized_test(&client, || async {
-        let (status, json) = create_rotation(&client, "Test Rotation Comments").await?;
+    let (rotation_id, subtask_id) = try_admin_authorized_test(&client, |jwt| async move {
+        let (status, json) = create_rotation(&client_clone, "Test Rotation Comments", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CREATED);
 
-        rotation_id = json.unwrap().rotation_id;
-        subtask_id = setup_subtask(&client, rotation_id).await?;
+        let rotation_id = json.unwrap().rotation_id;
+        let subtask_id = setup_subtask(&client_clone, rotation_id, jwt.as_str()).await?;
 
-        Ok(())
+        Ok((rotation_id, subtask_id))
     }).await?;
 
-    try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "<h1>XSS</h1>").await?;
+    let client_clone = client.clone();
+
+    try_authorized_test(&client, |jwt| async move {
+        let (status, _) = create_user_task(&client_clone, rotation_id, subtask_id, false, "<h1>XSS</h1>", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::BAD_REQUEST);
 
         Ok(())
     }).await?;
 
-    try_admin_authorized_test(&client, || async {
-        let status = delete_rotation(&client, rotation_id).await?;
+    let client_clone = client.clone();
+
+    try_admin_authorized_test(&client, |jwt| async move {
+        let status = delete_rotation(&client_clone, rotation_id, jwt.as_str()).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())
@@ -75,32 +79,34 @@ async fn test_invalid_task_comment_is_rejected() -> Result<()> {
 
 #[tokio::test]
 async fn test_no_duplicate_tasks() -> Result<()> {
-    let (client, _) = client()?;
-    let mut rotation_id = -1;
-    let mut subtask_id = -1;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_admin_authorized_test(&client, || async {
-        let (status, json) = create_rotation(&client, "Test Rotation Comments").await?;
+    let (rotation_id, subtask_id) = try_admin_authorized_test(&client, |jwt| async move {
+        let (status, json) = create_rotation(&client_clone, "Test Rotation Comments", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CREATED);
 
-        rotation_id = json.unwrap().rotation_id;
-        subtask_id = setup_subtask(&client, rotation_id).await?;
+        let rotation_id = json.unwrap().rotation_id;
+        let subtask_id = setup_subtask(&client_clone, rotation_id, jwt.as_str()).await?;
 
-        Ok(())
+        Ok((rotation_id, subtask_id))
     }).await?;
+    let client_clone = client.clone();
 
-    try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "Hi").await?;
+    try_authorized_test(&client, |jwt| async move {
+        let (status, _) = create_user_task(&client_clone, rotation_id, subtask_id, false, "Hi", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CREATED);
 
-        let (status, _) = create_user_task(&client, rotation_id, subtask_id, false, "Hi").await?;
+        let (status, _) = create_user_task(&client_clone, rotation_id, subtask_id, false, "Hi", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CONFLICT);
 
         Ok(())
     }).await?;
 
-    try_admin_authorized_test(&client, || async {
-        let status = delete_rotation(&client, rotation_id).await?;
+    let client_clone = client.clone();
+
+    try_admin_authorized_test(&client, |jwt| async move {
+        let status = delete_rotation(&client_clone, rotation_id, jwt.as_str()).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())
@@ -111,27 +117,31 @@ async fn test_no_duplicate_tasks() -> Result<()> {
 
 #[tokio::test]
 async fn test_cannot_create_task_on_nonexistent_subtask() -> Result<()> {
-    let (client, _) = client()?;
-    let mut rotation_id = -1;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_admin_authorized_test(&client, || async {
-        let (status, json) = create_rotation(&client, "Test Rotation Comments").await?;
+    let rotation_id = try_admin_authorized_test(&client, |jwt| async move {
+        let (status, json) = create_rotation(&client_clone, "Test Rotation Comments", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::CREATED);
 
-        rotation_id = json.unwrap().rotation_id;
+        let rotation_id = json.unwrap().rotation_id;
 
-        Ok(())
+        Ok(rotation_id)
     }).await?;
 
-    try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, rotation_id, 999, true, "Comment").await?;
+    let client_clone = client.clone();
+
+    try_authorized_test(&client, |jwt| async move {
+        let (status, _) = create_user_task(&client_clone, rotation_id, 999, true, "Comment", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::BAD_REQUEST);
 
         Ok(())
     }).await?;
 
-    try_admin_authorized_test(&client, || async {
-        let status = delete_rotation(&client, rotation_id).await?;
+    let client_clone = client.clone();
+
+    try_admin_authorized_test(&client, |jwt| async move {
+        let status = delete_rotation(&client_clone, rotation_id, jwt.as_str()).await?;
         assert_eq!(status, StatusCode::OK);
 
         Ok(())
@@ -142,10 +152,11 @@ async fn test_cannot_create_task_on_nonexistent_subtask() -> Result<()> {
 
 #[tokio::test]
 async fn test_cannot_create_task_on_nonexistent_rotation() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
+    let client_clone = client.clone();
 
-    try_authorized_test(&client, || async {
-        let (status, _) = create_user_task(&client, 999, 999, true, "Comment").await?;
+    try_authorized_test(&client, |jwt| async move {
+        let (status, _) = create_user_task(&client_clone, 999, 999, true, "Comment", jwt.as_str()).await?;
         assert_eq!(status, StatusCode::BAD_REQUEST);
 
         Ok(())
@@ -156,10 +167,11 @@ async fn test_cannot_create_task_on_nonexistent_rotation() -> Result<()> {
 
 #[tokio::test]
 async fn test_regular_user_cannot_get_other_tasks() -> Result<()> {
-    let (client, _) = client()?;
+    let client = client()?;
+    let client_clone = client.clone();
     
-    try_authorized_test(&client, || async {
-        let (status, _) = get_user_tasks(&client, 1, 1).await?;
+    try_authorized_test(&client, |jwt| async move {
+        let (status, _) = get_user_tasks(&client_clone, 1, 1, jwt.as_str()).await?;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
 
         Ok(())

@@ -5,10 +5,12 @@ import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidatePassword from "./validation/useValidatePassword"
+import useJwt from "./useJwt"
 
 const useLogin = () => {
     const { username, usernameError } = useValidateUsername()
     const { password, passwordError } = useValidatePassword()
+    const { setToken } = useJwt()
 
     const loading = ref(false)
     const loginError = ref("")
@@ -37,6 +39,15 @@ const useLogin = () => {
                 
                 session.value = data.user;
                 rotations.value = data.rotations
+
+                const token = response.headers.get("Authorization")
+                
+                if (token) {
+                    setToken(token)
+                }
+                else {
+                    loginError.value = "Token not found."
+                }
             }
             else {
                 switch (response.status) {

@@ -4,9 +4,9 @@ use crate::services::prelude::*;
 const SEARCH_LIMIT: i64 = 10;
 
 #[actix_web::get("/search/{query}")]
-pub(super) async fn search_users(session: Session, pool: Data<PgPool>, query: Path<String>) -> impl Responder {
-    if let Err(response) = UserSession::validate(&pool, &session, UserSessionRole::Admin).await {
-        return response;
+pub(super) async fn search_users(claim: JwtUserClaim, pool: Data<PgPool>, query: Path<String>) -> impl Responder {
+    if !claim.sub.is_admin {
+        return HttpResponse::Unauthorized().finish();
     }
 
     let users = match ClientUser::text_search_as_map(&pool, query.as_str(), SEARCH_LIMIT).await {

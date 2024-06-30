@@ -19,16 +19,15 @@ struct CreateUserTaskResponse {
 }
 
 #[actix_web::post("/create")]
-pub(super) async fn create_user_task(session: Session, pool: Data<PgPool>, create_user_task_query: Json<CreateUserTaskQuery>) -> impl Responder {
-    let user_id = match UserSession::validate(&pool, &session, UserSessionRole::Regular).await {
-        Ok(user_id) => user_id,
-        Err(response) => return response
-    };
+pub(super) async fn create_user_task(claim: JwtUserClaim, pool: Data<PgPool>, create_user_task_query: Json<CreateUserTaskQuery>) -> impl Responder {
+    if claim.sub.is_admin {
+        return HttpResponse::Unauthorized().finish();
+    }
 
     let create_user_task_query = create_user_task_query.into_inner();
 
     let user_task = UserTask::new(
-        user_id,
+        claim.sub.id,
         create_user_task_query.subtask_id,
         create_user_task_query.rotation_id,
         create_user_task_query.is_completed,

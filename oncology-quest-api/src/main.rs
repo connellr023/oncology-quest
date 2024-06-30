@@ -4,19 +4,14 @@
 mod services;
 mod models;
 mod utilities;
+mod middlewares;
 
-use rand::{thread_rng, RngCore};
-use utilities::environment::Environment;
-use actix_web::{cookie::{time::Duration, Key, SameSite}, web::Data, App, HttpServer};
-use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
-use std::io;
+use actix_web::{web::Data, App, HttpServer};
+use std::{io::Result, env::var};
 use dotenv::dotenv;
 use services::config::config;
 use actix_cors::Cors;
 use sqlx::PgPool;
-
-const SESSION_COOKIE_NAME: &str = "oncology-quest-session";
-const SESSION_COOKIE_DURATION: i64 = 6;
 
 #[cfg(feature = "production")]
 mod prod_config {
@@ -29,77 +24,37 @@ mod prod_config {
 }
 
 #[actix_web::main]
-async fn main() -> io::Result<()> {
+async fn main() -> Result<()> {
     // Load from .env file
     dotenv().ok();
 
-    // Load environment variables.
-    let env = Environment::new().expect("Failed to read environment variables");
+    let host_ip = var("HOST_IP").expect("Expected host IP.");
+    let host_port = var("HOST_PORT").expect("Expected host port.");
+    let database_url = var("DATABASE_URL").expect("Expected database URL.");
 
     // Setup Postgres connection pool
-    let pool = PgPool::connect(env.database_url())
+    let pool = PgPool::connect(database_url.as_str())
         .await
-        .expect("Failed to create database connection pool");
+        .expect("Failed to create database connection pool.");
 
     // Print server details.
-    println!("{}", env);
-
-    // Generate session key.
-    let mut key = [0u8; 64];
-    thread_rng().fill_bytes(&mut key);
+    println!("Server running on: {}:{}", host_ip, host_port);
 
     // Start HTTP server.
     HttpServer::new(move || {
-        
+
         // Initialize the application.
         App::new()
             .app_data(Data::new(pool.clone()))
             .configure(config)
-            .wrap(session_middleware(&key))
             .wrap(cors())
     })
     .bind(format!("{}:{}",
-        env.host_ip(),
-        env.host_port()
+        host_ip,
+        host_port
     ))?
     .run()
     .await
-}
-
-#[cfg(not(feature = "production"))]
-#[inline(always)]
-fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
-    SessionMiddleware::builder(
-        CookieSessionStore::default(),
-        Key::from(key)
-    )
-    .cookie_name(String::from(SESSION_COOKIE_NAME))
-    .cookie_secure(false)
-    .cookie_same_site(SameSite::None)
-    .cookie_http_only(true)
-    .session_lifecycle(
-        PersistentSession::default()
-            .session_ttl(Duration::hours(SESSION_COOKIE_DURATION))
-    )
-    .build()
-}
-
-#[cfg(feature = "production")]
-#[inline(always)]
-fn session_middleware(key: &[u8]) -> SessionMiddleware<CookieSessionStore> {
-    SessionMiddleware::builder(
-        CookieSessionStore::default(),
-        Key::from(key)
-    )
-    .cookie_name(String::from(SESSION_COOKIE_NAME))
-    .cookie_secure(true)
-    .cookie_same_site(SameSite::Lax)
-    .cookie_http_only(true)
-    .session_lifecycle(
-        PersistentSession::default()
-            .session_ttl(Duration::hours(SESSION_COOKIE_DURATION))
-    )
-    .build()
 }
 
 #[cfg(not(feature = "production"))]
