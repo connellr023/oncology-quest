@@ -1,5 +1,5 @@
 # Build stage for the web app
-FROM node:16 as web-builder
+FROM node:16 AS web-builder
 WORKDIR /web-tmp
 
 # Copy package.json and package-lock.json to the working directory
