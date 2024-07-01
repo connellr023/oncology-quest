@@ -42,11 +42,6 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _attemptLogin(String username, String plaintextPassword) async {
     String? error = await SessionState().login(username, plaintextPassword);
-
-    if (error == null && mounted) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
-    }
-
     _updateLoginError(error);
   }
 
@@ -111,18 +106,19 @@ class _LoginViewState extends State<LoginView> {
                 onErrorChanged: _updatePasswordError,
                 onChanged: (String input) => _password = input
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 15),
+              if (_loginError != null) Text(
+                _loginError!,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                )
+              ),
+              const SizedBox(height: 15),
               ThematicElevatedButton(
                 isDisabled: !_isUsernameValid || !_isPasswordValid,
                 text: 'Ok',
                 onPressed: () => _attemptLogin(_username, _password)
-              ),
-              if (_loginError != null) Text(
-                _loginError!,
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall!.color,
-                  fontSize: MediaQuery.of(context).size.width * 0.04,
-                )
               )
             ],
           ),

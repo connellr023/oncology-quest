@@ -33,6 +33,7 @@ flutter:
   generate: true
 
   assets:
+    - .env
     - assets/images/
     - assets/icons/
 

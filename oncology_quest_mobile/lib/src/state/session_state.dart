@@ -14,17 +14,51 @@ class SessionState with ChangeNotifier {
   String? get jwt => _jwt;
 
   SessionState() {
-    loadJwt();
+    init();
+  }
 
-    // TODO: Ping the server to check if the JWT is still valid and get the session data
+  Future<void> init() async {
+    await loadJwt();
+    await fetchSession();
+  }
+
+  Future<void> fetchSession() async {
+    if (_jwt == null) {
+      return;
+    }
+
+    try {
+      final response = await http.get(apiEndpoint.resolve('/api/users/session'), headers: {
+        'authorization': _jwt!
+      });
+
+      if (response.statusCode == 200) {
+        final session = Session.deserialize(json.decode(response.body));
+        _session = session;
+
+        notifyListeners();
+        return;
+      }
+    }
+    catch (_) {}
+
+    _session = null;
+
+    await storeJwt(null);
+    notifyListeners();
   }
 
   Future<String?> login(String username, String plaintextPassword) async {
     try {
-      final response = await http.post(apiEndpoint.resolve('/api/users/login'), body: {
-        'username': username,
-        'password': plaintextPassword
-      });
+      final response = await http.post(apiEndpoint.resolve('/api/users/login'),
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: jsonEncode({
+          'username': username,
+          'password': plaintextPassword
+        })
+      );
 
       if (response.statusCode == 200) {
         final jwt = response.headers['authorization']?.split(' ').last;
@@ -54,7 +88,7 @@ class SessionState with ChangeNotifier {
           case 500:
             return 'Internal server error. Please try again later.';
           default:
-            return 'An unknown error occurred. Please try again later.';
+            return 'Received response code ${response.statusCode}. Please try again later.';
         }
       }
     }
@@ -65,8 +99,10 @@ class SessionState with ChangeNotifier {
     return null;
   }
 
-  void logout() {
+  Future<void> logout() async {
     _session = null;
+
+    await storeJwt(null);
     notifyListeners();
   }
 
