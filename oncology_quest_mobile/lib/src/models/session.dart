@@ -1,6 +1,5 @@
 import 'package:oncology_quest_mobile/src/models/client_user.dart';
 import 'package:oncology_quest_mobile/src/models/rotation.dart';
-import 'package:oncology_quest_mobile/src/utilities/result.dart';
 
 class Session {
   final ClientUser user;
@@ -11,26 +10,17 @@ class Session {
     required this.rotations,
   });
 
-  static Result<Session> deserialize(Map<String, dynamic> json) {
+  factory Session.deserialize(Map<String, dynamic> json) {
     final user = ClientUser.deserialize(json['user']);
+    final rotations = <int, Rotation>{};
 
-    if (user.isErr) {
-      return Result.err(user.error);
+    for (final entry in json['rotations'].entries) {
+      rotations[int.parse(entry.key)] = Rotation.deserialize(entry.value);
     }
 
-    final rotations = Map<int, Rotation>.fromEntries(json['rotations'].map((entry) {
-      final rotation = Rotation.deserialize(entry['rotation']);
-
-      if (rotation.isErr) {
-        return Result.err(rotation.error);
-      }
-
-      return MapEntry(rotation.data!.id, rotation);
-    }));
-
-    return Result.ok(Session(
-      user: user.data!,
+    return Session(
+      user: user,
       rotations: rotations,
-    ));
+    );
   }
 }

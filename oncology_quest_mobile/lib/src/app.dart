@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'views/home_view.dart';
-import 'views/login_view.dart';
+import 'package:oncology_quest_mobile/src/views/home_view.dart';
+import 'package:oncology_quest_mobile/src/views/login_view.dart';
+import 'package:oncology_quest_mobile/src/views/dashboard_view.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -36,6 +36,7 @@ class App extends StatelessWidget {
       routes: {
         '/': (context) => const HomeView(),
         '/login': (context) => const LoginView(),
+        '/dashboard': (context) => const DashboardView(),
       },
     );
   }

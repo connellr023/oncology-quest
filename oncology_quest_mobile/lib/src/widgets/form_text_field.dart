@@ -6,6 +6,7 @@ class FormTextField extends StatefulWidget {
   final String errorMessage;
   final bool obscureText;
   final void Function(bool isError) onErrorChanged;
+  final void Function(String input) onChanged;
 
   const FormTextField({
     super.key,
@@ -14,6 +15,7 @@ class FormTextField extends StatefulWidget {
     required this.errorMessage,
     required this.obscureText,
     required this.onErrorChanged,
+    required this.onChanged,
   });
 
   @override
@@ -39,6 +41,8 @@ class _FormTextFieldState extends State<FormTextField> {
         widget.onErrorChanged(false);
       });
     }
+
+    widget.onChanged(input);
   }
 
   @override

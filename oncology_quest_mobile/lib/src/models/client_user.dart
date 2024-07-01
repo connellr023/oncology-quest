@@ -1,5 +1,3 @@
-import 'package:oncology_quest_mobile/src/utilities/result.dart';
-
 class ClientUser {
   final int id;
   final String username;
@@ -15,20 +13,23 @@ class ClientUser {
     required this.loginCount,
   });
 
-  static Result<ClientUser> deserialize(Map<String, dynamic> json) {
-    if (json['id'].runtimeType != int ||
-        json['username'].runtimeType != String ||
-        json['name'].runtimeType != String ||
-        json['isAdmin'].runtimeType != bool ||
-        json['loginCount'].runtimeType != int
-    ) return Result.err('Invalid JSON');
+  factory ClientUser.deserialize(Map<String, dynamic> json) {
+    final id = json['id'];
+    final username = json['username'];
+    final name = json['name'];
+    final isAdmin = json['is_admin'];
+    final loginCount = json['login_count'];
 
-    return Result.ok(ClientUser(
-      id: json['id'],
-      username: json['username'],
-      name: json['name'],
-      isAdmin: json['isAdmin'],
-      loginCount: json['loginCount'],
-    ));
+    if (id is! int || username is! String || name is! String || isAdmin is! bool || loginCount is! int) {
+      throw Error();
+    }
+
+    return ClientUser(
+      id: id,
+      username: username,
+      name: name,
+      isAdmin: isAdmin,
+      loginCount: loginCount,
+    );
   }
 }

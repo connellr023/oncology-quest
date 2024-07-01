@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/models/session.dart';
-import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
+import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/widgets/thematic_elevated_button.dart';
-import 'package:http/http.dart' as http;
-
-import 'dart:convert';
 
 import '../widgets/main_logo.dart';
 import '../widgets/form_text_field.dart';
@@ -18,6 +14,9 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  String _username = '';
+  String _password = '';
+
   bool _isUsernameValid = false;
   bool _isPasswordValid = false;
 
@@ -41,43 +40,14 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
-  Future<void> _login(String username, String plaintextPassword) async {
-    try {
-      _updateLoginError(null);
+  Future<void> _attemptLogin(String username, String plaintextPassword) async {
+    String? error = await SessionState().login(username, plaintextPassword);
 
-      final response = await http.post(apiEndpoint.resolve('/api/users/login'), body: {
-        'username': username,
-        'password': plaintextPassword
-      });
-
-      if (response.statusCode == 200) {
-        final session = Session.deserialize(json.decode(response.body));
-
-        if (session.isErr) {
-          _updateLoginError('Failed to deserialize session response.');
-          return;
-        }
-      }
-      else {
-        switch (response.statusCode) {
-          case 401:
-            _updateLoginError('Invalid username or password');
-            break;
-          case 429:
-            _updateLoginError('Too many login attempts. Please try again later.');
-            break;
-          case 500:
-            _updateLoginError('Internal server error. Please try again later.');
-            break;
-          default:
-            _updateLoginError('An unknown error occurred. Please try again later.');
-            break;
-        }
-      }
+    if (error == null && mounted) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
-    catch (_) {
-      _updateLoginError('Failed to connect to server. Please try again later.');
-    }
+
+    _updateLoginError(error);
   }
 
   @override
@@ -130,6 +100,7 @@ class _LoginViewState extends State<LoginView> {
                 validationRegex: usernameRegex,
                 errorMessage: 'Invalid username',
                 onErrorChanged: _updateUsernameError,
+                onChanged: (String input) => _username = input
               ),
               const SizedBox(height: 12),
               FormTextField(
@@ -138,12 +109,13 @@ class _LoginViewState extends State<LoginView> {
                 validationRegex: passwordRegex,
                 errorMessage: 'Password must be at withing 8 to 200 characters long',
                 onErrorChanged: _updatePasswordError,
+                onChanged: (String input) => _password = input
               ),
               const SizedBox(height: 25),
               ThematicElevatedButton(
                 isDisabled: !_isUsernameValid || !_isPasswordValid,
                 text: 'Ok',
-                onPressed: () => {}
+                onPressed: () => _attemptLogin(_username, _password)
               ),
               if (_loginError != null) Text(
                 _loginError!,

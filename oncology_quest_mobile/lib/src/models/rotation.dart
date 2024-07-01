@@ -1,6 +1,3 @@
-
-import 'package:oncology_quest_mobile/src/utilities/result.dart';
-
 class Rotation {
   final int id;
   final String name;
@@ -12,16 +9,19 @@ class Rotation {
     required this.lastUpdated,
   });
 
-  static Result<Rotation> deserialize(Map<String, dynamic> json) {
-    if (json['id'].runtimeType != int ||
-        json['name'].runtimeType != String ||
-        json['lastUpdated'].runtimeType != String
-    ) return Result.err('Invalid JSON');
+  factory Rotation.deserialize(Map<String, dynamic> json) {
+    final id = json['id'];
+    final name = json['name'];
+    final lastUpdated = json['lastUpdated'];
 
-    return Result.ok(Rotation(
-      id: json['id'],
-      name: json['name'],
-      lastUpdated: DateTime.parse(json['lastUpdated']),
-    ));
+    if (id is! int || name is! String || lastUpdated is! String) {
+      throw Error();
+    }
+
+    return Rotation(
+      id: id,
+      name: name,
+      lastUpdated: DateTime.parse(lastUpdated),
+    );
   }
 }
