@@ -6,25 +6,16 @@ import 'package:http/http.dart' as http;
 
 import 'dart:convert';
  
-class SessionState with ChangeNotifier {
+class SessionState extends ChangeNotifier {
   Session? _session;
   Session? get session => _session;
 
   String? _jwt;
   String? get jwt => _jwt;
 
-  SessionState() {
-    init();
-  }
-
-  Future<void> init() async {
-    await loadJwt();
-    await fetchSession();
-  }
-
-  Future<void> fetchSession() async {
+  Future<String?> fetchSession() async {
     if (_jwt == null) {
-      return;
+      return null;
     }
 
     try {
@@ -33,19 +24,27 @@ class SessionState with ChangeNotifier {
       });
 
       if (response.statusCode == 200) {
-        final session = Session.deserialize(json.decode(response.body));
-        _session = session;
+        try {
+          final session = Session.deserialize(json.decode(response.body));
+          _session = session;
 
-        notifyListeners();
-        return;
+          notifyListeners();
+          return null;
+        }
+        catch (_) {
+          return 'Failed to parse server response.';
+        }
       }
     }
-    catch (_) {}
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
 
     _session = null;
 
     await storeJwt(null);
     notifyListeners();
+    return null;
   }
 
   Future<String?> login(String username, String plaintextPassword) async {
@@ -75,10 +74,8 @@ class SessionState with ChangeNotifier {
           await storeJwt(jwt);
           notifyListeners();
         }
-        catch (e) {
-          return e.toString();
-          //return json.decode(response.body).toString();
-          //return 'Failed to parse server response.';
+        catch (_) {
+          return 'Failed to parse server response.';
         }
       }
       else {

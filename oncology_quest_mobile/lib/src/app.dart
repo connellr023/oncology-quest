@@ -12,37 +12,35 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SessionState>(
-      builder: (context, sessionState, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primaryColor: const Color(0xFF331BBF),
-            scaffoldBackgroundColor: const Color(0xFF030303),
-            textTheme: GoogleFonts.interTextTheme(
-              Theme.of(context).textTheme.copyWith(
-                bodySmall: const TextStyle(color: Color(0xFFE7E7E7)),
-                bodyMedium: const TextStyle(color: Color(0xFFE7E7E7)),
-                bodyLarge: const TextStyle(color: Color(0xFFE7E7E7)) 
-              )
-            )
-          ),
-          restorationScopeId: 'app',
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('en', 'CA'),
-          ],
-          initialRoute: sessionState.session == null ? '/' : '/dashboard',
-          routes: {
-            '/': (context) => const HomeView(),
-            '/login': (context) => const LoginView(),
-            '/dashboard': (context) => const DashboardView(),
-          }
-        );
+    final session = Provider.of<SessionState>(context, listen: false).session;
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primaryColor: const Color(0xFF331BBF),
+        scaffoldBackgroundColor: const Color(0xFF030303),
+        textTheme: GoogleFonts.interTextTheme(
+          Theme.of(context).textTheme.copyWith(
+            bodySmall: const TextStyle(color: Color(0xFFE7E7E7)),
+            bodyMedium: const TextStyle(color: Color(0xFFE7E7E7)),
+            bodyLarge: const TextStyle(color: Color(0xFFE7E7E7)) 
+          )
+        )
+      ),
+      restorationScopeId: 'app',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'CA'),
+      ],
+      initialRoute: session == null ? '/' : '/dashboard',
+      routes: {
+        '/': (context) => const HomeView(),
+        '/login': (context) => const LoginView(),
+        '/dashboard': (context) => const DashboardView(),
       }
     );
   }

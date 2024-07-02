@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/widgets/thematic_elevated_button.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/main_logo.dart';
 import '../widgets/form_text_field.dart';
@@ -41,7 +42,13 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _attemptLogin(String username, String plaintextPassword) async {
-    String? error = await SessionState().login(username, plaintextPassword);
+    String? error = await Provider.of<SessionState>(context, listen: false).login(username, plaintextPassword);
+    
+    if (error == null && mounted) {
+      Navigator.pushNamed(context, '/dashboard');
+      return;
+    }
+    
     _updateLoginError(error);
   }
 

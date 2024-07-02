@@ -6,12 +6,40 @@ import 'package:provider/provider.dart';
 import 'src/app.dart';
 
 Future<void> main() async {
-  await dotenv.load(fileName: '.env');
-
   runApp(
     ChangeNotifierProvider(
       create: (context) => SessionState(),
-      child: const App(),
+      child: _Initializer()
     )
   );
+}
+
+class _Initializer extends StatelessWidget {
+  Future<void> _initApp(BuildContext context) async {
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+
+    await dotenv.load(fileName: '.env');
+    await sessionState.loadJwt();
+    await sessionState.fetchSession();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _initApp(context),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return const App();
+        }
+
+        return const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      }
+    );
+  }
 }
