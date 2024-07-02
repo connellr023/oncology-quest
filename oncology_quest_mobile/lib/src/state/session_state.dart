@@ -75,8 +75,10 @@ class SessionState with ChangeNotifier {
           await storeJwt(jwt);
           notifyListeners();
         }
-        catch (_) {
-          return 'Failed to parse server response.';
+        catch (e) {
+          return e.toString();
+          //return json.decode(response.body).toString();
+          //return 'Failed to parse server response.';
         }
       }
       else {
