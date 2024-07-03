@@ -34,16 +34,20 @@ impl JwtClaim<String> {
             &EncodingKey::from_secret(secret_key().as_ref())
         ).unwrap()
     }
+}
 
-    pub fn deserialize(self) -> Result<JwtClaim<ClientUser>> {
+impl TryFrom<JwtClaim<String>> for JwtUserClaim {
+    type Error = Error;
+
+    fn try_from(value: JwtClaim<String>) -> Result<Self, Self::Error> {
         Ok(JwtClaim {
-            sub: serde_json::from_str(&self.sub)?,
-            exp: self.exp
+            sub: serde_json::from_str(&value.sub)?,
+            exp: value.exp
         })
     }
 }
 
-impl FromRequest for JwtClaim<ClientUser> {
+impl FromRequest for JwtUserClaim {
     type Error = Error;
     type Future = Ready<Result<Self, Self::Error>>;
 
@@ -62,9 +66,9 @@ impl FromRequest for JwtClaim<ClientUser> {
                             return ready(Err(ErrorUnauthorized("Token has expired.")));
                         }
 
-                        let claim = match data.claims.deserialize() {
+                        let claim = match data.claims.try_into() {
                             Ok(claim) => claim,
-                            Err(e) => return ready(Err(ErrorInternalServerError(e.to_string())))
+                            Err(_) => return ready(Err(ErrorInternalServerError("Failed to parse token data.")))
                         };
 
                         ready(Ok(claim))
