@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/state/session_state.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/credit_footer.dart';
 import '../widgets/thematic_elevated_button.dart';
@@ -9,6 +11,14 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Future.delayed(Duration.zero, () {
+      final session = Provider.of<SessionState>(context, listen: false).session;
+
+      if (session != null) {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
+    });
+
     const double buttonSpacing = 17;
 
     return Scaffold(
