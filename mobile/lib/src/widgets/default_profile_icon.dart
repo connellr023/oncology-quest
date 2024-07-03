@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class DefaultProfileIcon extends StatelessWidget {
   final String name;
+  final Function()? onTap;
 
   const DefaultProfileIcon({
     super.key,
-    required this.name
+    required this.name,
+    required this.onTap
   });
 
   @override
   Widget build(BuildContext context) {
     String initials = name.isNotEmpty ? name.substring(0, 2) : "?";
 
-    return CircleAvatar(
-      backgroundColor: Theme.of(context).primaryColor,
-      radius: MediaQuery.of(context).size.width * 0.05,
-      child: Text(
-        initials,
-        style: TextStyle(
-          fontSize: MediaQuery.of(context).size.width * 0.04,
-          color: Theme.of(context).textTheme.bodySmall!.color
-        ) // Customize the text style
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(50),
+      child: CircleAvatar(
+        backgroundColor: Theme.of(context).primaryColor,
+        child: Text(
+          initials,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge!.color,
+            fontSize: MediaQuery.of(context).size.width * 0.04
+          )
+        )
       )
     );
   }

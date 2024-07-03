@@ -16,7 +16,10 @@ class DashboardView extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         title: Row(
           children: <Widget>[
-            DefaultProfileIcon(name: session.user.name),
+            DefaultProfileIcon(
+              name: session.user.name,
+              onTap: () => _showBottomPanel(context),
+            ),
             const SizedBox(width: 10),
             RichText(
               text: TextSpan(
@@ -44,6 +47,34 @@ class DashboardView extends StatelessWidget {
           ]
         )
       )
+    );
+  }
+
+  void _showBottomPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              UserAccountsDrawerHeader(
+                accountName: Text("User Name"), // Replace with actual user name
+                accountEmail: Text("user@example.com"), // Replace with actual user email
+              ),
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Delete'),
+                onTap: () {
+                  // Handle the delete action
+                  Navigator.pop(context); // Close the bottom sheet
+                },
+              ),
+              // Add more ListTiles as needed
+            ],
+          ),
+        );
+      },
     );
   }
 }
