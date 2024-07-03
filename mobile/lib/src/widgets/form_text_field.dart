@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 
 class FormTextField extends StatefulWidget {
   final String labelText;
@@ -23,7 +24,6 @@ class FormTextField extends StatefulWidget {
 }
 
 class _FormTextFieldState extends State<FormTextField> {
-  final Color errorColor = const Color(0xFFE60A1C);
   final int unselectedAlpha = 150;
 
   String? errorMessage;

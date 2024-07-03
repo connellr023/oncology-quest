@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
+import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/widgets/bottom_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/default_profile_icon.dart';
 import 'package:provider/provider.dart';
 
@@ -53,28 +55,10 @@ class DashboardView extends StatelessWidget {
   void _showBottomPanel(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: backgroundColor2,
       builder: (BuildContext context) {
-        return Container(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              UserAccountsDrawerHeader(
-                accountName: Text("User Name"), // Replace with actual user name
-                accountEmail: Text("user@example.com"), // Replace with actual user email
-              ),
-              ListTile(
-                leading: Icon(Icons.delete),
-                title: Text('Delete'),
-                onTap: () {
-                  // Handle the delete action
-                  Navigator.pop(context); // Close the bottom sheet
-                },
-              ),
-              // Add more ListTiles as needed
-            ],
-          ),
-        );
-      },
+        return const BottomPanel();
+      }
     );
   }
 }
