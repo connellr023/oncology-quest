@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:provider/provider.dart';
 
 class BottomPanel extends StatelessWidget {
   const BottomPanel({super.key});
@@ -22,13 +24,26 @@ class BottomPanel extends StatelessWidget {
     );
   }
 
+  void onLogout(BuildContext context) {
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+    
+    Navigator.pushReplacementNamed(context, '/');
+    sessionState.logout();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 135,
+      height: 190,
       child: ListView(
         padding: const EdgeInsets.all(10),
         children: <Widget>[
+          _buildOption(
+            'Close',
+            Icons.close,
+            () => Navigator.pop(context),
+            splashColor: warningColor
+          ),
           _buildOption(
             'Delete Account',
             Icons.delete_forever,
@@ -38,7 +53,7 @@ class BottomPanel extends StatelessWidget {
           _buildOption(
             'Logout',
             Icons.logout,
-            () => Navigator.pop(context),
+            () => onLogout(context),
             splashColor: okColor
           )
         ],

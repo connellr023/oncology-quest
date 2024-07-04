@@ -10,7 +10,15 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = Provider.of<SessionState>(context).session!;
+    final session = Provider.of<SessionState>(context, listen: false).session;
+
+    if (session == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        )
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -42,11 +50,69 @@ class DashboardView extends StatelessWidget {
         )
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Logged in as ${session.user.name}'),
-          ]
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              _buildHeading(context, 'Rotations'),
+              SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: session.rotations.entries.map<Widget>((entry) {
+                    return _buildRotationOption(context, entry.value.name);
+                  }).toList()
+                ),
+              ),
+              const SizedBox(height: 40),
+              _buildHeading(context, 'My Progress'),
+            ]
+          )
+        )
+      )
+    );
+  }
+
+  Widget _buildHeading(BuildContext context, String title) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: Text(
+            title,
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodySmall!.color,
+              fontSize: MediaQuery.of(context).size.width * 0.068
+            )
+          )
+        ),
+        const SizedBox(height: 13)
+      ],
+    );
+  }
+
+  Widget _buildRotationOption(BuildContext context, String name) {
+    const double borderRadius = 18;
+    
+    return Material(
+      color: backgroundColor2,
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: InkWell(
+        splashColor: okColor,
+        borderRadius: BorderRadius.circular(borderRadius),
+        onTap: () => {},
+        child: Container(
+          padding: const EdgeInsets.all(17),
+          child: Text(
+            name,
+            style: TextStyle(
+              color: textColor,
+              fontSize: MediaQuery.of(context).size.width * 0.042
+            )
+          )
         )
       )
     );
