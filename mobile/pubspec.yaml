@@ -1,0 +1,47 @@
+name: oncology_quest_mobile
+description: "An application to aid Medical Oncology students."
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.3 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^6.2.1
+  flutter_native_splash: ^2.4.0
+  http: ^1.2.1
+  flutter_dotenv: ^5.1.0
+
+  flutter_gen: any
+  provider: ^6.1.2
+  shared_preferences: ^2.2.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - .env
+    - assets/images/
+    - assets/icons/
+
+flutter_native_splash:
+    color: "#030303"
+    image: assets/icons/logo/logo.png
+    android: true
+    ios: true
+    android_12:
+      image: assets/icons/logo/logo.png
+      icon_background_color: "#331bbf"

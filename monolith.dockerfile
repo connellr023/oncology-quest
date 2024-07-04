@@ -3,13 +3,13 @@ FROM node:16 AS web-builder
 WORKDIR /web-tmp
 
 # Copy package.json and package-lock.json to the working directory
-COPY ./oncology-quest-web/package*.json ./
+COPY ./web/package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy the current directory contents into the container
-COPY ./oncology-quest-web .
+COPY ./web .
 
 # Build the app for production
 RUN npm run build
@@ -26,7 +26,7 @@ WORKDIR /prod
 # Copy the compiled binary
 # Ensure the binary is built with the following command:
 # cargo build --release --features "production monolith"
-COPY ./oncology-quest-api/target/release/oncology-quest-api /prod/api
+COPY ./api/target/release/oncology-quest-api /prod/api
 
 # Copy the built web app from the web build stage
 COPY --from=web-builder /web-tmp/dist /prod/dist
