@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/widgets/bottom_panel.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard_app_bar.dart';
-import 'package:oncology_quest_mobile/src/widgets/graphic.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/edit_option.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/graphic.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
 import 'package:provider/provider.dart';
 
 class DashboardView extends StatefulWidget {
@@ -31,6 +34,30 @@ class _DashboardViewState extends State<DashboardView> {
       _isEditingRotations = !_isEditingRotations;
       _selectedRotationId = null;
     });
+  }
+
+  void _showBottomPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: backgroundColor2,
+      builder: (BuildContext context) {
+        return const BottomPanel();
+      }
+    );
+  }
+
+  void _showInputModal(BuildContext context) {
+    setState(() {
+      _isEditingRotations = false;
+    });
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: backgroundColor2,
+      builder: (BuildContext context) {
+        return const InputPanel();
+      },
+    );
   }
 
   @override
@@ -63,17 +90,18 @@ class _DashboardViewState extends State<DashboardView> {
                     child: _buildHeading(context, 'Rotations'),
                   ),
                   if (session.user.isAdmin) ...<Widget>[
-                    _buildBasicOption(context,
-                      'New',
-                      okColor,
-                      Icons.add_box,
-                      () => {}
+                    BasicOption(
+                      context: context,
+                      title: 'New',
+                      color: okColor,
+                      icon: Icons.add_box,
+                      onTap: () => _showInputModal(context)
                     ),
                     const SizedBox(width: 5),
-                    _buildEditOption(
-                      context,
-                      _isEditingRotations,
-                      () => _toggleEditRotations()
+                    EditOption(
+                      context: context,
+                      isEditing: _isEditingRotations,
+                      onTap: () => _toggleEditRotations()
                     )
                   ]
                 ]
@@ -99,62 +127,6 @@ class _DashboardViewState extends State<DashboardView> {
             ]
           )
         )
-      )
-    );
-  }
-
-  Widget _buildBasicOption(BuildContext context, String title, Color color, IconData icon, void Function() onTap) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(15),
-      onTap: onTap,
-      splashColor: color,
-      child: Padding(
-        padding: const EdgeInsets.all(7),
-        child: Row(
-          children: <Widget>[
-            Icon(
-              icon,
-              color: color,
-              size: MediaQuery.of(context).size.width * 0.06
-            ),
-            const SizedBox(width: 5),
-            Text(
-              title,
-              style: TextStyle(
-                color: color,
-                fontSize: MediaQuery.of(context).size.width * 0.042
-              )
-            )
-          ]
-        ),
-      )
-    );
-  }
-
-  Widget _buildEditOption(BuildContext context, bool isEditing, void Function() onTap) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(15),
-      onTap: onTap,
-      splashColor: isEditing ? textColor : okColor,
-      child: Padding(
-        padding: const EdgeInsets.all(7),
-        child: Row(
-          children: <Widget>[
-            Icon(
-              isEditing ? Icons.done : Icons.edit,
-              color: isEditing ? okColor : textColor,
-              size: MediaQuery.of(context).size.width * 0.06
-            ),
-            const SizedBox(width: 5),
-            Text(
-              isEditing ? 'Done' : 'Edit',
-              style: TextStyle(
-                color: isEditing ? okColor : textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.042
-              )
-            )
-          ]
-        ),
       )
     );
   }
@@ -241,16 +213,6 @@ class _DashboardViewState extends State<DashboardView> {
           )
         )
       )
-    );
-  }
-
-  void _showBottomPanel(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      builder: (BuildContext context) {
-        return const BottomPanel();
-      }
     );
   }
 }
