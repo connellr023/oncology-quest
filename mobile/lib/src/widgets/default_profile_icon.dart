@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class DefaultProfileIcon extends StatelessWidget {
   final String name;
@@ -18,16 +17,23 @@ class DefaultProfileIcon extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(50),
-      child: CircleAvatar(
-        backgroundColor: Theme.of(context).primaryColor,
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: Theme.of(context).textTheme.bodyLarge!.color,
-            fontSize: MediaQuery.of(context).size.width * 0.04
-          )
-        )
-      )
+      splashColor: Colors.white,
+      child: Ink(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).primaryColor,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            initials,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyLarge!.color,
+              fontSize: MediaQuery.of(context).size.width * 0.04,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

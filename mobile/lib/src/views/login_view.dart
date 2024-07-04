@@ -21,6 +21,7 @@ class _LoginViewState extends State<LoginView> {
 
   bool _isUsernameValid = false;
   bool _isPasswordValid = false;
+  bool _isLoading = false;
 
   String? _loginError;
 
@@ -42,9 +43,17 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
+  void _updateLoading(bool isLoading) {
+    setState(() {
+      _isLoading = isLoading;
+    });
+  }
+
   Future<void> _attemptLogin(String username, String plaintextPassword) async {
+    _updateLoading(true);
     String? error = await Provider.of<SessionState>(context, listen: false).login(username, plaintextPassword);
-    
+    _updateLoading(false);
+
     if (error == null && mounted) {
       Navigator.pushNamed(context, '/dashboard');
       return;
@@ -125,6 +134,7 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(height: 15),
               ThematicElevatedButton(
                 isDisabled: !_isUsernameValid || !_isPasswordValid,
+                isLoading: _isLoading,
                 text: 'Ok',
                 onPressed: () => _attemptLogin(_username, _password)
               )

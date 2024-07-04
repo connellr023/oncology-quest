@@ -137,6 +137,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildRotationOption(BuildContext context, Rotation rotation) {
     const double borderRadius = 18;
+    final bool isSelected = _selectedRotationId == rotation.id;
     
     return Material(
       color: backgroundColor2,
@@ -150,7 +151,7 @@ class _DashboardViewState extends State<DashboardView> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              if (_selectedRotationId == rotation.id) ...<Widget>[
+              if (isSelected) ...<Widget>[
                 Icon(
                   Icons.check,
                   color: okColor,
@@ -161,7 +162,7 @@ class _DashboardViewState extends State<DashboardView> {
               Text(
                 rotation.name,
                 style: TextStyle(
-                  color: textColor,
+                  color: isSelected ? okColor : textColor,
                   fontSize: MediaQuery.of(context).size.width * 0.042
                 )
               )
