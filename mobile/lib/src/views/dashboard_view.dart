@@ -3,7 +3,7 @@ import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/widgets/bottom_panel.dart';
-import 'package:oncology_quest_mobile/src/widgets/default_profile_icon.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard_app_bar.dart';
 import 'package:oncology_quest_mobile/src/widgets/graphic.dart';
 import 'package:provider/provider.dart';
 
@@ -15,11 +15,21 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
+  bool _isEditingRotations = false;
+
   int? _selectedRotationId;
 
   void _selectRotation(int rotationId) {
     setState(() {
       _selectedRotationId = _selectedRotationId == rotationId ? null : rotationId;
+      _isEditingRotations = false;
+    });
+  }
+
+  void _toggleEditRotations() {
+    setState(() {
+      _isEditingRotations = !_isEditingRotations;
+      _selectedRotationId = null;
     });
   }
 
@@ -36,33 +46,9 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Row(
-          children: <Widget>[
-            DefaultProfileIcon(
-              name: session.user.name,
-              onTap: () => _showBottomPanel(context),
-            ),
-            const SizedBox(width: 10),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.05,
-                  color: Theme.of(context).textTheme.bodySmall!.color,
-                ),
-                children: <TextSpan>[
-                  TextSpan(
-                    text: session.user.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)
-                  ),
-                  TextSpan(text: ' (${session.user.username})')
-                ]
-              )
-            )
-          ]
-        )
+      appBar: DashboardAppBar(
+        session: session,
+        onProfileTap: () => _showBottomPanel(context)
       ),
       body: Center(
         child: Padding(
@@ -70,7 +56,28 @@ class _DashboardViewState extends State<DashboardView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              _buildHeading(context, 'Rotations'),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: _buildHeading(context, 'Rotations'),
+                  ),
+                  if (session.user.isAdmin) ...<Widget>[
+                    _buildBasicOption(context,
+                      'New',
+                      okColor,
+                      Icons.add_box,
+                      () => {}
+                    ),
+                    const SizedBox(width: 5),
+                    _buildEditOption(
+                      context,
+                      _isEditingRotations,
+                      () => _toggleEditRotations()
+                    )
+                  ]
+                ]
+              ),
               SizedBox(
                 width: double.infinity,
                 child: Wrap(
@@ -92,6 +99,62 @@ class _DashboardViewState extends State<DashboardView> {
             ]
           )
         )
+      )
+    );
+  }
+
+  Widget _buildBasicOption(BuildContext context, String title, Color color, IconData icon, void Function() onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: onTap,
+      splashColor: color,
+      child: Padding(
+        padding: const EdgeInsets.all(7),
+        child: Row(
+          children: <Widget>[
+            Icon(
+              icon,
+              color: color,
+              size: MediaQuery.of(context).size.width * 0.06
+            ),
+            const SizedBox(width: 5),
+            Text(
+              title,
+              style: TextStyle(
+                color: color,
+                fontSize: MediaQuery.of(context).size.width * 0.042
+              )
+            )
+          ]
+        ),
+      )
+    );
+  }
+
+  Widget _buildEditOption(BuildContext context, bool isEditing, void Function() onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: onTap,
+      splashColor: isEditing ? textColor : okColor,
+      child: Padding(
+        padding: const EdgeInsets.all(7),
+        child: Row(
+          children: <Widget>[
+            Icon(
+              isEditing ? Icons.done : Icons.edit,
+              color: isEditing ? okColor : textColor,
+              size: MediaQuery.of(context).size.width * 0.06
+            ),
+            const SizedBox(width: 5),
+            Text(
+              isEditing ? 'Done' : 'Edit',
+              style: TextStyle(
+                color: isEditing ? okColor : textColor,
+                fontSize: MediaQuery.of(context).size.width * 0.042
+              )
+            )
+          ]
+        ),
       )
     );
   }
@@ -143,7 +206,7 @@ class _DashboardViewState extends State<DashboardView> {
       color: backgroundColor2,
       borderRadius: BorderRadius.circular(borderRadius),
       child: InkWell(
-        splashColor: okColor,
+        splashColor: _isEditingRotations ? errorColor : okColor,
         borderRadius: BorderRadius.circular(borderRadius),
         onTap: () => _selectRotation(rotation.id),
         child: Container(
@@ -158,11 +221,19 @@ class _DashboardViewState extends State<DashboardView> {
                   size: MediaQuery.of(context).size.width * 0.06
                 ),
                 const SizedBox(width: 10)
+              ]
+              else if (_isEditingRotations) ...<Widget>[
+                Icon(
+                  Icons.delete_forever,
+                  color: errorColor,
+                  size: MediaQuery.of(context).size.width * 0.06
+                ),
+                const SizedBox(width: 10)
               ],
               Text(
                 rotation.name,
                 style: TextStyle(
-                  color: isSelected ? okColor : textColor,
+                  color: isSelected ? okColor : _isEditingRotations ? errorColor : textColor,
                   fontSize: MediaQuery.of(context).size.width * 0.042
                 )
               )
