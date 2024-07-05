@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/regex.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/edit_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/graphic.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/rotation_select.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/section_heading.dart';
 import 'package:provider/provider.dart';
 
 class DashboardView extends StatefulWidget {
@@ -19,23 +16,7 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  bool _isEditingRotations = false;
-
   int? _selectedRotationId;
-
-  void _selectRotation(int rotationId) {
-    setState(() {
-      _selectedRotationId = _selectedRotationId == rotationId ? null : rotationId;
-      _isEditingRotations = false;
-    });
-  }
-
-  void _toggleEditRotations() {
-    setState(() {
-      _isEditingRotations = !_isEditingRotations;
-      _selectedRotationId = null;
-    });
-  }
 
   void _showBottomPanel(BuildContext context) {
     showModalBottomSheet(
@@ -44,56 +25,6 @@ class _DashboardViewState extends State<DashboardView> {
       builder: (BuildContext context) {
         return const BottomPanel();
       }
-    );
-  }
-
-  void _displayError(String errorMessage) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(errorMessage),
-      backgroundColor: errorColor
-    ));
-  }
-
-  Future<void> _attemptCreateRotation(String name) async {
-    final sessionState = Provider.of<SessionState>(context, listen: false);
-    final String? errorMessage = await sessionState.createRotation(name);
-
-    if (errorMessage != null) {
-      _displayError(errorMessage);
-    }
-  }
-
-  Future<void> _attemptDeleteRotation(int rotationId) async {
-    final sessionState = Provider.of<SessionState>(context, listen: false);
-    final String? errorMessage = await sessionState.deleteRotation(rotationId);
-
-    if (errorMessage != null) {
-      _displayError(errorMessage);
-    }
-  }
-
-  void _showInputModal(BuildContext context) {
-    setState(() {
-      _isEditingRotations = false;
-    });
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      isScrollControlled: true, // Make the modal resizable
-      builder: (BuildContext context) {
-        return SingleChildScrollView( // Make the content scrollable
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom
-          ),
-          child: InputPanel(
-            hintText: 'Enter rotation name',
-            errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
-            regex: nameRegex,
-            onConfirm: _attemptCreateRotation
-          ),
-        );
-      },
     );
   }
 
@@ -120,56 +51,20 @@ class _DashboardViewState extends State<DashboardView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Row(
-                children: <Widget>[
-                  _buildHeading(context, 'Rotations'),
-                  const Expanded(child: SizedBox()),
-                  if (session.user.isAdmin) Container(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      children: <Widget>[
-                        BasicOption(
-                          context: context,
-                          title: 'New',
-                          color: okColor,
-                          icon: Icons.add_box,
-                          onTap: () => _showInputModal(context)
-                        ),
-                        const SizedBox(width: 5),
-                        EditOption(
-                          context: context,
-                          isEditing: _isEditingRotations,
-                          onTap: () => _toggleEditRotations()
-                        )
-                      ]
-                    )
-                  )
-                ]
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: Consumer<SessionState>(
-                  builder: (context, sessionState, child) => Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      if (sessionState.session != null)
-                        for (final rotationEntry in sessionState.session!.rotations.entries)
-                          _buildRotationOption(context, rotationEntry.value)
-                    ]
-                  )
-                )
+              RotationSelect(
+                session: session,
+                onRotationSelect: (id) => _selectedRotationId = id,
               ),
               if (_selectedRotationId != null) ...<Widget>[
                 const SizedBox(height: 35),
-                _buildHeading(context, 'My Progress')
+                SectionHeading(context: context, title: 'My Progress')
               ]
               else ...<Widget>[
                 const SizedBox(height: 60),
                 _buildNoRotationSelected(context)
               ]
             ]
-          ),
+          )
         )
       )
     );
@@ -192,72 +87,6 @@ class _DashboardViewState extends State<DashboardView> {
         ),
         const SizedBox(height: 40)
       ]
-    );
-  }
-
-  Widget _buildHeading(BuildContext context, String title) {
-    return Column(
-      children: <Widget>[
-        Row(
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.left,
-              style: TextStyle(
-                color: textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.068
-              )
-            )
-          ]
-        ),
-        const SizedBox(height: 13)
-      ]
-    );
-  }
-
-  Widget _buildRotationOption(BuildContext context, Rotation rotation) {
-    const double borderRadius = 18;
-    final bool isSelected = _selectedRotationId == rotation.id;
-    
-    return Material(
-      color: backgroundColor2,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: InkWell(
-        splashColor: _isEditingRotations ? errorColor : okColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        onTap: () => _isEditingRotations ? _attemptDeleteRotation(rotation.id) : _selectRotation(rotation.id),
-        child: Container(
-          padding: const EdgeInsets.all(17),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              if (isSelected) ...<Widget>[
-                Icon(
-                  Icons.check,
-                  color: okColor,
-                  size: MediaQuery.of(context).size.width * 0.06
-                ),
-                const SizedBox(width: 10)
-              ]
-              else if (_isEditingRotations) ...<Widget>[
-                Icon(
-                  Icons.delete_forever,
-                  color: errorColor,
-                  size: MediaQuery.of(context).size.width * 0.06
-                ),
-                const SizedBox(width: 10)
-              ],
-              Text(
-                rotation.name,
-                style: TextStyle(
-                  color: isSelected ? okColor : _isEditingRotations ? errorColor : textColor,
-                  fontSize: MediaQuery.of(context).size.width * 0.042
-                )
-              )
-            ]
-          )
-        )
-      )
     );
   }
 }
