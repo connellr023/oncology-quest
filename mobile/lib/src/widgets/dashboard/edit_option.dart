@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 
 class EditOption extends StatelessWidget {
+  final BuildContext context;
+  final bool isEditing;
+  final void Function() onTap;
+
   const EditOption({
     super.key,
     required this.context,
     required this.isEditing,
     required this.onTap,
   });
-
-  final BuildContext context;
-  final bool isEditing;
-  final void Function() onTap;
 
   @override
   Widget build(BuildContext context) {

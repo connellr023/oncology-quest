@@ -14,6 +14,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        dividerColor: Colors.transparent,
         primaryColor: themeColor,
         scaffoldBackgroundColor: backgroundColor1,
         textTheme: GoogleFonts.interTextTheme(

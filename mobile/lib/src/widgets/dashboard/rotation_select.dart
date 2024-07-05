@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
+import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/display_error.dart';
@@ -29,6 +30,16 @@ class _RotationSelectState extends State<RotationSelect> {
   bool _isEditingRotations = false;
   int? _selectedRotationId;
 
+  Future<void> _attemptFetchEntries(int rotationId) async {
+    final entriesState = Provider.of<EntriesState>(context, listen: false);
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+    final String? errorMessage = await entriesState.fetchEntries(sessionState.jwt, rotationId);
+
+    if (errorMessage != null && mounted) {
+      displayError(context, errorMessage);
+    }
+  }
+
   void _selectRotation(int rotationId) {
     setState(() {
       _selectedRotationId = _selectedRotationId == rotationId ? null : rotationId;
@@ -36,6 +47,8 @@ class _RotationSelectState extends State<RotationSelect> {
 
       widget.onRotationSelect(_selectedRotationId);
     });
+
+    _attemptFetchEntries(rotationId);
   }
 
   void _toggleEditRotations() {
@@ -146,7 +159,7 @@ class _RotationSelectState extends State<RotationSelect> {
       color: backgroundColor2,
       borderRadius: BorderRadius.circular(borderRadius),
       child: InkWell(
-        splashColor: _isEditingRotations ? errorColor : okColor,
+        splashColor: _isEditingRotations ? errorColor : isSelected ? textColor : okColor,
         borderRadius: BorderRadius.circular(borderRadius),
         onTap: () => _isEditingRotations ? _attemptDeleteRotation(rotation.id) : _selectRotation(rotation.id),
         child: Container(
