@@ -16,28 +16,28 @@ class BottomPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 190,
-      child: ListView(
-        padding: const EdgeInsets.all(10),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           PanelOption(
             text: 'Close',
             icon: Icons.close,
             onTap: () => Navigator.pop(context),
-            color: warningColor
+            splashColor: warningColor
           ),
           PanelOption(
             text: 'Delete Account',
             icon: Icons.delete_forever,
             onTap: () => Navigator.pop(context),
-            color: errorColor
+            splashColor: errorColor
           ),
           PanelOption(
             text: 'Logout',
             icon: Icons.logout,
             onTap: () => onLogout(context),
-            color: okColor
+            splashColor: okColor
           )
         ],
       ),

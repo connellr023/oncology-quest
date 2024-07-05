@@ -4,38 +4,68 @@ import 'package:oncology_quest_mobile/src/widgets/dashboard/panel_input_option.d
 import 'package:oncology_quest_mobile/src/widgets/dashboard/panel_option.dart';
 
 class InputPanel extends StatefulWidget {
-  const InputPanel({super.key});
+  final String hintText;
+  final String errorMessage;
+  final RegExp regex;
+
+  const InputPanel({
+    super.key,
+    required this.hintText,
+    required this.errorMessage,
+    required this.regex
+  });
 
   @override
   State<InputPanel> createState() => _InputPanelState();
 }
 
 class _InputPanelState extends State<InputPanel> {
+  bool _isError = true;
+
+  void _validateInput(String input) {
+    setState(() {
+      _isError = !widget.regex.hasMatch(input);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 220,
-      child: ListView(
-        padding: const EdgeInsets.all(10),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           PanelInputOption(
-            hintText: 'Enter text',
+            hintText: widget.hintText,
             splashColor: okColor,
-            onChanged: (input) => {},
+            isError: _isError,
+            onChanged: _validateInput,
           ),
+          if (_isError) ...<Widget>[
+            const SizedBox(height: 10),
+            Text(
+              widget.errorMessage,
+              style: TextStyle(
+                color: errorColor,
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+              ),
+              textAlign: TextAlign.center
+            )
+          ],
           const SizedBox(height: 20),
           PanelOption(
             text: 'Confirm',
             icon: Icons.done,
             onTap: () => Navigator.pop(context),
-            color: okColor
+            splashColor: okColor,
+            isDisabled: _isError,
           ),
           PanelOption(
             text: 'Cancel',
             icon: Icons.close,
             onTap: () => Navigator.pop(context),
-            color: errorColor
-          )
+            splashColor: errorColor
+          ),
         ],
       ),
     );

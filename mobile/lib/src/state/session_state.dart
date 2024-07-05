@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
@@ -12,6 +13,45 @@ class SessionState extends ChangeNotifier {
 
   String? _jwt;
   String? get jwt => _jwt;
+
+  Future<String?> createRotation(String name) async {
+    if (_jwt == null || session == null) {
+      return 'You must be logged in to create a rotation.';
+    }
+
+    try {
+      final response = await http.post(apiEndpoint.resolve('/api/rotations/create'),
+        headers: {
+          'content-type': 'application/json',
+          'authorization': _jwt!
+        },
+        body: jsonEncode({
+          'name': name
+        })
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+
+        final int rotationId = int.parse(body['rotationId']);
+        final DateTime lastUpdated = DateTime.parse(body['lastUpdated']);
+
+        final rotation = Rotation(
+          id: rotationId,
+          name: name,
+          lastUpdated: lastUpdated
+        );
+
+        session!.rotations.putIfAbsent(rotationId, () => rotation);
+      }
+      else {
+        return 'Failed to create rotation. Please try again later.';
+      }
+    }
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
+  }
 
   Future<String?> fetchSession() async {
     if (_jwt == null) {

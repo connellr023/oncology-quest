@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/regex.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
@@ -54,8 +55,18 @@ class _DashboardViewState extends State<DashboardView> {
     showModalBottomSheet(
       context: context,
       backgroundColor: backgroundColor2,
+      isScrollControlled: true, // Make the modal resizable
       builder: (BuildContext context) {
-        return const InputPanel();
+        return SingleChildScrollView( // Make the content scrollable
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust padding based on the keyboard
+          ),
+          child: InputPanel(
+            hintText: 'Enter rotation name',
+            errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
+            regex: nameRegex,
+          ),
+        );
       },
     );
   }
@@ -77,55 +88,62 @@ class _DashboardViewState extends State<DashboardView> {
         session: session,
         onProfileTap: () => _showBottomPanel(context)
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(15),
+      body: Padding(
+        padding: const EdgeInsets.all(15),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Expanded(
-                    child: _buildHeading(context, 'Rotations'),
-                  ),
-                  if (session.user.isAdmin) ...<Widget>[
-                    BasicOption(
-                      context: context,
-                      title: 'New',
-                      color: okColor,
-                      icon: Icons.add_box,
-                      onTap: () => _showInputModal(context)
-                    ),
-                    const SizedBox(width: 5),
-                    EditOption(
-                      context: context,
-                      isEditing: _isEditingRotations,
-                      onTap: () => _toggleEditRotations()
+                  _buildHeading(context, 'Rotations'),
+                  const Expanded(child: SizedBox()),
+                  if (session.user.isAdmin) Container(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: <Widget>[
+                        BasicOption(
+                          context: context,
+                          title: 'New',
+                          color: okColor,
+                          icon: Icons.add_box,
+                          onTap: () => _showInputModal(context)
+                        ),
+                        const SizedBox(width: 5),
+                        EditOption(
+                          context: context,
+                          isEditing: _isEditingRotations,
+                          onTap: () => _toggleEditRotations()
+                        )
+                      ]
                     )
-                  ]
+                  )
                 ]
               ),
               SizedBox(
                 width: double.infinity,
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: session.rotations.entries.map<Widget>((entry) {
-                    return _buildRotationOption(context, entry.value);
-                  }).toList()
-                ),
+                child: Consumer<SessionState>(
+                  builder: (context, sessionState, child) => Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      if (sessionState.session != null)
+                        for (final rotationEntry in sessionState.session!.rotations.entries)
+                          _buildRotationOption(context, rotationEntry.value)
+                    ]
+                  )
+                )
               ),
               if (_selectedRotationId != null) ...<Widget>[
                 const SizedBox(height: 35),
                 _buildHeading(context, 'My Progress')
               ]
               else ...<Widget>[
-                const Expanded(child: SizedBox()),
+                const SizedBox(height: 60),
                 _buildNoRotationSelected(context)
               ]
             ]
-          )
+          ),
         )
       )
     );
@@ -153,20 +171,21 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildHeading(BuildContext context, String title) {
     return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: Text(
-            title,
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              color: textColor,
-              fontSize: MediaQuery.of(context).size.width * 0.068
+      children: <Widget>[
+        Row(
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                color: textColor,
+                fontSize: MediaQuery.of(context).size.width * 0.068
+              )
             )
-          )
+          ]
         ),
         const SizedBox(height: 13)
-      ],
+      ]
     );
   }
 
