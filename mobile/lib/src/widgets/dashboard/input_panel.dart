@@ -7,12 +7,14 @@ class InputPanel extends StatefulWidget {
   final String hintText;
   final String errorMessage;
   final RegExp regex;
+  final void Function(String) onConfirm;
 
   const InputPanel({
     super.key,
     required this.hintText,
     required this.errorMessage,
-    required this.regex
+    required this.regex,
+    required this.onConfirm
   });
 
   @override
@@ -22,9 +24,12 @@ class InputPanel extends StatefulWidget {
 class _InputPanelState extends State<InputPanel> {
   bool _isError = true;
 
+  String _input = '';
+
   void _validateInput(String input) {
     setState(() {
       _isError = !widget.regex.hasMatch(input);
+      _input = input;
     });
   }
 
@@ -56,7 +61,10 @@ class _InputPanelState extends State<InputPanel> {
           PanelOption(
             text: 'Confirm',
             icon: Icons.done,
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              widget.onConfirm(_input);
+              Navigator.pop(context);
+            },
             splashColor: okColor,
             isDisabled: _isError,
           ),
@@ -65,9 +73,9 @@ class _InputPanelState extends State<InputPanel> {
             icon: Icons.close,
             onTap: () => Navigator.pop(context),
             splashColor: errorColor
-          ),
-        ],
-      ),
+          )
+        ]
+      )
     );
   }
 }

@@ -47,6 +47,31 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  void _displayError(String errorMessage) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(errorMessage),
+      backgroundColor: errorColor
+    ));
+  }
+
+  Future<void> _attemptCreateRotation(String name) async {
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+    final String? errorMessage = await sessionState.createRotation(name);
+
+    if (errorMessage != null) {
+      _displayError(errorMessage);
+    }
+  }
+
+  Future<void> _attemptDeleteRotation(int rotationId) async {
+    final sessionState = Provider.of<SessionState>(context, listen: false);
+    final String? errorMessage = await sessionState.deleteRotation(rotationId);
+
+    if (errorMessage != null) {
+      _displayError(errorMessage);
+    }
+  }
+
   void _showInputModal(BuildContext context) {
     setState(() {
       _isEditingRotations = false;
@@ -59,12 +84,13 @@ class _DashboardViewState extends State<DashboardView> {
       builder: (BuildContext context) {
         return SingleChildScrollView( // Make the content scrollable
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust padding based on the keyboard
+            bottom: MediaQuery.of(context).viewInsets.bottom
           ),
           child: InputPanel(
             hintText: 'Enter rotation name',
             errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
             regex: nameRegex,
+            onConfirm: _attemptCreateRotation
           ),
         );
       },
@@ -199,7 +225,7 @@ class _DashboardViewState extends State<DashboardView> {
       child: InkWell(
         splashColor: _isEditingRotations ? errorColor : okColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        onTap: () => _selectRotation(rotation.id),
+        onTap: () => _isEditingRotations ? _attemptDeleteRotation(rotation.id) : _selectRotation(rotation.id),
         child: Container(
           padding: const EdgeInsets.all(17),
           child: Row(

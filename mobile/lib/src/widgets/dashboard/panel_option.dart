@@ -22,7 +22,7 @@ class PanelOption extends StatelessWidget {
     final renderColor = isDisabled ? textColor.withOpacity(0.5) : textColor;
 
     return InkWell(
-      splashColor: isDisabled ? textColor.withOpacity(0.3) : splashColor,
+      splashColor: isDisabled ? textColor.withOpacity(0.5) : splashColor,
       borderRadius: BorderRadius.circular(20),
       onTap: () => { if (!isDisabled) onTap() },
       child: ListTile(
