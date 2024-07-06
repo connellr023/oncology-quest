@@ -101,7 +101,7 @@ class _DashboardViewState extends State<DashboardView> {
 
         return Column(
           children: entries.map((entry) {
-            return FullEntry(entry: entry);
+            return FullEntry(level: entry);
           }).toList()
         );
       }

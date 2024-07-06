@@ -17,34 +17,57 @@ class ExpandableSection extends StatefulWidget {
   State<ExpandableSection> createState() => _ExpandableSectionState();
 }
 
-class _ExpandableSectionState extends State<ExpandableSection> {
+class _ExpandableSectionState extends State<ExpandableSection> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
   bool _isExpanded = false;
 
-  void _toggleExpanded() {
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggleExpand() {
     setState(() {
       _isExpanded = !_isExpanded;
+
+      if (_isExpanded) {
+        _controller.forward();
+      }
+      else {
+        _controller.reverse();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    const double borderRadius = 18;
-
     return Material(
       color: widget.backgroundColor,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: InkWell(
-        splashColor: _isExpanded ? textColor.withOpacity(0.3) : themeColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        onTap: () => _toggleExpanded(),
-        child: Column(
-          children: <Widget>[
-            ListTile(
+      child: Column(
+        children: [
+          InkWell(
+            splashColor: _isExpanded ? textColor.withOpacity(0.3) : themeColor,
+            onTap: () => _toggleExpand(),
+            child: ListTile(
               title: Text(
                 widget.title,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: MediaQuery.of(context).size.width * 0.042
+                  fontSize: MediaQuery.of(context).size.width * 0.044
                 ),
               ),
               leading: Icon(
@@ -52,10 +75,14 @@ class _ExpandableSectionState extends State<ExpandableSection> {
                 color: _isExpanded ? themeColor : textColor,
                 size: MediaQuery.of(context).size.width * 0.1
               )
-            ),
-            if (_isExpanded) ...widget.children
-          ]
-        )
+            )
+          ),
+          SizeTransition(
+            axisAlignment: 1.0,
+            sizeFactor: _animation,
+            child: Column(children: widget.children)
+          )
+        ]
       )
     );
   }
