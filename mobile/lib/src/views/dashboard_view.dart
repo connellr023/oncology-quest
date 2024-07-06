@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
@@ -66,7 +67,7 @@ class _DashboardViewState extends State<DashboardView> {
               if (_selectedRotationId != null) ...<Widget>[
                 const SizedBox(height: 35),
                 SectionHeading(context: context, title: 'My Progress'),
-                _buildEntries()
+                _buildEntries(session)
               ]
               else ...<Widget>[
                 const SizedBox(height: 60),
@@ -79,7 +80,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Consumer<EntriesState> _buildEntries() {
+  Consumer<EntriesState> _buildEntries(Session session) {
     return Consumer<EntriesState>(
       builder: (context, entriesState, child) {
         final entries = entriesState.entries[_selectedRotationId];
@@ -101,7 +102,10 @@ class _DashboardViewState extends State<DashboardView> {
 
         return Column(
           children: entries.map((entry) {
-            return FullEntry(level: entry);
+            return FullEntry(
+              level: entry,
+              session: session
+            );
           }).toList()
         );
       }

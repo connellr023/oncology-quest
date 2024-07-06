@@ -7,7 +7,7 @@ import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/display_error.dart';
 import 'package:oncology_quest_mobile/src/utilities/regex.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/edit_option.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/section_heading.dart';
 import 'package:provider/provider.dart';
@@ -123,9 +123,15 @@ class _RotationSelectState extends State<RotationSelect> {
                     onTap: () => _showInputModal(context)
                   ),
                   const SizedBox(width: 5),
-                  EditOption(
+                  TwoVariantOption(
+                    firstColor: textColor,
+                    secondColor: okColor,
+                    firstIcon: Icons.edit,
+                    secondIcon: Icons.done,
+                    firstText: 'Edit',
+                    secondText: 'Done',
                     context: context,
-                    isEditing: _isEditingRotations,
+                    inFirstVariant: !_isEditingRotations,
                     onTap: () => _toggleEditRotations()
                   )
                 ]

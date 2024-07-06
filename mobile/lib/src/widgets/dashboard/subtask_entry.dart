@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
+import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
 
 class SubtaskEntry extends StatefulWidget {
+  final Session session;
   final Subtask subtask;
 
   const SubtaskEntry({
     super.key,
+    required this.session,
     required this.subtask
   });
 
@@ -15,6 +19,14 @@ class SubtaskEntry extends StatefulWidget {
 }
 
 class _SubtaskEntryState extends State<SubtaskEntry> {
+  bool _isComplete = false;
+
+  void _toggleComplete() {
+    setState(() {
+      _isComplete = !_isComplete;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -40,11 +52,19 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
                 fontSize: MediaQuery.of(context).size.width * 0.044
               )
             ),
-            // const Spacer(),
-            // Checkbox(
-            //   value: true,
-            //   onChanged: (bool? value) => {}
-            // )
+            const Spacer(),
+            TwoVariantOption(
+              firstColor: errorColor,
+              secondColor: okColor,
+              firstIcon: Icons.close,
+              secondIcon: Icons.done,
+              firstText: 'Working',
+              secondText: 'Done',
+              context: context,
+              inFirstVariant: !_isComplete,
+              isDisabled: widget.session.user.isAdmin,
+              onTap: () => _toggleComplete()
+            )
           ]
         )
       ),
