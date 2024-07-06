@@ -162,7 +162,7 @@ class _RotationSelectState extends State<RotationSelect> {
         splashColor: _isEditingRotations ? errorColor : isSelected ? textColor : okColor,
         borderRadius: BorderRadius.circular(borderRadius),
         onTap: () => _isEditingRotations ? _attemptDeleteRotation(rotation.id) : _selectRotation(rotation.id),
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.all(17),
           child: Row(
             mainAxisSize: MainAxisSize.min,
