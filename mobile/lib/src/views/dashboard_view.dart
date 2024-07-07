@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/models/session.dart';
-import 'package:oncology_quest_mobile/src/state/entries_state.dart';
+import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/full_entry.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/entries.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/graphic.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/rotation_select.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/section_heading.dart';
@@ -19,14 +18,6 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  int? _selectedRotationId;
-
-  void _updateSelectedRotationId(int? id) {
-    setState(() {
-      _selectedRotationId = id;
-    });
-  }
-
   void _showBottomPanel(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -64,55 +55,29 @@ class _DashboardViewState extends State<DashboardView> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               const SizedBox(height: 15),
-              RotationSelect(
-                session: session,
-                onRotationSelect: _updateSelectedRotationId,
-              ),
-              if (_selectedRotationId != null) ...<Widget>[
-                const SizedBox(height: 35),
-                SectionHeading(context: context, title: session.user.isAdmin ? 'Task Entries' : 'My Progress'),
-                _buildEntries(session)
-              ]
-              else ...<Widget>[
-                const SizedBox(height: 60),
-                _buildNoRotationSelected(context)
-              ]
+              RotationSelect(session: session),
+              Consumer<SelectedRotationState>(
+                builder: (context, selectedRotationState, child) => Column(
+                  children: <Widget>[
+                    if (selectedRotationState.selectedRotationId != null) ...<Widget>[
+                      const SizedBox(height: 35),
+                      SectionHeading(context: context, title: session.user.isAdmin ? 'Task Entries' : 'My Progress'),
+                      Entries(
+                        session: session,
+                        rotationId: selectedRotationState.selectedRotationId!
+                      )
+                    ]
+                    else ...<Widget>[
+                      const SizedBox(height: 60),
+                      _buildNoRotationSelected(context)
+                    ]
+                  ]
+                )
+              )
             ]
           )
         )
       )
-    );
-  }
-
-  Consumer<EntriesState> _buildEntries(Session session) {
-    return Consumer<EntriesState>(
-      builder: (context, entriesState, child) {
-        final entries = entriesState.entries[_selectedRotationId];
-
-        if (entries == null || entries.isEmpty) {
-          return Column(
-            children: <Widget>[
-              const SizedBox(height: 15),
-              Text(
-                'No entries found for this rotation.',
-                style: TextStyle(
-                  color: textColor.withOpacity(0.6),
-                  fontSize: MediaQuery.of(context).size.width * 0.045
-                )
-              )
-            ]
-          );
-        }
-
-        return Column(
-          children: entries.map((entry) {
-            return FullEntry(
-              level: entry,
-              session: session
-            );
-          }).toList()
-        );
-      }
     );
   }
 

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class BasicOption extends StatelessWidget {
+  final Color backgroundColor;
+  final EdgeInsetsGeometry padding;
+  final double borderRadius;
+
   const BasicOption({
     super.key,
     required this.context,
@@ -8,6 +12,9 @@ class BasicOption extends StatelessWidget {
     required this.color,
     required this.icon,
     required this.onTap,
+    this.backgroundColor = Colors.transparent,
+    this.padding = const EdgeInsets.all(7),
+    this.borderRadius = 15
   });
 
   final BuildContext context;
@@ -18,30 +25,35 @@ class BasicOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(15),
-      onTap: onTap,
-      splashColor: color,
-      child: Padding(
-        padding: const EdgeInsets.all(7),
-        child: Row(
-          children: <Widget>[
-            Icon(
-              icon,
-              color: color,
-              size: MediaQuery.of(context).size.width * 0.06
-            ),
-            const SizedBox(width: 5),
-            Text(
-              title,
-              style: TextStyle(
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(borderRadius),
+        onTap: onTap,
+        splashColor: color,
+        child: Padding(
+          padding: padding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                icon,
                 color: color,
-                fontSize: MediaQuery.of(context).size.width * 0.042
+                size: MediaQuery.of(context).size.width * 0.06
+              ),
+              const SizedBox(width: 5),
+              Text(
+                title,
+                style: TextStyle(
+                  color: color,
+                  fontSize: MediaQuery.of(context).size.width * 0.042
+                )
               )
-            )
-          ]
-        ),
-      )
+            ]
+          ),
+        )
+      ),
     );
   }
 }

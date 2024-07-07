@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
+import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +12,8 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => SessionState()),
-        ChangeNotifierProvider(create: (context) => EntriesState())
+        ChangeNotifierProvider(create: (context) => EntriesState()),
+        ChangeNotifierProvider(create: (context) => SelectedRotationState())
       ],
       child: _Initializer()
     )

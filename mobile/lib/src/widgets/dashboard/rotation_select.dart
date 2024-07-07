@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
+import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/display_error.dart';
@@ -14,12 +15,10 @@ import 'package:provider/provider.dart';
 
 class RotationSelect extends StatefulWidget {
   final Session session;
-  final Function(int?) onRotationSelect;
 
   const RotationSelect({
     super.key,
-    required this.session,
-    required this.onRotationSelect
+    required this.session
   });
 
   @override
@@ -28,7 +27,6 @@ class RotationSelect extends StatefulWidget {
 
 class _RotationSelectState extends State<RotationSelect> {
   bool _isEditingRotations = false;
-  int? _selectedRotationId;
 
   Future<void> _attemptFetchEntries(int rotationId) async {
     final entriesState = Provider.of<EntriesState>(context, listen: false);
@@ -41,22 +39,22 @@ class _RotationSelectState extends State<RotationSelect> {
   }
 
   void _selectRotation(int rotationId) {
-    setState(() {
-      _selectedRotationId = _selectedRotationId == rotationId ? null : rotationId;
-      _isEditingRotations = false;
+    final selectedRotationState = Provider.of<SelectedRotationState>(context, listen: false);
 
-      widget.onRotationSelect(_selectedRotationId);
+    setState(() {
+      _isEditingRotations = false;
+      selectedRotationState.selectRotation(selectedRotationState.selectedRotationId == rotationId ? null : rotationId);
     });
 
     _attemptFetchEntries(rotationId);
   }
 
   void _toggleEditRotations() {
+    final selectedRotationState = Provider.of<SelectedRotationState>(context, listen: false);
+
     setState(() {
       _isEditingRotations = !_isEditingRotations;
-      _selectedRotationId = null;
-
-      widget.onRotationSelect(_selectedRotationId);
+      selectedRotationState.selectRotation(null);
     });
   }
 
@@ -158,8 +156,10 @@ class _RotationSelectState extends State<RotationSelect> {
   }
 
   Widget _buildRotationOption(BuildContext context, Rotation rotation) {
+    final selectedRotationId = Provider.of<SelectedRotationState>(context).selectedRotationId;
+
     const double borderRadius = 18;
-    final bool isSelected = _selectedRotationId == rotation.id;
+    final bool isSelected = selectedRotationId == rotation.id;
     
     return Material(
       color: backgroundColor2,
