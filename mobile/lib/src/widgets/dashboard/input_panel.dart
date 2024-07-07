@@ -35,47 +35,52 @@ class _InputPanelState extends State<InputPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          PanelInputOption(
-            hintText: widget.hintText,
-            splashColor: okColor,
-            isError: _isError,
-            onChanged: _validateInput,
-          ),
-          if (_isError) ...<Widget>[
-            const SizedBox(height: 10),
-            Text(
-              widget.errorMessage,
-              style: TextStyle(
-                color: errorColor,
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-              ),
-              textAlign: TextAlign.center
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            PanelInputOption(
+              hintText: widget.hintText,
+              splashColor: okColor,
+              isError: _isError,
+              onChanged: _validateInput,
+            ),
+            if (_isError) ...<Widget>[
+              const SizedBox(height: 10),
+              Text(
+                widget.errorMessage,
+                style: TextStyle(
+                  color: errorColor,
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
+                textAlign: TextAlign.center
+              )
+            ],
+            const SizedBox(height: 20),
+            PanelOption(
+              text: 'Confirm',
+              icon: Icons.done,
+              onTap: () {
+                widget.onConfirm(_input);
+                Navigator.pop(context);
+              },
+              splashColor: okColor,
+              isDisabled: _isError,
+            ),
+            PanelOption(
+              text: 'Cancel',
+              icon: Icons.close,
+              onTap: () => Navigator.pop(context),
+              splashColor: errorColor
             )
-          ],
-          const SizedBox(height: 20),
-          PanelOption(
-            text: 'Confirm',
-            icon: Icons.done,
-            onTap: () {
-              widget.onConfirm(_input);
-              Navigator.pop(context);
-            },
-            splashColor: okColor,
-            isDisabled: _isError,
-          ),
-          PanelOption(
-            text: 'Cancel',
-            icon: Icons.close,
-            onTap: () => Navigator.pop(context),
-            splashColor: errorColor
-          )
-        ]
-      )
+          ]
+        )
+      ),
     );
   }
 }

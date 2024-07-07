@@ -7,3 +7,11 @@ void displayError(BuildContext context, String errorMessage) {
     backgroundColor: errorColor
   ));
 }
+
+Future<void> attemptFallible(BuildContext context, Future<String?> Function() future) async {
+  final String? errorMessage = await future();
+
+  if (errorMessage != null && context.mounted) {
+    displayError(context, errorMessage);
+  }
+}

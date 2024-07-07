@@ -5,7 +5,7 @@ import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/display_error.dart';
+import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/utilities/regex.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
@@ -31,11 +31,8 @@ class _RotationSelectState extends State<RotationSelect> {
   Future<void> _attemptFetchEntries(int rotationId) async {
     final entriesState = Provider.of<EntriesState>(context, listen: false);
     final sessionState = Provider.of<SessionState>(context, listen: false);
-    final String? errorMessage = await entriesState.fetchEntries(sessionState.jwt, rotationId);
-
-    if (errorMessage != null && mounted) {
-      displayError(context, errorMessage);
-    }
+    
+    attemptFallible(context, () => entriesState.fetchEntries(sessionState.jwt!, rotationId));
   }
 
   void _selectRotation(int rotationId) {
@@ -58,22 +55,14 @@ class _RotationSelectState extends State<RotationSelect> {
     });
   }
 
-  Future<void> _attemptCreateRotation(String name) async {
+  void _attemptCreateRotation(String name) async {
     final sessionState = Provider.of<SessionState>(context, listen: false);
-    final String? errorMessage = await sessionState.createRotation(name);
-
-    if (errorMessage != null && mounted) {
-      displayError(context, errorMessage);
-    }
+    attemptFallible(context, () => sessionState.createRotation(name));
   }
 
-  Future<void> _attemptDeleteRotation(int rotationId) async {
+  void _attemptDeleteRotation(int rotationId) {
     final sessionState = Provider.of<SessionState>(context, listen: false);
-    final String? errorMessage = await sessionState.deleteRotation(rotationId);
-
-    if (errorMessage != null && mounted) {
-      displayError(context, errorMessage);
-    }
+    attemptFallible(context, () => sessionState.deleteRotation(rotationId));
   }
 
   void _showInputModal(BuildContext context) {
@@ -86,18 +75,13 @@ class _RotationSelectState extends State<RotationSelect> {
       backgroundColor: backgroundColor2,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom
-          ),
-          child: InputPanel(
-            hintText: 'Enter rotation name',
-            errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
-            regex: nameRegex,
-            onConfirm: _attemptCreateRotation
-          ),
+        return InputPanel(
+          hintText: 'Enter rotation name',
+          errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
+          regex: nameRegex,
+          onConfirm: _attemptCreateRotation
         );
-      },
+      }
     );
   }
 

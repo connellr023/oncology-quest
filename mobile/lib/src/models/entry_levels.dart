@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class EntryLevel<T, U> {
-  final T entry;
-  final List<U> children;
+class EntryLevel<E, C> {
+  final E entry;
+  final List<C> children;
 
   EntryLevel({
     required this.entry,

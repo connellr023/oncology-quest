@@ -59,7 +59,14 @@ migrate_working_dir/
 **/.flutter-plugins-dependencies
 **/.pub-cache/
 **/.pub/
-**/build/
+/mobile/build/
+/mobile/web
+/mobile/ios
+/mobile/android
+/mobile/linux
+/mobile/macos
+/mobile/windows
+/mobile/.gitignore
 
 # Symbolication related
 **/app.*.symbols

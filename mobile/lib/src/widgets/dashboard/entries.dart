@@ -3,20 +3,40 @@ import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
+import 'package:oncology_quest_mobile/src/utilities/regex.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/expandable_entry_layer.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/subtask_entry.dart';
 import 'package:provider/provider.dart';
 
 class Entries extends StatelessWidget {
   final Session session;
+  final String jwt;
   final int rotationId;
 
   const Entries({
     super.key,
     required this.session,
+    required this.jwt,
     required this.rotationId
   });
+
+  void _showCreateEntryModal(BuildContext context, String title, void Function(String) onConfirm) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: backgroundColor2,
+      builder: (BuildContext context) {
+        return InputPanel(
+          hintText: title,
+          errorMessage: '$title title can only contain letters, numbers, and the characters +, -, (, ), and / and be within 1 and 100 characters.',
+          regex: entryTitleRegex,
+          onConfirm: onConfirm
+        );
+      }
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -26,10 +46,7 @@ class Entries extends StatelessWidget {
 
         return Column(
           children: <Widget>[
-            if (entries != null && entries.isNotEmpty) ...entries.map((entry) => FullEntry(
-              level: entry,
-              session: session
-            ))
+            if (entries != null && entries.isNotEmpty) ...entries.map((entry) => _buildFullEntry(context, session, entry))
             else Padding(
               padding: const EdgeInsets.only(
                 top: 20,
@@ -51,7 +68,11 @@ class Entries extends StatelessWidget {
                 color: okColor,
                 icon: Icons.add,
                 padding: const EdgeInsets.all(15),
-                onTap: () => {}
+                onTap: () => _showCreateEntryModal(
+                  context,
+                  'New CBD Phase',
+                  (title) => attemptFallible(context, () => entriesState.createSupertask(jwt, title, rotationId))
+                )
               ),
               const SizedBox(height: 20)
             ]
@@ -60,20 +81,8 @@ class Entries extends StatelessWidget {
       }
     );
   }
-}
 
-class FullEntry extends StatelessWidget {
-  final Session session;
-  final EntryHierarchy level;
-
-  const FullEntry({
-    super.key,
-    required this.session,
-    required this.level
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildFullEntry(BuildContext context, Session session, EntryHierarchy level) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
@@ -113,7 +122,11 @@ class FullEntry extends StatelessWidget {
       icon: Icons.add,
       padding: const EdgeInsets.all(15),
       borderRadius: 0,
-      onTap: () => {}
+      onTap: () => _showCreateEntryModal(
+        context,
+        title,
+        (title) => {}
+      )
     );
   }
 }

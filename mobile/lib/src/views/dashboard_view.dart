@@ -30,9 +30,9 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    final session = Provider.of<SessionState>(context, listen: false).session;
+    final sessionState = Provider.of<SessionState>(context, listen: false);
 
-    if (session == null) {
+    if (sessionState.session == null) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -42,7 +42,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     return Scaffold(
       appBar: DashboardAppBar(
-        session: session,
+        session: sessionState.session!,
         onProfileTap: () => _showBottomPanel(context)
       ),
       body: Padding(
@@ -55,16 +55,17 @@ class _DashboardViewState extends State<DashboardView> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               const SizedBox(height: 15),
-              RotationSelect(session: session),
+              RotationSelect(session: sessionState.session!),
               Consumer<SelectedRotationState>(
                 builder: (context, selectedRotationState, child) => Column(
                   children: <Widget>[
                     if (selectedRotationState.selectedRotationId != null) ...<Widget>[
                       const SizedBox(height: 35),
-                      SectionHeading(context: context, title: session.user.isAdmin ? 'Task Entries' : 'My Progress'),
+                      SectionHeading(context: context, title: sessionState.session!.user.isAdmin ? 'Task Entries' : 'My Progress'),
                       Entries(
-                        session: session,
-                        rotationId: selectedRotationState.selectedRotationId!
+                        rotationId: selectedRotationState.selectedRotationId!,
+                        session: sessionState.session!,
+                        jwt: sessionState.jwt!
                       )
                     ]
                     else ...<Widget>[
