@@ -4,6 +4,7 @@ import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/utilities/regex.dart';
@@ -31,8 +32,22 @@ class _RotationSelectState extends State<RotationSelect> {
   Future<void> _attemptFetchEntries(int rotationId) async {
     final entriesState = Provider.of<EntriesState>(context, listen: false);
     final sessionState = Provider.of<SessionState>(context, listen: false);
+    final userTasksState = Provider.of<UserTasksState>(context, listen: false);
     
-    attemptFallible(context, () => entriesState.fetchEntries(sessionState.jwt!, rotationId));
+    attemptFallible(context, () async {
+      final String? entriesErrorMessage = await entriesState.fetchEntries(sessionState.jwt!, rotationId);
+      final String? userTasksErrorMessage = await userTasksState.fetchOwnUserTasks(sessionState.jwt!, rotationId);
+
+      if (entriesErrorMessage != null) {
+        return entriesErrorMessage;
+      }
+
+      if (userTasksErrorMessage != null) {
+        return userTasksErrorMessage;
+      }
+
+      return null;
+    });
   }
 
   void _selectRotation(int rotationId) {

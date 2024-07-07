@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EntriesState extends ChangeNotifier {
+  /// Memoized entries.
+  /// Map of rotation ID to list of entries.
   final Map<int, List<EntryHierarchy>> _entriesMemo = {};
   Map<int, List<EntryHierarchy>> get entries => _entriesMemo;
 

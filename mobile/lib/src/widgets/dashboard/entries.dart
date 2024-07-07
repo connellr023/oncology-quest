@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/utilities/regex.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/expandable_entry_layer.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/progressable_entry_layer.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/subtask_entry.dart';
 import 'package:provider/provider.dart';
@@ -89,12 +90,14 @@ class Entries extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: ExpandableEntryLayer(
+        child: ProgressableEntryLayer(
+          progress: 0,
           session: session,
           backgroundColor: backgroundColor2,
           title: supertaskLevel.hierarchy.entry.title,
           children: <Widget>[
-            ...supertaskLevel.hierarchy.children.asMap().entries.map((taskEntry) => ExpandableEntryLayer(
+            ...supertaskLevel.hierarchy.children.asMap().entries.map((taskEntry) => ProgressableEntryLayer(
+              progress: 0,
               session: session,
               backgroundColor: backgroundColor3,
               title: taskEntry.value.entry.title,
@@ -102,6 +105,7 @@ class Entries extends StatelessWidget {
                 const SizedBox(height: 15),
                 ...taskEntry.value.children.map((subtask) => SubtaskEntry(
                   session: session,
+                  jwt: jwt,
                   subtask: subtask
                 )),
                 if (session.user.isAdmin) _buildNewEntryButton(
@@ -117,7 +121,7 @@ class Entries extends StatelessWidget {
               (taskTitle) => attemptFallible(context, () => entriesState.createTask(jwt, taskTitle, rotationId, supertaskLevel.hierarchy.entry.id, supertaskIndex))
             )
           ]
-        ),
+        )
       )
     );
   }

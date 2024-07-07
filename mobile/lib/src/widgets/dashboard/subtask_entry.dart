@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
+import 'package:oncology_quest_mobile/src/models/user_task.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
+import 'package:provider/provider.dart';
 
 class SubtaskEntry extends StatefulWidget {
   final Session session;
+  final String jwt;
   final Subtask subtask;
 
   const SubtaskEntry({
     super.key,
     required this.session,
-    required this.subtask
+    required this.jwt,
+    required this.subtask,
   });
 
   @override
@@ -19,16 +25,14 @@ class SubtaskEntry extends StatefulWidget {
 }
 
 class _SubtaskEntryState extends State<SubtaskEntry> {
-  bool _isComplete = false;
-
-  void _toggleComplete() {
-    setState(() {
-      _isComplete = !_isComplete;
-    });
-  }
+  bool _isCompleted = false;
 
   @override
   Widget build(BuildContext context) {
+    final userTasksState = Provider.of<UserTasksState>(context);
+
+    final comment = '';//userTask == null ? '' : userTask!.comment;
+
     return Padding(
       padding: const EdgeInsets.only(
         left: 27,
@@ -63,13 +67,20 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
               firstText: 'Working',
               secondText: 'Done',
               context: context,
-              inFirstVariant: !_isComplete,
+              inFirstVariant: !_isCompleted,
               isDisabled: widget.session.user.isAdmin,
-              onTap: () => _toggleComplete()
+              onTap: () => attemptFallible(context, () => userTasksState.updateUserTask(
+                widget.jwt,
+                widget.subtask.rotationId,
+                widget.subtask.id,
+                widget.session.user.id,
+                !_isCompleted,
+                comment
+              ))
             )
           ]
         )
-      ),
+      )
     );
   }
 }

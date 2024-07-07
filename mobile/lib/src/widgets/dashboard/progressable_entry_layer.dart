@@ -3,14 +3,16 @@ import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 
-class ExpandableEntryLayer extends StatefulWidget {
+class ProgressableEntryLayer extends StatefulWidget {
+  final double progress;
   final Session session;
   final Color backgroundColor;
   final String title;
   final List<Widget> children;
 
-  const ExpandableEntryLayer({
+  const ProgressableEntryLayer({
     super.key,
+    required this.progress,
     required this.session,
     required this.backgroundColor,
     required this.title,
@@ -18,10 +20,10 @@ class ExpandableEntryLayer extends StatefulWidget {
   });
 
   @override
-  State<ExpandableEntryLayer> createState() => _ExpandableEntryLayerState();
+  State<ProgressableEntryLayer> createState() => _ProgressableEntryLayerState();
 }
 
-class _ExpandableEntryLayerState extends State<ExpandableEntryLayer> with SingleTickerProviderStateMixin {
+class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _isExpanded = false;
@@ -126,15 +128,15 @@ class _ExpandableEntryLayerState extends State<ExpandableEntryLayer> with Single
                 height: height,
                 child: LinearProgressIndicator(
                   borderRadius: BorderRadius.circular(height),
-                  value: 0,
+                  value: widget.progress,
                   backgroundColor: textColor.withOpacity(0.3),
                   valueColor: const AlwaysStoppedAnimation(okColor)
-                ),
+                )
               )
             ),
             const SizedBox(width: 10),
             Text(
-              '0%',
+              '${(widget.progress * 100).round()}%',
               style: TextStyle(
                 color: textColor,
                 fontSize: MediaQuery.of(context).size.width * 0.04,
