@@ -25,9 +25,11 @@ class FullEntry extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: ExpandableEntryLayer(
+          session: session,
           backgroundColor: backgroundColor2,
           title: level.hierarchy.entry.title,
           children: level.hierarchy.children.map((taskLevel) => ExpandableEntryLayer(
+            session: session,
             backgroundColor: backgroundColor3,
             title: taskLevel.entry.title,
             children: <Widget>[

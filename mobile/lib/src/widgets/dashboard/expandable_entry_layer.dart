@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 
 class ExpandableEntryLayer extends StatefulWidget {
+  final Session session;
   final Color backgroundColor;
   final String title;
   final List<Widget> children;
 
   const ExpandableEntryLayer({
     super.key,
+    required this.session,
     required this.backgroundColor,
     required this.title,
     required this.children
@@ -65,6 +69,7 @@ class _ExpandableEntryLayerState extends State<ExpandableEntryLayer> with Single
             child: Row(
               children: [
                 Expanded(
+                  flex: 2,
                   child: ListTile(
                     title: Text(
                       widget.title,
@@ -78,6 +83,19 @@ class _ExpandableEntryLayerState extends State<ExpandableEntryLayer> with Single
                       color: _isExpanded ? themeColor : textColor,
                       size: MediaQuery.of(context).size.width * 0.1
                     )
+                  ),
+                ),
+                if (widget.session.user.isAdmin) Padding(
+                  padding: const EdgeInsets.only(
+                    right: 10,
+                    left: 10
+                  ),
+                  child: BasicOption(
+                    context: context,
+                    title: 'Edit',
+                    color: textColor,
+                    icon: Icons.edit,
+                    onTap: () => {}
                   ),
                 ),
                 _buildProgressIndicator() 
@@ -99,10 +117,11 @@ class _ExpandableEntryLayerState extends State<ExpandableEntryLayer> with Single
 
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.only(right: 15),
+        padding: const EdgeInsets.only(right: 17),
         child: Row(
           children: [
             Expanded(
+              flex: 1,
               child: SizedBox(
                 height: height,
                 child: LinearProgressIndicator(
@@ -113,12 +132,13 @@ class _ExpandableEntryLayerState extends State<ExpandableEntryLayer> with Single
                 ),
               )
             ),
-            const SizedBox(width: 13),
+            const SizedBox(width: 10),
             Text(
               '0%',
               style: TextStyle(
                 color: textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.04
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                fontStyle: FontStyle.italic
               )
             )
           ]

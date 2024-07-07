@@ -45,14 +45,16 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
               size: MediaQuery.of(context).size.width * 0.045
             ),
             const SizedBox(width: 12),
-            Text(
-              widget.subtask.title,
-              style: TextStyle(
-                color: textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.044
+            Expanded(
+              child: Text(
+                widget.subtask.title,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: MediaQuery.of(context).size.width * 0.044
+                )
               )
             ),
-            const Spacer(),
+            const SizedBox(width: 10),
             TwoVariantOption(
               firstColor: errorColor,
               secondColor: okColor,

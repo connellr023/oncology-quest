@@ -55,18 +55,22 @@ class _DashboardViewState extends State<DashboardView> {
         onProfileTap: () => _showBottomPanel(context)
       ),
       body: Padding(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.only(
+          left: 15,
+          right: 15
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              const SizedBox(height: 15),
               RotationSelect(
                 session: session,
                 onRotationSelect: _updateSelectedRotationId,
               ),
               if (_selectedRotationId != null) ...<Widget>[
                 const SizedBox(height: 35),
-                SectionHeading(context: context, title: 'My Progress'),
+                SectionHeading(context: context, title: session.user.isAdmin ? 'Task Entries' : 'My Progress'),
                 _buildEntries(session)
               ]
               else ...<Widget>[
