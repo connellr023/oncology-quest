@@ -46,7 +46,9 @@ class Entries extends StatelessWidget {
 
         return Column(
           children: <Widget>[
-            if (entries != null && entries.isNotEmpty) ...entries.map((entry) => _buildFullEntry(context, session, entry))
+            if (entries != null && entries.isNotEmpty) ...entries.asMap().entries.map(
+              (entry) => _buildFullEntry(context, session, entriesState, entry.key, entry.value)
+            )
             else Padding(
               padding: const EdgeInsets.only(
                 top: 20,
@@ -58,7 +60,7 @@ class Entries extends StatelessWidget {
                   color: textColor.withOpacity(0.6),
                   fontSize: MediaQuery.of(context).size.width * 0.045
                 )
-              ),
+              )
             ),
             if (session.user.isAdmin) ...<Widget>[
               BasicOption(
@@ -82,7 +84,7 @@ class Entries extends StatelessWidget {
     );
   }
 
-  Widget _buildFullEntry(BuildContext context, Session session, EntryHierarchy level) {
+  Widget _buildFullEntry(BuildContext context, Session session, EntriesState entriesState, int supertaskIndex, EntryHierarchy supertaskLevel) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
@@ -90,31 +92,37 @@ class Entries extends StatelessWidget {
         child: ExpandableEntryLayer(
           session: session,
           backgroundColor: backgroundColor2,
-          title: level.hierarchy.entry.title,
+          title: supertaskLevel.hierarchy.entry.title,
           children: <Widget>[
-            ...level.hierarchy.children.map((taskLevel) => ExpandableEntryLayer(
+            ...supertaskLevel.hierarchy.children.asMap().entries.map((taskEntry) => ExpandableEntryLayer(
               session: session,
               backgroundColor: backgroundColor3,
-              title: taskLevel.entry.title,
+              title: taskEntry.value.entry.title,
               children: <Widget>[
                 const SizedBox(height: 15),
-                ...taskLevel.children.map((subtask) => SubtaskEntry(
+                ...taskEntry.value.children.map((subtask) => SubtaskEntry(
                   session: session,
                   subtask: subtask
                 )),
-                if (session.user.isAdmin)
-                  _buildNewEntryButton(context, 'New Clinical Experience')
+                if (session.user.isAdmin) _buildNewEntryButton(
+                  context,
+                  'New Clinical Experience',
+                  (subtaskTitle) => attemptFallible(context, () => entriesState.createSubtask(jwt, subtaskTitle, rotationId, taskEntry.value.entry.id, supertaskIndex, taskEntry.key))
+                )
               ]
             )),
-            if (session.user.isAdmin)
-              _buildNewEntryButton(context, 'New EPA')
+            if (session.user.isAdmin) _buildNewEntryButton(
+              context,
+              'New EPA',
+              (taskTitle) => attemptFallible(context, () => entriesState.createTask(jwt, taskTitle, rotationId, supertaskLevel.hierarchy.entry.id, supertaskIndex))
+            )
           ]
         ),
       )
     );
   }
 
-  Widget _buildNewEntryButton(BuildContext context, String title) {
+  Widget _buildNewEntryButton(BuildContext context, String title, void Function(String) onConfirm) {
     return BasicOption(
       context: context,
       title: title,
@@ -125,7 +133,7 @@ class Entries extends StatelessWidget {
       onTap: () => _showCreateEntryModal(
         context,
         title,
-        (title) => {}
+        onConfirm
       )
     );
   }

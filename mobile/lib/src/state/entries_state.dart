@@ -84,4 +84,89 @@ class EntriesState extends ChangeNotifier {
 
     return null;
   }
+
+  Future<String?> createTask(String jwt, String title, int rotationId, int supertaskId, int supertaskIndex) async {
+    try {
+      final response = await http.post(apiEndpoint.resolve('/api/entries/tasks/create'),
+        headers: {
+          'content-type': 'application/json',
+          'authorization': jwt
+        },
+        body: json.encode({
+          'title': title,
+          'rotationId': rotationId,
+          'parentId': supertaskId
+        })
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+        final taskId = int.parse(body['entryId'].toString());
+
+        _entriesMemo[rotationId]![supertaskIndex].hierarchy.children.add(
+          EntryLevel(
+            entry: Task(
+              id: taskId,
+              title: title,
+              rotationId: rotationId,
+              supertaskId: supertaskId
+            ),
+            children: []
+          )
+        );
+
+        await cacheAndMemoizeEntries(rotationId, _entriesMemo[rotationId]!);
+        notifyListeners();
+      }
+      else {
+        return 'Failed to create task. Please try again later.';
+      }
+    }
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
+
+    return null;
+  }
+
+  Future<String?> createSubtask(String jwt, String title, int rotationId, int taskId, int supertaskIndex, int taskIndex) async {
+    try {
+      final response = await http.post(apiEndpoint.resolve('/api/entries/subtasks/create'),
+        headers: {
+          'content-type': 'application/json',
+          'authorization': jwt
+        },
+        body: json.encode({
+          'title': title,
+          'rotationId': rotationId,
+          'parentId': taskId
+        })
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+        final subtaskId = int.parse(body['entryId'].toString());
+
+        _entriesMemo[rotationId]![supertaskIndex].hierarchy.children[taskIndex].children.add(
+          Subtask(
+            id: subtaskId,
+            title: title,
+            rotationId: rotationId,
+            taskId: taskId
+          )
+        );
+
+        await cacheAndMemoizeEntries(rotationId, _entriesMemo[rotationId]!);
+        notifyListeners();
+      }
+      else {
+        return 'Failed to create subtask. Please try again later.';
+      }
+    }
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
+
+    return null;
+  }
 }

@@ -60,13 +60,11 @@ migrate_working_dir/
 **/.pub-cache/
 **/.pub/
 /mobile/build/
-/mobile/web
-/mobile/ios
-/mobile/android
 /mobile/linux
 /mobile/macos
 /mobile/windows
 /mobile/.gitignore
+/mobile/README.md
 
 # Symbolication related
 **/app.*.symbols
