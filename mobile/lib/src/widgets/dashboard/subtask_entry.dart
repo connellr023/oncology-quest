@@ -17,7 +17,7 @@ class SubtaskEntry extends StatefulWidget {
     super.key,
     required this.session,
     required this.jwt,
-    required this.subtask,
+    required this.subtask
   });
 
   @override
@@ -25,48 +25,19 @@ class SubtaskEntry extends StatefulWidget {
 }
 
 class _SubtaskEntryState extends State<SubtaskEntry> {
-  late UserTasksState _userTasksStateNotifier;
-  UserTask? get _userTask => _userTasksStateNotifier.userTasks[widget.subtask.rotationId]?.structure[widget.subtask.id];
-
   late bool _isCompleted;
   late String _comment;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _userTasksStateNotifier = Provider.of<UserTasksState>(context, listen: false);
-    _userTasksStateNotifier.addListener(_onUserTasksUpdated);
-  }
-
-  @override
-  void dispose() {
-    _userTasksStateNotifier.removeListener(_onUserTasksUpdated);
-    super.dispose();
-  }
-
-  void _onUserTasksUpdated() {
-    if (_userTask != null) {
-      if (_userTask!.isCompleted == _isCompleted && _userTask!.comment == _comment) {
-        return;
-      }
-
-      setState(() {
-        _isCompleted = _userTask!.isCompleted;
-        _comment = _userTask!.comment;
-      });
-    }
-  }
+  UserTasksState get _userTasksState => Provider.of<UserTasksState>(context, listen: false);
+  UserTask? get _userTask => _userTasksState.userTasks[widget.subtask.rotationId]?.structure[widget.subtask.id];
 
   Future<void> _optimisticUpdateUserTask(bool isCompleted, String comment) async {
-    final userTasksState = Provider.of<UserTasksState>(context, listen: false);
-
     setState(() {
       _isCompleted = isCompleted;
       _comment = comment;
     });
 
-    final success = await attemptFallible(context, () => userTasksState.updateUserTask(
+    final success = await attemptFallible(context, () => _userTasksState.updateUserTask(
       widget.jwt,
       widget.subtask.rotationId,
       widget.subtask.id,
@@ -80,7 +51,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
         _isCompleted = _userTask?.isCompleted ?? false;
         _comment = _userTask?.comment ?? '';
       });
-    }
+    } 
   }
 
   @override

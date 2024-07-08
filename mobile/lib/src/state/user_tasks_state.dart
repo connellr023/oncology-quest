@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/user_task.dart';
 import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
 
@@ -10,6 +11,10 @@ class UserTasksState extends ChangeNotifier {
   /// Map of rotation ID to map of subtask ID to user task.
   final Map<int, UserTaskStructure> _userTasksMemo = {};
   Map<int, UserTaskStructure> get userTasks => _userTasksMemo;
+
+  /// Memoized progress.
+  /// Map of super task ID to progress memo.
+  final Map<int, _SupertaskProgressMemo> _progressMemo = {};
 
   Future<String?> fetchOwnUserTasks(String jwt, int rotationId) async {
     try {
@@ -101,5 +106,22 @@ class UserTasksState extends ChangeNotifier {
     }
 
     return null;
+  }
+}
+
+class _SupertaskProgressMemo {
+  double supertaskProgress = 0.0;
+
+  /// Map of task ID to progress.
+  Map<int, double> tasksProgress = {};
+
+  double calculateTaskProgress(UserTaskStructure userTaskStructure, List<Subtask> subtasks) {
+    // TODO
+    return 0.0;
+  }
+
+  double calculateSupertaskProgress(UserTaskStructure userTaskStructure, List<Task> tasks) {
+    // TODO
+    return 0.0;
   }
 }

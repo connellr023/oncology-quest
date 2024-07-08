@@ -10,7 +10,7 @@ class ProgressableEntryLayer extends StatefulWidget {
   final Color backgroundColor;
   final String title;
   final List<Widget> children;
-  final double Function() calculateProgress;
+  final double Function(UserTasksState) calculateProgress;
 
   const ProgressableEntryLayer({
     super.key,
@@ -88,7 +88,7 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
                       color: _isExpanded ? themeColor : textColor,
                       size: MediaQuery.of(context).size.width * 0.1
                     )
-                  ),
+                  )
                 ),
                 if (widget.session.user.isAdmin) Padding(
                   padding: const EdgeInsets.only(
@@ -125,7 +125,7 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
         padding: const EdgeInsets.only(right: 17),
         child: Consumer<UserTasksState>(
           builder: (context, userTasksState, child) {
-            final progress = widget.calculateProgress();
+            final progress = widget.calculateProgress(userTasksState);
 
             return Row(
               children: [

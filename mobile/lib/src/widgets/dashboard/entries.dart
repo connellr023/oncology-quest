@@ -90,13 +90,13 @@ class Entries extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: ProgressableEntryLayer(
-          calculateProgress: () => 0.0,
+          calculateProgress: (state) => 0.0,
           session: session,
           backgroundColor: backgroundColor2,
           title: supertaskLevel.hierarchy.entry.title,
           children: <Widget>[
             ...supertaskLevel.hierarchy.children.asMap().entries.map((taskEntry) => ProgressableEntryLayer(
-              calculateProgress: () => 0.0,
+              calculateProgress: (state) => 0.0,
               session: session,
               backgroundColor: backgroundColor3,
               title: taskEntry.value.entry.title,
