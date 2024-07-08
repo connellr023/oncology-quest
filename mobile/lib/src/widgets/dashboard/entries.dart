@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
-import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/utilities/regex.dart';
