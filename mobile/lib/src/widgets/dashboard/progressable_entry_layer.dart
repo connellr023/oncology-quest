@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
+import 'package:provider/provider.dart';
 
 class ProgressableEntryLayer extends StatefulWidget {
-  final double progress;
   final Session session;
   final Color backgroundColor;
   final String title;
   final List<Widget> children;
+  final double Function() calculateProgress;
 
   const ProgressableEntryLayer({
     super.key,
-    required this.progress,
     required this.session,
     required this.backgroundColor,
     required this.title,
-    required this.children
+    required this.children,
+    required this.calculateProgress
   });
 
   @override
@@ -26,6 +28,7 @@ class ProgressableEntryLayer extends StatefulWidget {
 class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+
   bool _isExpanded = false;
 
   @override
@@ -120,30 +123,36 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(right: 17),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 1,
-              child: SizedBox(
-                height: height,
-                child: LinearProgressIndicator(
-                  borderRadius: BorderRadius.circular(height),
-                  value: widget.progress,
-                  backgroundColor: textColor.withOpacity(0.3),
-                  valueColor: const AlwaysStoppedAnimation(okColor)
+        child: Consumer<UserTasksState>(
+          builder: (context, userTasksState, child) {
+            final progress = widget.calculateProgress();
+
+            return Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    height: height,
+                    child: LinearProgressIndicator(
+                      borderRadius: BorderRadius.circular(height),
+                      value: progress,
+                      backgroundColor: textColor.withOpacity(0.3),
+                      valueColor: const AlwaysStoppedAnimation(okColor)
+                    )
+                  )
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${(progress * 100).round()}%',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: MediaQuery.of(context).size.width * 0.04,
+                    fontStyle: FontStyle.italic
+                  )
                 )
-              )
-            ),
-            const SizedBox(width: 10),
-            Text(
-              '${(widget.progress * 100).round()}%',
-              style: TextStyle(
-                color: textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-                fontStyle: FontStyle.italic
-              )
-            )
-          ]
+              ]
+            );
+          }
         )
       )
     );

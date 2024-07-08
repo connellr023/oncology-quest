@@ -58,12 +58,35 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
     }
   }
 
+  Future<void> _optimisticUpdateUserTask(bool isCompleted, String comment) async {
+    final userTasksState = Provider.of<UserTasksState>(context, listen: false);
+
+    setState(() {
+      _isCompleted = isCompleted;
+      _comment = comment;
+    });
+
+    final success = await attemptFallible(context, () => userTasksState.updateUserTask(
+      widget.jwt,
+      widget.subtask.rotationId,
+      widget.subtask.id,
+      widget.session.user.id,
+      _isCompleted,
+      _comment
+    ));
+
+    if (!success) {
+      setState(() {
+        _isCompleted = _userTask?.isCompleted ?? false;
+        _comment = _userTask?.comment ?? '';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _isCompleted = _userTask?.isCompleted ?? false;
     _comment = _userTask?.comment ?? '';
-
-    final userTasksState = Provider.of<UserTasksState>(context);
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -101,14 +124,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
               context: context,
               inFirstVariant: !_isCompleted,
               isDisabled: widget.session.user.isAdmin,
-              onTap: () => attemptFallible(context, () => userTasksState.updateUserTask(
-                widget.jwt,
-                widget.subtask.rotationId,
-                widget.subtask.id,
-                widget.session.user.id,
-                !_isCompleted,
-                _comment
-              ))
+              onTap: () => _optimisticUpdateUserTask(!_isCompleted, _comment)
             )
           ]
         )
