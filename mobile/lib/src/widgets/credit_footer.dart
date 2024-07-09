@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class CreditFooter extends StatelessWidget {
   const CreditFooter({super.key});
@@ -7,7 +8,7 @@ class CreditFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -15,7 +16,7 @@ class CreditFooter extends StatelessWidget {
             '\u00A9 Connell Reffo 2024',
             style: TextStyle(
               color: Theme.of(context).textTheme.bodySmall!.color,
-              fontSize: MediaQuery.of(context).size.width * 0.035
+              fontSize: standardFontSize(context)
             ),
           ),
         ],
