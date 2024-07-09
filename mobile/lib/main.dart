@@ -44,8 +44,8 @@ class _Initializer extends StatelessWidget {
           home: Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
-            ),
-          ),
+            )
+          )
         );
       }
     );

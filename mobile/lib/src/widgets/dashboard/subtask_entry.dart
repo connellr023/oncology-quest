@@ -12,34 +12,70 @@ class SubtaskEntry extends StatefulWidget {
   final Session session;
   final String jwt;
   final Subtask subtask;
+  final int supertaskId;
 
   const SubtaskEntry({
     super.key,
     required this.session,
     required this.jwt,
-    required this.subtask
+    required this.subtask,
+    required this.supertaskId
   });
 
   @override
   State<SubtaskEntry> createState() => _SubtaskEntryState();
 }
 
+
 class _SubtaskEntryState extends State<SubtaskEntry> {
+  late UserTasksState _userTasksStateNotifier;
+  UserTask? get _userTask => _userTasksStateNotifier.userTasks[widget.subtask.rotationId]?.structure[widget.subtask.id];
+
   late bool _isCompleted;
   late String _comment;
 
-  UserTasksState get _userTasksState => Provider.of<UserTasksState>(context, listen: false);
-  UserTask? get _userTask => _userTasksState.userTasks[widget.subtask.rotationId]?.structure[widget.subtask.id];
+  @override
+  void initState() {
+    super.initState();
+
+    _userTasksStateNotifier = Provider.of<UserTasksState>(context, listen: false);
+    _userTasksStateNotifier.addListener(_onUserTasksUpdated);
+
+    _isCompleted = _userTask?.isCompleted ?? false;
+    _comment = _userTask?.comment ?? '';
+  }
+
+  @override
+  void dispose() {
+    _userTasksStateNotifier.removeListener(_onUserTasksUpdated);
+    super.dispose();
+  }
+
+  void _onUserTasksUpdated() {
+    if (_userTask != null) {
+      if (_userTask!.isCompleted == _isCompleted && _userTask!.comment == _comment) {
+        return;
+      }
+
+      setState(() {
+        _isCompleted = _userTask!.isCompleted;
+        _comment = _userTask!.comment;
+      });
+    }
+  }
 
   Future<void> _optimisticUpdateUserTask(bool isCompleted, String comment) async {
+    final userTasksState = Provider.of<UserTasksState>(context, listen: false);
+
     setState(() {
       _isCompleted = isCompleted;
       _comment = comment;
     });
 
-    final success = await attemptFallible(context, () => _userTasksState.updateUserTask(
+    final success = await attemptFallible(context, () => userTasksState.updateUserTask(
       widget.jwt,
       widget.subtask.rotationId,
+      widget.supertaskId,
       widget.subtask.id,
       widget.session.user.id,
       _isCompleted,
@@ -51,14 +87,11 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
         _isCompleted = _userTask?.isCompleted ?? false;
         _comment = _userTask?.comment ?? '';
       });
-    } 
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    _isCompleted = _userTask?.isCompleted ?? false;
-    _comment = _userTask?.comment ?? '';
-
     return Padding(
       padding: const EdgeInsets.only(
         left: 27,

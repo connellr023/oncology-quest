@@ -47,7 +47,7 @@ class Entries extends StatelessWidget {
         return Column(
           children: <Widget>[
             if (entries != null && entries.isNotEmpty) ...entries.asMap().entries.map(
-              (entry) => _buildFullEntry(context, session, entriesState, entry.key, entry.value)
+              (entry) => _buildFullEntry(context, entriesState, entry.value, entry.key)
             )
             else Padding(
               padding: const EdgeInsets.only(
@@ -84,19 +84,19 @@ class Entries extends StatelessWidget {
     );
   }
 
-  Widget _buildFullEntry(BuildContext context, Session session, EntriesState entriesState, int supertaskIndex, EntryHierarchy supertaskLevel) {
+  Widget _buildFullEntry(BuildContext context, EntriesState entriesState, EntryHierarchy supertaskLevel, int supertaskIndex) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: ProgressableEntryLayer(
-          calculateProgress: (state) => 0.0,
+          calculateProgress: (state) => state.getProgressMemo(rotationId, supertaskLevel.hierarchy.entry.id).calculateSupertaskProgressWithMemo(state, supertaskLevel.hierarchy.children),
           session: session,
           backgroundColor: backgroundColor2,
           title: supertaskLevel.hierarchy.entry.title,
           children: <Widget>[
             ...supertaskLevel.hierarchy.children.asMap().entries.map((taskEntry) => ProgressableEntryLayer(
-              calculateProgress: (state) => 0.0,
+              calculateProgress: (state) => state.getProgressMemo(rotationId, supertaskLevel.hierarchy.entry.id).calculateTaskProgressWithMemo(state, taskEntry.value.entry.id, taskEntry.value.children.length),
               session: session,
               backgroundColor: backgroundColor3,
               title: taskEntry.value.entry.title,
@@ -105,7 +105,8 @@ class Entries extends StatelessWidget {
                 ...taskEntry.value.children.map((subtask) => SubtaskEntry(
                   session: session,
                   jwt: jwt,
-                  subtask: subtask
+                  subtask: subtask,
+                  supertaskId: supertaskLevel.hierarchy.entry.id,
                 )),
                 if (session.user.isAdmin) _buildNewEntryButton(
                   context,
