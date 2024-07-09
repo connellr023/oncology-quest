@@ -90,13 +90,13 @@ class Entries extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: ProgressableEntryLayer(
-          calculateProgress: (state) => state.getProgressMemo(rotationId, supertaskLevel.hierarchy.entry.id).calculateSupertaskProgressWithMemo(state, supertaskLevel.hierarchy.children),
+          calculateProgress: (state) => state.calculateSupertaskProgress(rotationId, supertaskLevel),
           session: session,
           backgroundColor: backgroundColor2,
           title: supertaskLevel.hierarchy.entry.title,
           children: <Widget>[
             ...supertaskLevel.hierarchy.children.asMap().entries.map((taskEntry) => ProgressableEntryLayer(
-              calculateProgress: (state) => state.getProgressMemo(rotationId, supertaskLevel.hierarchy.entry.id).calculateTaskProgressWithMemo(state, taskEntry.value.entry.id, taskEntry.value.children.length),
+              calculateProgress: (state) => state.calculateTaskProgress(rotationId, supertaskLevel.hierarchy.entry.id, taskEntry.value.entry.id, taskEntry.value.children),
               session: session,
               backgroundColor: backgroundColor3,
               title: taskEntry.value.entry.title,
@@ -107,6 +107,7 @@ class Entries extends StatelessWidget {
                   jwt: jwt,
                   subtask: subtask,
                   supertaskId: supertaskLevel.hierarchy.entry.id,
+                  taskId: taskEntry.value.entry.id
                 )),
                 if (session.user.isAdmin) _buildNewEntryButton(
                   context,

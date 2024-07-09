@@ -13,13 +13,15 @@ class SubtaskEntry extends StatefulWidget {
   final String jwt;
   final Subtask subtask;
   final int supertaskId;
+  final int taskId;
 
   const SubtaskEntry({
     super.key,
     required this.session,
     required this.jwt,
     required this.subtask,
-    required this.supertaskId
+    required this.supertaskId,
+    required this.taskId
   });
 
   @override
@@ -76,6 +78,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
       widget.jwt,
       widget.subtask.rotationId,
       widget.supertaskId,
+      widget.taskId,
       widget.subtask.id,
       widget.session.user.id,
       _isCompleted,

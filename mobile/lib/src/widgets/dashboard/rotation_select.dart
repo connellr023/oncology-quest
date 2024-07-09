@@ -35,16 +35,18 @@ class _RotationSelectState extends State<RotationSelect> {
     final userTasksState = Provider.of<UserTasksState>(context, listen: false);
     
     attemptFallible(context, () async {
-      final String? entriesErrorMessage = await entriesState.fetchEntries(sessionState.jwt!, rotationId);
+      // User tasks must be loaded first to ensure that the user's progress is displayed correctly.
       final String? userTasksErrorMessage = await userTasksState.fetchOwnUserTasks(sessionState.jwt!, rotationId);
-
-      if (entriesErrorMessage != null) {
-        return entriesErrorMessage;
-      }
 
       if (userTasksErrorMessage != null) {
         return userTasksErrorMessage;
       }
+
+      final String? entriesErrorMessage = await entriesState.fetchEntries(sessionState.jwt!, rotationId);
+
+      if (entriesErrorMessage != null) {
+        return entriesErrorMessage;
+      } 
 
       return null;
     });

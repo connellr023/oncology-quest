@@ -26,8 +26,8 @@ class ProgressableEntryLayer extends StatefulWidget {
 }
 
 class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late AnimationController _slideController;
+  late Animation<double> _slideAnimation;
 
   bool _isExpanded = false;
 
@@ -35,31 +35,32 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
+    _slideController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
 
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
+    _slideAnimation = CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.fastOutSlowIn
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 
   void _toggleExpand() {
-    setState(() {
-      _isExpanded = !_isExpanded;
+    _isExpanded = !_isExpanded;
 
-      if (_isExpanded) {
-        _controller.forward();
-      }
-      else {
-        _controller.reverse();
-      }
-    });
+    if (_isExpanded) {
+      _slideController.forward();
+    }
+    else {
+      _slideController.reverse();
+    }
   }
 
   @override
@@ -68,48 +69,50 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
       color: widget.backgroundColor,
       child: Column(
         children: [
-          InkWell(
-            splashColor: _isExpanded ? textColor.withOpacity(0.3) : themeColor,
-            onTap: () => _toggleExpand(),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: ListTile(
-                    title: Text(
-                      widget.title,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: MediaQuery.of(context).size.width * 0.044
+          StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) => InkWell(
+              splashColor: _isExpanded ? textColor.withOpacity(0.3) : themeColor,
+              onTap: () => setState(() => _toggleExpand()),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: ListTile(
+                      title: Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: MediaQuery.of(context).size.width * 0.044
+                        )
+                      ),
+                      leading: Icon(
+                        _isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                        color: _isExpanded ? themeColor : textColor,
+                        size: MediaQuery.of(context).size.width * 0.1
                       )
-                    ),
-                    leading: Icon(
-                      _isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                      color: _isExpanded ? themeColor : textColor,
-                      size: MediaQuery.of(context).size.width * 0.1
                     )
-                  )
-                ),
-                if (widget.session.user.isAdmin) Padding(
-                  padding: const EdgeInsets.only(
-                    right: 10,
-                    left: 10
                   ),
-                  child: BasicOption(
-                    context: context,
-                    title: 'Edit',
-                    color: textColor,
-                    icon: Icons.edit,
-                    onTap: () => {}
+                  if (widget.session.user.isAdmin) Padding(
+                    padding: const EdgeInsets.only(
+                      right: 10,
+                      left: 10
+                    ),
+                    child: BasicOption(
+                      context: context,
+                      title: 'Edit',
+                      color: textColor,
+                      icon: Icons.edit,
+                      onTap: () => {}
+                    ),
                   ),
-                ),
-                _buildProgressIndicator() 
-              ],
+                  _buildProgressIndicator() 
+                ]
+              )
             )
           ),
           SizeTransition(
             axisAlignment: 1.0,
-            sizeFactor: _animation,
+            sizeFactor: _slideAnimation,
             child: Column(children: widget.children)
           )
         ]
@@ -118,42 +121,111 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
   }
 
   Widget _buildProgressIndicator() {
-    const double height = 8;
-
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(right: 17),
         child: Consumer<UserTasksState>(
           builder: (context, userTasksState, child) {
             final progress = widget.calculateProgress(userTasksState);
-
-            return Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: SizedBox(
-                    height: height,
-                    child: LinearProgressIndicator(
-                      borderRadius: BorderRadius.circular(height),
-                      value: progress,
-                      backgroundColor: textColor.withOpacity(0.3),
-                      valueColor: const AlwaysStoppedAnimation(okColor)
-                    )
-                  )
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  '${(progress * 100).round()}%',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: MediaQuery.of(context).size.width * 0.04,
-                    fontStyle: FontStyle.italic
-                  )
-                )
-              ]
-            );
+            return _ProgressIndicator(progress: progress);
           }
         )
+      )
+    );
+  }
+}
+
+class _ProgressIndicator extends StatefulWidget {
+  final double progress;
+
+  const _ProgressIndicator({required this.progress});
+
+  @override
+  State<_ProgressIndicator> createState() => _ProgressIndicatorState();
+}
+
+class _ProgressIndicatorState extends State<_ProgressIndicator> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _progressAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this
+    );
+
+    _progressAnimation = Tween<double>(
+      begin: widget.progress,
+      end: widget.progress
+    ).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(_ProgressIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.progress != widget.progress) {
+      _progressAnimation = Tween<double>(
+        begin: oldWidget.progress,
+        end: widget.progress
+      ).animate(CurvedAnimation(
+        parent: _controller,
+        curve: Curves.fastOutSlowIn
+      ));
+
+      _controller
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const double height = 8;
+
+    return AnimatedBuilder(
+      animation: _progressAnimation,
+      builder: (context, child) => Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: SizedBox(
+              height: height,
+              child: LinearProgressIndicator(
+                borderRadius: BorderRadius.circular(height),
+                value: _progressAnimation.value,
+                backgroundColor: textColor.withOpacity(0.3),
+                valueColor: AlwaysStoppedAnimation(
+                  _progressAnimation.value < 0.5
+                    ? Color.lerp(errorColor, warningColor, _progressAnimation.value * 2)
+                    : Color.lerp(warningColor, okColor, (_progressAnimation.value - 0.5) * 2),
+                )
+              )
+            )
+          ),
+          const SizedBox(width: 7),
+          SizedBox(
+            width: 45,
+            child: Text(
+              '${(_progressAnimation.value * 100).round()}%',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: textColor,
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                fontStyle: FontStyle.italic
+              )
+            ),
+          )
+        ]
       )
     );
   }

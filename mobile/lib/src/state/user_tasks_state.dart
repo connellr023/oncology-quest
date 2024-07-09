@@ -14,14 +14,77 @@ class UserTasksState extends ChangeNotifier {
 
   /// Memoized progress.
   /// Map of supertask ID to progress memo.
-  final Map<int, ProgressMemo> _progressMemo = {};
+  final Map<int, _ProgressMemo> _progressMemo = {};
 
-  ProgressMemo getProgressMemo(int rotationId, int supertaskId) {
-    if (_progressMemo[supertaskId] == null) {
-      _progressMemo[supertaskId] = ProgressMemo(rotationId: rotationId);
+  void invalidateTaskProgressMemo(int supertaskId, int taskId) {
+    if (_progressMemo[supertaskId]?.tasksProgress[taskId] != null) {
+      _progressMemo[supertaskId]!.supertaskProgress = null;
+      _progressMemo[supertaskId]!.tasksProgress.remove(taskId);
+    }
+  }
+
+  double calculateTaskProgress(int rotationId, int supertaskId, int taskId, List<Subtask> subtasks) {
+    final taskProgressMemo = _progressMemo[supertaskId]?.tasksProgress[taskId];
+
+    if (taskProgressMemo != null) {
+      return taskProgressMemo;
     }
 
-    return _progressMemo[supertaskId]!;
+    if (_progressMemo[supertaskId] == null) {
+      _progressMemo[supertaskId] = _ProgressMemo();
+    }
+
+    if (subtasks.isEmpty) {
+      _progressMemo[supertaskId]!.tasksProgress[taskId] = 0.0;
+      return 0.0;
+    }
+
+    int completedSubtasks = 0;
+
+    for (final subtask in subtasks) {
+      final correspondingUserTask = _userTasksMemo[rotationId]?.structure[subtask.id];
+
+      if (correspondingUserTask != null && correspondingUserTask.isCompleted) {
+        completedSubtasks++;
+      }
+    }
+
+    final progress = completedSubtasks / subtasks.length;
+    _progressMemo[supertaskId]!.tasksProgress[taskId] = progress;
+
+    return progress;
+  }
+
+  double calculateSupertaskProgress(int rotationId, EntryHierarchy supertaskLevel) {
+    final supertaskProgressMemo = _progressMemo[supertaskLevel.hierarchy.entry.id]?.supertaskProgress;
+
+    if (supertaskProgressMemo != null) {
+      return supertaskProgressMemo;
+    }
+
+    if (_progressMemo[supertaskLevel.hierarchy.entry.id] == null) {
+      _progressMemo[supertaskLevel.hierarchy.entry.id] = _ProgressMemo();
+    }
+    
+    if (supertaskLevel.hierarchy.children.isEmpty) {
+      _progressMemo[supertaskLevel.hierarchy.entry.id]!.supertaskProgress = 0.0;
+      return 0.0;
+    }
+
+    int totalTasks = 0;
+    double totalProgress = 0.0;
+
+    for (final taskLevel in supertaskLevel.hierarchy.children) {
+      final progress = calculateTaskProgress(rotationId, supertaskLevel.hierarchy.entry.id, taskLevel.entry.id, taskLevel.children);
+
+      totalProgress += progress;
+      totalTasks++;
+    }
+
+    final progress = totalProgress / totalTasks;
+    _progressMemo[supertaskLevel.hierarchy.entry.id]!.supertaskProgress = progress;
+
+    return progress;
   }
 
   Future<String?> fetchOwnUserTasks(String jwt, int rotationId) async {
@@ -38,7 +101,6 @@ class UserTasksState extends ChangeNotifier {
         final userTasks = UserTaskStructure.deserialize(body);
 
         _userTasksMemo[rotationId] = userTasks;
-        notifyListeners();
       }
       else {
         return 'Failed to fetch user tasks. Please try again later.';
@@ -48,10 +110,11 @@ class UserTasksState extends ChangeNotifier {
       return 'Failed to connect to server. Please try again later.';
     }
 
+    notifyListeners();
     return null;
   }
 
-  Future<String?> updateUserTask(String jwt, int rotationId, int supertaskId, int subtaskId, int userId, bool isCompleted, String comment) async {
+  Future<String?> updateUserTask(String jwt, int rotationId, int supertaskId, int taskId, int subtaskId, int userId, bool isCompleted, String comment) async {
     try {
       if (_userTasksMemo[rotationId]?.structure[subtaskId] == null) {
         final response = await http.post(apiEndpoint.resolve('/api/tasks/create'),
@@ -78,15 +141,6 @@ class UserTasksState extends ChangeNotifier {
             isCompleted: isCompleted,
             comment: comment
           );
-
-          
-          final progressMemo = _progressMemo[supertaskId];
-
-          if (progressMemo != null) {
-            progressMemo.invalidate(subtaskId);
-          }
-
-          notifyListeners();
         }
         else {
           return 'Failed to create user task. Please try again later.';
@@ -108,8 +162,6 @@ class UserTasksState extends ChangeNotifier {
         if (response.statusCode == 200) {
           _userTasksMemo[rotationId]!.structure[subtaskId]!.isCompleted = isCompleted;
           _userTasksMemo[rotationId]!.structure[subtaskId]!.comment = comment;
-
-          notifyListeners();
         }
         else {
           return 'Failed to update user task. Please try again later.';
@@ -120,81 +172,17 @@ class UserTasksState extends ChangeNotifier {
       return 'Failed to connect to server. Please try again later.';
     }
 
+    invalidateTaskProgressMemo(supertaskId, taskId);
+    notifyListeners();
+
     return null;
   }
 }
 
-class ProgressMemo {
+class _ProgressMemo {
   /// Map of task ID to progress.
-  final Map<int, double> _tasksProgress = {};
+  final Map<int, double> tasksProgress;
+  double? supertaskProgress;
 
-  double? _supertaskProgress;
-  int rotationId;
-
-  ProgressMemo({required this.rotationId});
-
-  void invalidate(int taskId) {
-    _tasksProgress.remove(taskId);
-    _supertaskProgress = null;
-  }
-
-  double calculateTaskProgressWithMemo(UserTasksState state, int taskId, int subtaskCount) {
-    final userTaskStructure = state.userTasks[rotationId];
-    
-    if (userTaskStructure == null || subtaskCount == 0) {
-      return 0.0;
-    }
-
-    final memoizedProgress = _tasksProgress[taskId];
-    
-    if (memoizedProgress != null) {
-      return memoizedProgress;
-    }
-    
-    int completedSubtasks = 0;
-
-    for (final userTask in userTaskStructure.structure.values) {
-      if (userTask.isCompleted) {
-        completedSubtasks++;
-      }
-    }
-
-    double progress = completedSubtasks / subtaskCount;
-
-    if (progress.isNaN || progress.isInfinite) {
-      progress = 0.0;
-    }
-
-    _tasksProgress[taskId] = progress;
-
-    return progress;
-  }
-
-  double calculateSupertaskProgressWithMemo(UserTasksState state, List<EntryLevel<Task, Subtask>> tasks) {
-    if (_supertaskProgress != null) {
-      return _supertaskProgress!;
-    }
-    
-    int totalTasks = 0;
-    double totalProgress = 0.0;
-
-    if (tasks.isEmpty) {
-      return 0.0;
-    }
-
-    for (final task in tasks) {
-      final progress = calculateTaskProgressWithMemo(state, task.entry.id, task.children.length);
-
-      totalProgress += progress;
-      totalTasks++;
-    }
-
-    _supertaskProgress = totalProgress / totalTasks;
-
-    if (_supertaskProgress!.isNaN || _supertaskProgress!.isInfinite) {
-      _supertaskProgress = 0.0;
-    }
-
-    return _supertaskProgress!;
-  }
+  _ProgressMemo() : tasksProgress = {};
 }
