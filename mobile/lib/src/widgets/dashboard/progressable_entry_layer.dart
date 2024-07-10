@@ -86,6 +86,7 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
                     Expanded(
                       flex: 2,
                       child: ListTile(
+                        mouseCursor: MouseCursor.uncontrolled,
                         title: Text(
                           widget.title,
                           style: TextStyle(
@@ -115,7 +116,7 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
                     ),
                     _buildProgressIndicator() 
                   ]
-                ),
+                )
               )
             )
           ),

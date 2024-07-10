@@ -80,7 +80,7 @@ impl FromRequest for JwtUserClaim {
 
         ready(Err(ErrorUnauthorized("No authorization header found.")))
     }
-    
+
     fn extract(req: &HttpRequest) -> Self::Future {
         Self::from_request(req, &mut Payload::None)
     }

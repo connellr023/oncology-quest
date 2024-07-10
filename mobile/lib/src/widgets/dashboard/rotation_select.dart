@@ -139,19 +139,18 @@ class _RotationSelectState extends State<RotationSelect> {
             )
           ]
         ),
-        SizedBox(
-          width: double.infinity,
+        Center(
           child: Consumer<SessionState>(
             builder: (context, sessionState, child) => Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: [
-                if (sessionState.session != null)
-                  for (final rotationEntry in sessionState.session!.rotations.entries)
-                    _buildRotationOption(context, rotationEntry.value)
+              children: <Widget>[
+                for (final rotationEntry in sessionState.session!.rotations.entries)
+                  _buildRotationOption(context, rotationEntry.value
+                )
               ]
             )
-          )
+          ),
         )
       ]
     );

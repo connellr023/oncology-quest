@@ -54,7 +54,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
               )
             )
           ]
-        ),
+        )
       )
     );
   }

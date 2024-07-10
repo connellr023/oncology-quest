@@ -22,11 +22,11 @@ double graphicWidth(BuildContext context) {
 }
 
 double headingFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.04).clamp(20, 30);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(25, 32);
 }
 
 double uiFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.04).clamp(19, 29);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(22, 29);
 }
 
 double uiWidth(BuildContext context) {
