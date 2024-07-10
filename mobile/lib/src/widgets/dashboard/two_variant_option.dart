@@ -31,7 +31,7 @@ class TwoVariantOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = standardFontSize(context);
     final color = inFirstVariant ? firstColor : secondColor;
-    const double disabledOpacity = 0.8;
+    const double disabledOpacity = 0.6;
 
     return InkWell(
       borderRadius: BorderRadius.circular(15),

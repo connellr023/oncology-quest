@@ -146,11 +146,10 @@ class _RotationSelectState extends State<RotationSelect> {
               runSpacing: 10,
               children: <Widget>[
                 for (final rotationEntry in sessionState.session!.rotations.entries)
-                  _buildRotationOption(context, rotationEntry.value
-                )
+                  _buildRotationOption(context, rotationEntry.value)
               ]
             )
-          ),
+          )
         )
       ]
     );

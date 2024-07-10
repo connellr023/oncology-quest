@@ -5,15 +5,17 @@ import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 class PanelInputOption extends StatelessWidget {
   final bool isError;
   final String hintText;
-  final Color splashColor;
+  final String? defaultValue;
+  final Color backgroundColor;
   final Function(String) onChanged;
 
   const PanelInputOption({
     super.key,
     this.isError = false,
     required this.hintText,
-    required this.onChanged,
-    required this.splashColor,
+    this.defaultValue,
+    this.backgroundColor = backgroundColor3,
+    required this.onChanged
   });
 
   @override
@@ -24,7 +26,8 @@ class PanelInputOption extends StatelessWidget {
       borderSide: isError ? const BorderSide(color: errorColor, width: 3) : BorderSide.none
     );
 
-    return TextField(
+    return TextFormField(
+      initialValue: defaultValue,
       style: TextStyle(
         color: isError ? errorColor : textColor,
         fontSize: size
@@ -38,7 +41,7 @@ class PanelInputOption extends StatelessWidget {
         enabledBorder: outlinedBorder,
         focusedBorder: outlinedBorder,
         filled: true,
-        fillColor: backgroundColor3
+        fillColor: backgroundColor
       ),
       onChanged: onChanged
     );

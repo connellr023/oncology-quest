@@ -47,9 +47,8 @@ class _InputPanelState extends State<InputPanel> {
           children: <Widget>[
             PanelInputOption(
               hintText: widget.hintText,
-              splashColor: okColor,
               isError: _isError,
-              onChanged: _validateInput,
+              onChanged: _validateInput
             ),
             if (_isError) ...<Widget>[
               const SizedBox(height: 10),
