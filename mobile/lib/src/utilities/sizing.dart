@@ -5,6 +5,10 @@ bool inMobileViewport(BuildContext context) {
   return MediaQuery.of(context).size.width < 600 || !kIsWeb;
 }
 
+double uiElementVerticalSpacing(BuildContext context) {
+  return (MediaQuery.of(context).size.height * 0.02).clamp(12, 27);
+}
+
 double homeViewMainLogoSize(BuildContext context) {
   return (MediaQuery.of(context).size.width * 0.35).clamp(100, 200);
 }
@@ -13,12 +17,16 @@ double secondaryViewMainLogoSize(BuildContext context) {
   return (MediaQuery.of(context).size.width * 0.3).clamp(80, 170);
 }
 
+double graphicWidth(BuildContext context) {
+  return (MediaQuery.of(context).size.width * 0.65).clamp(200, 400);
+}
+
 double headingFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.35).clamp(25, 32);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(20, 30);
 }
 
 double uiFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.4).clamp(16, 28);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(19, 29);
 }
 
 double uiWidth(BuildContext context) {
@@ -34,5 +42,5 @@ double secondaryUiButtonHeight(BuildContext context) {
 }
 
 double standardFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.4).clamp(14, 22);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(18, 23);
 }

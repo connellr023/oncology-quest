@@ -22,7 +22,7 @@ class HomeView extends StatelessWidget {
 
     double buttonWidth = uiWidth(context);
     double buttonHeight = mainUiButtonHeight(context);
-    const double buttonSpacing = 25;
+    double buttonSpacing = uiElementVerticalSpacing(context);
 
     return Scaffold(
       body: Center(
@@ -55,14 +55,14 @@ class HomeView extends StatelessWidget {
               text: 'Login',
               onPressed: () => Navigator.pushNamed(context, '/login')
             ),
-            const SizedBox(height: buttonSpacing),
+            SizedBox(height: buttonSpacing),
             ThematicElevatedButton(
               width: buttonWidth,
               height: buttonHeight,
               text: 'Register',
               onPressed: () => {}
             ),
-            const SizedBox(height: buttonSpacing),
+            SizedBox(height: buttonSpacing),
             ThematicElevatedButton(
               width: buttonWidth,
               height: buttonHeight,

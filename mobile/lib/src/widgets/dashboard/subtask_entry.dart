@@ -5,6 +5,7 @@ import 'package:oncology_quest_mobile/src/models/user_task.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
 import 'package:provider/provider.dart';
 
@@ -95,6 +96,8 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
 
   @override
   Widget build(BuildContext context) {
+    final size = standardFontSize(context);
+
     return Padding(
       padding: const EdgeInsets.only(
         left: 27,
@@ -108,7 +111,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
             Icon(
               Icons.circle,
               color: themeColor,
-              size: MediaQuery.of(context).size.width * 0.045
+              size: size
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -116,7 +119,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
                 widget.subtask.title,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: MediaQuery.of(context).size.width * 0.044
+                  fontSize: size
                 )
               )
             ),

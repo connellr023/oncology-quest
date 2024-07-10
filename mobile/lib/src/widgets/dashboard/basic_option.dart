@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class BasicOption extends StatelessWidget {
   final Color backgroundColor;
@@ -25,6 +26,8 @@ class BasicOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = standardFontSize(context);
+
     return Material(
       color: backgroundColor,
       borderRadius: BorderRadius.circular(borderRadius),
@@ -40,14 +43,14 @@ class BasicOption extends StatelessWidget {
               Icon(
                 icon,
                 color: color,
-                size: MediaQuery.of(context).size.width * 0.06
+                size: size
               ),
               const SizedBox(width: 5),
               Text(
                 title,
                 style: TextStyle(
                   color: color,
-                  fontSize: MediaQuery.of(context).size.width * 0.042
+                  fontSize: size
                 )
               )
             ]

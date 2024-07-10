@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/buttons.dart';
 import 'package:provider/provider.dart';
@@ -24,8 +24,6 @@ class _LoginViewState extends State<LoginView> {
   bool _isPasswordValid = false;
   bool _isLoading = false;
 
-  String? _loginError;
-
   void _updateUsernameError(bool isError) {
     setState(() {
       _isUsernameValid = !isError;
@@ -38,12 +36,6 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
-  void _updateLoginError(String? error) {
-    setState(() {
-      _loginError = error;
-    });
-  }
-
   void _updateLoading(bool isLoading) {
     setState(() {
       _isLoading = isLoading;
@@ -52,15 +44,13 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _attemptLogin(String username, String plaintextPassword) async {
     _updateLoading(true);
-    String? error = await Provider.of<SessionState>(context, listen: false).login(username, plaintextPassword);
+    final success = await attemptFallible(context, () => Provider.of<SessionState>(context, listen: false).login(username, plaintextPassword));
     _updateLoading(false);
 
-    if (error == null && mounted) {
+    if (success && mounted) {
       Navigator.pushNamed(context, '/dashboard');
       return;
     }
-    
-    _updateLoginError(error);
   }
 
   @override
@@ -68,6 +58,7 @@ class _LoginViewState extends State<LoginView> {
     double buttonWidth = uiWidth(context);
     double buttonHeight = secondaryUiButtonHeight(context);
     double backButtonSize = standardFontSize(context);
+    double spacing = uiElementVerticalSpacing(context);
 
     bool isMobile = inMobileViewport(context);
 
@@ -118,7 +109,7 @@ class _LoginViewState extends State<LoginView> {
                 onErrorChanged: _updateUsernameError,
                 onChanged: (String input) => _username = input
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: spacing),
               FormTextField(
                 obscureText: true,
                 labelText: 'Password',
@@ -127,15 +118,7 @@ class _LoginViewState extends State<LoginView> {
                 onErrorChanged: _updatePasswordError,
                 onChanged: (String input) => _password = input
               ),
-              const SizedBox(height: 20),
-              if (_loginError != null) Text(
-                _loginError!,
-                style: TextStyle(
-                  color: errorColor,
-                  fontSize: MediaQuery.of(context).size.width * 0.04
-                )
-              ),
-              const SizedBox(height: 15),
+              SizedBox(height: spacing),
               ThematicElevatedButton(
                 width: buttonWidth,
                 height: buttonHeight,
@@ -145,7 +128,7 @@ class _LoginViewState extends State<LoginView> {
                 onPressed: () => _attemptLogin(_username, _password)
               ),
               if (!isMobile) ...<Widget>[
-                const SizedBox(height: 20),
+                SizedBox(height: spacing),
                 MonotoneElevatedButton(
                   width: buttonWidth,
                   height: buttonHeight,

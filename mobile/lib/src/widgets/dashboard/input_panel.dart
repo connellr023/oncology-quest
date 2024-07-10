@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/panel_input_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/panel_option.dart';
 
@@ -56,7 +57,7 @@ class _InputPanelState extends State<InputPanel> {
                 widget.errorMessage,
                 style: TextStyle(
                   color: errorColor,
-                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                  fontSize: standardFontSize(context)
                 ),
                 textAlign: TextAlign.center
               )

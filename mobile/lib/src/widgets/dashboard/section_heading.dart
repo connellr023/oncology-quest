@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class SectionHeading extends StatelessWidget {
   const SectionHeading({
@@ -22,7 +23,7 @@ class SectionHeading extends StatelessWidget {
               textAlign: TextAlign.left,
               style: TextStyle(
                 color: textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.068
+                fontSize: headingFontSize(context)
               )
             )
           ]

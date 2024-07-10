@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/entries.dart';
@@ -85,7 +86,7 @@ class _DashboardViewState extends State<DashboardView> {
   Widget _buildNoRotationSelected(BuildContext context) {
     return Column(
       children: <Widget>[
-        Graphic(imageWidth: MediaQuery.of(context).size.width * 0.65),
+        Graphic(imageWidth: graphicWidth(context)),
         Padding(
           padding: const EdgeInsets.all(20),
           child: Text(
@@ -93,7 +94,7 @@ class _DashboardViewState extends State<DashboardView> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: textColor,
-              fontSize: MediaQuery.of(context).size.width * 0.043
+              fontSize: uiFontSize(context)
             )
           )
         ),

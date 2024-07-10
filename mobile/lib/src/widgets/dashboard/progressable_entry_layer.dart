@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:provider/provider.dart';
 
@@ -65,6 +66,8 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
 
   @override
   Widget build(BuildContext context) {
+    final size = standardFontSize(context);
+
     return Material(
       color: widget.backgroundColor,
       child: Column(
@@ -73,40 +76,46 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
             builder: (BuildContext context, StateSetter setState) => InkWell(
               splashColor: _isExpanded ? textColor.withOpacity(0.3) : themeColor,
               onTap: () => setState(() => _toggleExpand()),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: ListTile(
-                      title: Text(
-                        widget.title,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: MediaQuery.of(context).size.width * 0.044
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 7,
+                  bottom: 7
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: ListTile(
+                        title: Text(
+                          widget.title,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: size
+                          )
+                        ),
+                        leading: Icon(
+                          _isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                          color: _isExpanded ? themeColor : textColor,
+                          size: size * 2.3
                         )
-                      ),
-                      leading: Icon(
-                        _isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                        color: _isExpanded ? themeColor : textColor,
-                        size: MediaQuery.of(context).size.width * 0.1
                       )
-                    )
-                  ),
-                  if (widget.session.user.isAdmin) Padding(
-                    padding: const EdgeInsets.only(
-                      right: 10,
-                      left: 10
                     ),
-                    child: BasicOption(
-                      context: context,
-                      title: 'Edit',
-                      color: textColor,
-                      icon: Icons.edit,
-                      onTap: () => {}
+                    if (widget.session.user.isAdmin) Padding(
+                      padding: const EdgeInsets.only(
+                        right: 10,
+                        left: 10
+                      ),
+                      child: BasicOption(
+                        context: context,
+                        title: 'Edit',
+                        color: textColor,
+                        icon: Icons.edit,
+                        onTap: () => {}
+                      ),
                     ),
-                  ),
-                  _buildProgressIndicator() 
-                ]
+                    _buildProgressIndicator() 
+                  ]
+                ),
               )
             )
           ),
@@ -190,6 +199,7 @@ class _ProgressIndicatorState extends State<_ProgressIndicator> with SingleTicke
 
   @override
   Widget build(BuildContext context) {
+    double size = standardFontSize(context);
     const double height = 8;
 
     return AnimatedBuilder(
@@ -212,15 +222,15 @@ class _ProgressIndicatorState extends State<_ProgressIndicator> with SingleTicke
               )
             )
           ),
-          const SizedBox(width: 7),
+          SizedBox(width: size * 0.3),
           SizedBox(
-            width: 45,
+            width: size * 3,
             child: Text(
               '${(_progressAnimation.value * 100).round()}%',
               textAlign: TextAlign.right,
               style: TextStyle(
                 color: textColor,
-                fontSize: MediaQuery.of(context).size.width * 0.04,
+                fontSize: size,
                 fontStyle: FontStyle.italic
               )
             ),

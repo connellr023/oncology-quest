@@ -8,6 +8,7 @@ import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
 import 'package:oncology_quest_mobile/src/utilities/regex.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
@@ -162,6 +163,8 @@ class _RotationSelectState extends State<RotationSelect> {
     const double borderRadius = 18;
     final bool isSelected = selectedRotationId == rotation.id;
     
+    double size = standardFontSize(context);
+
     return Material(
       color: backgroundColor2,
       borderRadius: BorderRadius.circular(borderRadius),
@@ -178,7 +181,7 @@ class _RotationSelectState extends State<RotationSelect> {
                 Icon(
                   Icons.check,
                   color: okColor,
-                  size: MediaQuery.of(context).size.width * 0.06
+                  size: size
                 ),
                 const SizedBox(width: 10)
               ]
@@ -186,7 +189,7 @@ class _RotationSelectState extends State<RotationSelect> {
                 Icon(
                   Icons.delete_forever,
                   color: errorColor,
-                  size: MediaQuery.of(context).size.width * 0.06
+                  size: size
                 ),
                 const SizedBox(width: 10)
               ],
@@ -194,7 +197,7 @@ class _RotationSelectState extends State<RotationSelect> {
                 rotation.name,
                 style: TextStyle(
                   color: isSelected ? okColor : _isEditingRotations ? errorColor : textColor,
-                  fontSize: MediaQuery.of(context).size.width * 0.042
+                  fontSize: size
                 )
               )
             ]

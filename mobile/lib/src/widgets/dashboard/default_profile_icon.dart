@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 class DefaultProfileIcon extends StatelessWidget {
+  final double size;
   final String name;
   final Function()? onTap;
 
   const DefaultProfileIcon({
     super.key,
+    required this.size,
     required this.name,
     required this.onTap
   });
@@ -29,11 +31,11 @@ class DefaultProfileIcon extends StatelessWidget {
             initials,
             style: TextStyle(
               color: Theme.of(context).textTheme.bodyLarge!.color,
-              fontSize: MediaQuery.of(context).size.width * 0.04,
-            ),
-          ),
-        ),
-      ),
+              fontSize: size
+            )
+          )
+        )
+      )
     );
   }
 }

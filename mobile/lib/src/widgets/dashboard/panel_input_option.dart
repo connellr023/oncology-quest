@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class PanelInputOption extends StatelessWidget {
   final bool isError;
@@ -17,6 +18,7 @@ class PanelInputOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = standardFontSize(context);
     final outlinedBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(20),
       borderSide: isError ? const BorderSide(color: errorColor, width: 3) : BorderSide.none
@@ -24,12 +26,14 @@ class PanelInputOption extends StatelessWidget {
 
     return TextField(
       style: TextStyle(
-        color: isError ? errorColor : textColor
+        color: isError ? errorColor : textColor,
+        fontSize: size
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
-          color: textColor.withOpacity(0.5)
+          color: textColor.withOpacity(0.5),
+          fontSize: size
         ),
         enabledBorder: outlinedBorder,
         focusedBorder: outlinedBorder,

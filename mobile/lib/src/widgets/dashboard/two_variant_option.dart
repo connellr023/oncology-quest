@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class TwoVariantOption extends StatelessWidget {
   final Color firstColor;
@@ -28,6 +29,7 @@ class TwoVariantOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = standardFontSize(context);
     final color = inFirstVariant ? firstColor : secondColor;
     const double disabledOpacity = 0.8;
 
@@ -42,14 +44,14 @@ class TwoVariantOption extends StatelessWidget {
             Icon(
               inFirstVariant ? firstIcon : secondIcon,
               color: isDisabled ? color.withOpacity(disabledOpacity) : color,
-              size: MediaQuery.of(context).size.width * 0.06
+              size: size
             ),
             const SizedBox(width: 5),
             Text(
               inFirstVariant ? firstText : secondText,
               style: TextStyle(
                 color: isDisabled ? color.withOpacity(disabledOpacity) : color,
-                fontSize: MediaQuery.of(context).size.width * 0.042
+                fontSize: size
               )
             )
           ]

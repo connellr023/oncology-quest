@@ -30,8 +30,8 @@ class PanelOption extends StatelessWidget {
         title: Text(
           text,
           style: TextStyle(color: renderColor),
-        ),
-      ),
+        )
+      )
     );
   }
 }
