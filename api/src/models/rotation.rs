@@ -2,7 +2,7 @@ use super::prelude::*;
 use crate::utilities::parsable::Name;
 use std::{collections::HashMap, marker::PhantomData};
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct RotationModel {
     id: i32,
@@ -10,7 +10,7 @@ struct RotationModel {
     last_updated: DateTime<Utc>
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct Rotation<S> {
     #[serde(flatten)]
     model: RotationModel,
@@ -42,7 +42,7 @@ impl Rotation<Unsynced> {
             _marker: PhantomData
         }
     }
-    
+
     pub async fn insert(self, pool: &PgPool) -> Result<Rotation<Synced>> {
         let row = sqlx::query!(
             r#"
@@ -89,22 +89,22 @@ impl Rotation<Synced> {
     }
 
     /// Checks if a cache is valid by comparing the cache timestamp with the last updated timestamp of the rotation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `pool` - A reference to the database connection pool.
     /// * `rotation_id` - The ID of the rotation.
     /// * `cache_timestamp` - The timestamp of the cache to be checked.
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// A boolean wrapped in a Result indicating whether the cache is valid. There will be an error if a database error occurs.
-    pub async fn is_cache_valid(pool: &PgPool, rotation_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> Result<bool> {        
+    pub async fn is_cache_valid(pool: &PgPool, rotation_id: i32, cache_timestamp: Option<DateTime<Utc>>) -> Result<bool> {
         let cache_timestamp = match cache_timestamp {
             Some(cache_timestamp) => cache_timestamp,
             None => return Ok(false)
         };
-        
+
         let last_updated = sqlx::query!(
             r#"
             SELECT last_updated FROM rotations WHERE id = $1;
@@ -120,6 +120,8 @@ impl Rotation<Synced> {
     }
 
     pub async fn fetch_all_as_map(pool: &PgPool) -> Result<HashMap<i32, Self>> {
+        println!("Fetching all rotations as map.");
+
         let rotations = sqlx::query_as!(
             RotationModel,
             r#"

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
@@ -12,6 +13,79 @@ class SessionState extends ChangeNotifier {
 
   String? _jwt;
   String? get jwt => _jwt;
+
+  Future<String?> createRotation(String name) async {
+    if (_jwt == null || session == null) {
+      return 'You must be logged in to create a rotation.';
+    }
+
+    try {
+      final response = await http.post(apiEndpoint.resolve('/api/rotations/create'),
+        headers: {
+          'content-type': 'application/json',
+          'authorization': _jwt!
+        },
+        body: jsonEncode({
+          'name': name
+        })
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+
+        final int rotationId = int.parse(body['rotationId'].toString());
+        final DateTime lastUpdated = DateTime.parse(body['lastUpdated'].toString());
+
+        final rotation = Rotation(
+          id: rotationId,
+          name: name,
+          lastUpdated: lastUpdated
+        );
+
+        session!.rotations.putIfAbsent(rotationId, () => rotation);
+        notifyListeners();
+      }
+      else {
+        return 'Failed to create rotation. Please try again later.';
+      }
+    }
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
+
+    return null;
+  }
+
+  Future<String?> deleteRotation(int rotationId) async {
+    if (_jwt == null || session == null) {
+      return 'You must be logged in to delete a rotation.';
+    }
+
+    try {
+      final response = await http.delete(apiEndpoint.resolve('/api/rotations/delete'),
+        headers: {
+          'content-type': 'application/json',
+          'authorization': _jwt!
+        },
+        body: jsonEncode({
+          'rotationId': rotationId
+        })
+      );
+
+      if (response.statusCode == 200) {
+        session!.rotations.remove(rotationId);
+        notifyListeners();
+      }
+      else {
+        return 'Failed to delete rotation. Please try again later.';
+      }
+    }
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
+
+    return null;
+  }
 
   Future<String?> fetchSession() async {
     if (_jwt == null) {
@@ -48,6 +122,8 @@ class SessionState extends ChangeNotifier {
   }
 
   Future<String?> login(String username, String plaintextPassword) async {
+    // TODO: Clear user tasks and entries memoized data.
+
     try {
       final response = await http.post(apiEndpoint.resolve('/api/users/login'),
         headers: {

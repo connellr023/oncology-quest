@@ -1,5 +1,5 @@
 # $\text{Oncology Quest}$
-> A fullstack web application that aids Medical Oncology Trainees and rotation directors.
+> A progressive web app architected to aid Medical Oncology trainees and rotation directors. 
 
 > [!IMPORTANT]
 > This app is only meant for trainees. If that is not you, then *please* do **not** try using this service as it will place unnecassary load on the webserver and illegitimate accounts will be removed.
@@ -37,7 +37,7 @@
  - Straightforward user registration and authentication
  - Management dashboard for administrative users
  - Responsive and dark themed front end user interface
- - Client side caching and memoization of frequently accessed data to reduce server load
+ - Caching and memoization of frequently accessed data to reduce server and database load
 
 <br />
 
@@ -48,7 +48,6 @@
  - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
  - **REGEX** patterns that filter every user input to prevent **XSS** attacks as well as **SQL** injection but the backend already uses prepared statements anyway
  - Writing the backend in **Rust** is a security feature in itself
-
 
 <br />
 

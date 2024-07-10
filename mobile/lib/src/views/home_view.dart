@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/credit_footer.dart';
-import '../widgets/thematic_elevated_button.dart';
+import '../widgets/buttons.dart';
 import '../widgets/main_logo.dart';
 
 class HomeView extends StatelessWidget {
@@ -19,14 +20,16 @@ class HomeView extends StatelessWidget {
       }
     });
 
-    const double buttonSpacing = 17;
+    double buttonWidth = uiWidth(context);
+    double buttonHeight = mainUiButtonHeight(context);
+    double buttonSpacing = uiElementVerticalSpacing(context);
 
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            MainLogo(imageSize: MediaQuery.of(context).size.width * 0.35),
+            MainLogo(imageSize: homeViewMainLogoSize(context)),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.all(18.0),
@@ -35,28 +38,34 @@ class HomeView extends StatelessWidget {
                 text: TextSpan(
                   text: 'Get started with ',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.06,
+                    fontSize: headingFontSize(context),
                     color: Theme.of(context).textTheme.bodySmall!.color,
                   ),
                   children: const <TextSpan>[
                     TextSpan(text: 'Oncology Quest', style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(text: ' below')
-                  ],
-                ),
-              ),
+                  ]
+                )
+              )
             ),
             const SizedBox(height: 50),
             ThematicElevatedButton(
+              width: buttonWidth,
+              height: buttonHeight,
               text: 'Login',
               onPressed: () => Navigator.pushNamed(context, '/login')
             ),
-            const SizedBox(height: buttonSpacing),
+            SizedBox(height: buttonSpacing),
             ThematicElevatedButton(
+              width: buttonWidth,
+              height: buttonHeight,
               text: 'Register',
               onPressed: () => {}
             ),
-            const SizedBox(height: buttonSpacing),
+            SizedBox(height: buttonSpacing),
             ThematicElevatedButton(
+              width: buttonWidth,
+              height: buttonHeight,
               text: 'Reset Password',
               onPressed: () => {}
             )

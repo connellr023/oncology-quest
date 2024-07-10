@@ -7,6 +7,7 @@ mod utilities;
 mod middlewares;
 
 use actix_web::{web::Data, App, HttpServer};
+use utilities::memory_cache::MemoryCache;
 use std::{io::Result, env::var};
 use dotenv::dotenv;
 use services::config::config;
@@ -46,6 +47,7 @@ async fn main() -> Result<()> {
         // Initialize the application.
         App::new()
             .app_data(Data::new(pool.clone()))
+            .app_data(Data::new(MemoryCache::new()))
             .configure(config)
             .wrap(cors())
     })

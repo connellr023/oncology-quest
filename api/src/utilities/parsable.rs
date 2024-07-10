@@ -13,7 +13,7 @@ macro_rules! parsable {
                 item.0
             }
         }
-        
+
         impl From<String> for $t {
             fn from(s: String) -> Self {
                 $t(s)

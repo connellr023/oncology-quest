@@ -14,13 +14,14 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        dividerColor: Colors.transparent,
         primaryColor: themeColor,
         scaffoldBackgroundColor: backgroundColor1,
         textTheme: GoogleFonts.interTextTheme(
           Theme.of(context).textTheme.copyWith(
             bodySmall: const TextStyle(color: textColor),
             bodyMedium: const TextStyle(color: textColor),
-            bodyLarge: const TextStyle(color: textColor) 
+            bodyLarge: const TextStyle(color: textColor)
           )
         )
       ),
@@ -28,16 +29,16 @@ class App extends StatelessWidget {
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate
       ],
       supportedLocales: const [
-        Locale('en', 'CA'),
+        Locale('en', 'CA')
       ],
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeView(),
         '/login': (context) => const LoginView(),
-        '/dashboard': (context) => const DashboardView(),
+        '/dashboard': (context) => const DashboardView()
       }
     );
   }

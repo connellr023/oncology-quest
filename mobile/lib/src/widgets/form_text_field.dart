@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class FormTextField extends StatefulWidget {
   final String labelText;
@@ -47,10 +48,8 @@ class _FormTextFieldState extends State<FormTextField> {
 
   @override
   Widget build(BuildContext context) {
-    double fontSize = MediaQuery.of(context).size.width * 0.04;
-    double fieldWidth = MediaQuery.of(context).size.width * 0.8;
-
-    const double fieldHeight = 60;
+    double fontSize = standardFontSize(context);
+    double fieldWidth = uiWidth(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +63,7 @@ class _FormTextFieldState extends State<FormTextField> {
                 widget.labelText,
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
-                  color: Theme.of(context).textTheme.bodySmall!.color,
+                  color: textColor,
                   fontSize: fontSize
                 )
               ),
@@ -74,37 +73,37 @@ class _FormTextFieldState extends State<FormTextField> {
                   color: errorColor,
                   fontSize: fontSize,
                 )
-              ),
+              )
             ]
           )
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         SizedBox(
           width: fieldWidth,
-          height: fieldHeight,
           child: TextField(
+            cursorColor: textColor,
             onChanged: _validateInput,
             obscureText: widget.obscureText,
             style: TextStyle(
-              color: Theme.of(context).textTheme.bodySmall!.color,
+              color: textColor,
               fontSize: fontSize
             ),
             decoration: InputDecoration(
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: errorMessage != null ? errorColor.withAlpha(unselectedAlpha) : Theme.of(context).primaryColor.withAlpha(unselectedAlpha),
-                  width: 3,
+                  width: 3
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: errorMessage != null ? errorColor : Theme.of(context).primaryColor,
-                  width: 3,
+                  width: 3
                 ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+                borderRadius: BorderRadius.circular(10)
+              )
+            )
           )
         )
       ],
