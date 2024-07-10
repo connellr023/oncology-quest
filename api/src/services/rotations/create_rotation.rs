@@ -15,7 +15,7 @@ struct CreateRotationResponse {
 }
 
 #[actix_web::post("/create")]
-pub(super) async fn create_rotation(claim: JwtUserClaim, pool: Data<PgPool>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
+pub(super) async fn create_rotation(claim: JwtUserClaim, pool: Data<PgPool>, memory_cache: Data<MemoryCache>, create_rotation_query: Json<CreateRotationQuery>) -> impl Responder {
     if !claim.sub.is_admin {
         return HttpResponse::Unauthorized().finish();
     }
@@ -25,6 +25,8 @@ pub(super) async fn create_rotation(claim: JwtUserClaim, pool: Data<PgPool>, cre
         Ok(rotation) => rotation,
         Err(_) => return HttpResponse::InternalServerError().finish()
     };
+
+    let _ = memory_cache.insert_rotation(rotation.clone());
 
     HttpResponse::Created().json(CreateRotationResponse {
         rotation_id: rotation.id(),
