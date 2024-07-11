@@ -23,6 +23,11 @@ class UserTasksState extends ChangeNotifier {
     }
   }
 
+  void clearMemo() {
+    _userTasksMemo.clear();
+    _progressMemo.clear();
+  }
+
   double calculateTaskProgress(int rotationId, int supertaskId, int taskId, List<Subtask> subtasks) {
     final taskProgressMemo = _progressMemo[supertaskId]?.tasksProgress[taskId];
 

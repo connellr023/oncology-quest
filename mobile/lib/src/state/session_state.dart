@@ -122,8 +122,6 @@ class SessionState extends ChangeNotifier {
   }
 
   Future<String?> login(String username, String plaintextPassword) async {
-    // TODO: Clear user tasks and entries memoized data.
-
     try {
       final response = await http.post(apiEndpoint.resolve('/api/users/login'),
         headers: {

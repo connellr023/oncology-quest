@@ -36,11 +36,13 @@ class _RotationSelectState extends State<RotationSelect> {
     final userTasksState = Provider.of<UserTasksState>(context, listen: false);
     
     attemptFallible(context, () async {
-      // User tasks must be loaded first to ensure that the user's progress is displayed correctly.
-      final String? userTasksErrorMessage = await userTasksState.fetchOwnUserTasks(sessionState.jwt!, rotationId);
+      if (!sessionState.session!.user.isAdmin) {
+        // User tasks must be loaded first to ensure that the user's progress is displayed correctly.
+        final String? userTasksErrorMessage = await userTasksState.fetchOwnUserTasks(sessionState.jwt!, rotationId);
 
-      if (userTasksErrorMessage != null) {
-        return userTasksErrorMessage;
+        if (userTasksErrorMessage != null) {
+          return userTasksErrorMessage;
+        }
       }
 
       final String? entriesErrorMessage = await entriesState.fetchEntries(sessionState.jwt!, rotationId);
@@ -145,8 +147,9 @@ class _RotationSelectState extends State<RotationSelect> {
               spacing: 10,
               runSpacing: 10,
               children: <Widget>[
-                for (final rotationEntry in sessionState.session!.rotations.entries)
-                  _buildRotationOption(context, rotationEntry.value)
+                if (sessionState.session != null)
+                  for (final rotationEntry in sessionState.session!.rotations.entries)
+                    _buildRotationOption(context, rotationEntry.value)
               ]
             )
           )

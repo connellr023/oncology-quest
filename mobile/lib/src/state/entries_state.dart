@@ -16,6 +16,10 @@ class EntriesState extends ChangeNotifier {
     _entriesMemo[rotationId] = entries;
   }
 
+  void clearMemo() {
+    _entriesMemo.clear();
+  }
+
   Future<String?> fetchEntries(String jwt, int rotationId) async {
     try {
       final response = await http.get(apiEndpoint.resolve('/api/entries/$rotationId'),
