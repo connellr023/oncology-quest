@@ -107,7 +107,6 @@ class _ProgressableEntryLayerState extends State<ProgressableEntryLayer> with Si
                         left: 10
                       ),
                       child: BasicOption(
-                        context: context,
                         title: 'Edit',
                         color: textColor,
                         icon: Icons.edit,

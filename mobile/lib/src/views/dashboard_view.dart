@@ -3,8 +3,9 @@ import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_navigation_area.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/top_app_bar.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/entries.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/graphic.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/rotation_select.dart';
@@ -32,7 +33,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     return Scaffold(
-      appBar: DashboardAppBar(
+      appBar: TopAppBar(
         session: sessionState.session!,
         onProfileTap: () => showInteractivePanel(context, const BottomPanel())
       ),
@@ -70,7 +71,7 @@ class _DashboardViewState extends State<DashboardView> {
           )
         )
       ),
-      bottomNavigationBar: null
+      bottomNavigationBar: sessionState.session!.user.isAdmin ? const BottomNavigationArea() : null
     );
   }
 

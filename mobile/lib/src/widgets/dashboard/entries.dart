@@ -60,7 +60,6 @@ class Entries extends StatelessWidget {
             if (session.user.isAdmin) ...<Widget>[
               BasicOption(
                 backgroundColor: backgroundColor2,
-                context: context,
                 title: 'New CBD Phase',
                 color: okColor,
                 icon: Icons.add,
@@ -124,7 +123,6 @@ class Entries extends StatelessWidget {
 
   Widget _buildNewEntryButton(BuildContext context, String title, void Function(String) onConfirm) {
     return BasicOption(
-      context: context,
       title: title,
       color: okColor,
       icon: Icons.add,

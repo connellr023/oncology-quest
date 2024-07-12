@@ -111,7 +111,6 @@ class _RotationSelectState extends State<RotationSelect> {
               child: Row(
                 children: <Widget>[
                   BasicOption(
-                    context: context,
                     title: 'New',
                     color: okColor,
                     icon: Icons.add,
