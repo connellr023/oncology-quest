@@ -5,6 +5,7 @@ import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_navigation_area.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/search_users_drawer.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/top_app_bar.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/entries.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/graphic.dart';
@@ -53,7 +54,7 @@ class _DashboardViewState extends State<DashboardView> {
                   children: <Widget>[
                     if (selectedRotationState.selectedRotationId != null) ...<Widget>[
                       const SizedBox(height: 35),
-                      SectionHeading(context: context, title: sessionState.session!.user.isAdmin ? 'Task Entries' : 'My Progress'),
+                      SectionHeading(title: sessionState.session!.user.isAdmin ? 'Task Entries' : 'My Progress'),
                       Entries(
                         rotationId: selectedRotationState.selectedRotationId!,
                         session: sessionState.session!,
@@ -71,7 +72,12 @@ class _DashboardViewState extends State<DashboardView> {
           )
         )
       ),
-      bottomNavigationBar: sessionState.session!.user.isAdmin ? const BottomNavigationArea() : null
+      drawer: const SearchUsersDrawer(),
+      bottomNavigationBar: sessionState.session!.user.isAdmin ? Builder(
+        builder: (context) => BottomNavigationArea(
+          onSearchTap: () => Scaffold.of(context).openDrawer()
+        )
+      ) : null
     );
   }
 

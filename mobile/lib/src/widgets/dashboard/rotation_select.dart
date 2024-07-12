@@ -104,7 +104,7 @@ class _RotationSelectState extends State<RotationSelect> {
       children: <Widget>[
         Row(
           children: <Widget>[
-            SectionHeading(context: context, title: 'Rotations'),
+            const SectionHeading(title: 'Rotations'),
             const Expanded(child: SizedBox()),
             if (widget.session.user.isAdmin) Container(
               padding: const EdgeInsets.only(bottom: 10),

@@ -3,14 +3,12 @@ import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class SectionHeading extends StatelessWidget {
+  final String title;
+
   const SectionHeading({
     super.key,
-    required this.context,
     required this.title,
   });
-
-  final BuildContext context;
-  final String title;
 
   @override
   Widget build(BuildContext context) {

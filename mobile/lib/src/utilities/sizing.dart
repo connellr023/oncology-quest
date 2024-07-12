@@ -33,6 +33,10 @@ double modalFontSize(BuildContext context) {
   return (MediaQuery.of(context).size.width * 0.04).clamp(16, 21);
 }
 
+double drawerUiWidth(BuildContext context) {
+  return (MediaQuery.of(context).size.width * 0.85).clamp(200, 500);
+}
+
 double uiElementVerticalSpacing(BuildContext context) {
   return (MediaQuery.of(context).size.height * 0.02).clamp(12, 27);
 }

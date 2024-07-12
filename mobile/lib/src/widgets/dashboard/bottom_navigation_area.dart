@@ -3,7 +3,12 @@ import 'package:oncology_quest_mobile/src/utilities/colors.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 
 class BottomNavigationArea extends StatelessWidget {
-  const BottomNavigationArea({super.key});
+  final void Function() onSearchTap;
+
+  const BottomNavigationArea({
+    super.key,
+    required this.onSearchTap
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,19 +23,13 @@ class BottomNavigationArea extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             BasicOption(
-              title: 'Dashboard',
-              color: textColor,
-              icon: Icons.home,
-              onTap: () => {}
-            ),
-            BasicOption(
-              title: 'Search',
+              title: 'Search Users',
               color: textColor,
               icon: Icons.search_rounded,
-              onTap: () => {}
+              onTap: onSearchTap
             )
           ]
-        ),
+        )
       )
     );
   }
