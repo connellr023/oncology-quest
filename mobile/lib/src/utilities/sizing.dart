@@ -1,8 +1,36 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+
+void showInteractivePanel(BuildContext context, Widget panel) {
+  if (inMobileViewport(context)) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: backgroundColor2,
+      builder: (BuildContext context) => panel
+    );
+  }
+  else {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => Dialog(
+        backgroundColor: backgroundColor2,
+        child: SizedBox(
+          width: uiWidth(context),
+          child: panel
+        )
+      )
+    );
+  }
+}
 
 bool inMobileViewport(BuildContext context) {
   return MediaQuery.of(context).size.width < 600 || !kIsWeb;
+}
+
+double modalFontSize(BuildContext context) {
+  return (MediaQuery.of(context).size.width * 0.04).clamp(16, 21);
 }
 
 double uiElementVerticalSpacing(BuildContext context) {

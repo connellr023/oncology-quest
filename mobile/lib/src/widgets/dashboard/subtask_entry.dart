@@ -119,7 +119,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
 
     return Padding(
       padding: const EdgeInsets.only(
-        left: 27,
+        left: 31,
         right: 15,
         bottom: 20,
       ),
@@ -185,12 +185,13 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
   Widget _buildCommentField(BuildContext context, bool isDisabled) {
     return Row(
       children: <Widget>[
-        Expanded(
+        if (_comment.isNotEmpty) Expanded(
           child: PanelInputOption(
             isError: _isCommentError,
             defaultValue: _comment,
             backgroundColor: backgroundColor2,
-            hintText: 'Type a comment...',
+            isDisabled: isDisabled,
+            hintText: isDisabled ? '' : 'Enter a comment',
             onChanged: _onCommentChanged
           )
         )

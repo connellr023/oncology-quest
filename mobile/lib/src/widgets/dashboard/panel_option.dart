@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
 
 class PanelOption extends StatelessWidget {
   final String text;
@@ -26,10 +27,14 @@ class PanelOption extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       onTap: () => { if (!isDisabled) onTap() },
       child: ListTile(
+        mouseCursor: SystemMouseCursors.click,
         leading: Icon(icon, color: renderColor),
         title: Text(
           text,
-          style: TextStyle(color: renderColor),
+          style: TextStyle(
+            color: renderColor,
+            fontSize: modalFontSize(context)
+          )
         )
       )
     );

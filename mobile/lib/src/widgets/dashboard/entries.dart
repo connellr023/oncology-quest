@@ -25,18 +25,12 @@ class Entries extends StatelessWidget {
   });
 
   void _showCreateEntryModal(BuildContext context, String title, void Function(String) onConfirm) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      builder: (BuildContext context) {
-        return InputPanel(
-          hintText: title,
-          errorMessage: '$title title can only contain letters, numbers, and the characters +, -, (, ), and / and be within 1 and 100 characters.',
-          regex: entryTitleRegex,
-          onConfirm: onConfirm
-        );
-      }
-    );
+    showInteractivePanel(context, InputPanel(
+      hintText: title,
+      errorMessage: '$title title can only contain letters, numbers, and the characters +, -, (, ), and / and be within 1 and 100 characters.',
+      regex: entryTitleRegex,
+      onConfirm: onConfirm
+    ));
   }
   
   @override

@@ -56,7 +56,7 @@ class _InputPanelState extends State<InputPanel> {
                 widget.errorMessage,
                 style: TextStyle(
                   color: errorColor,
-                  fontSize: standardFontSize(context)
+                  fontSize: modalFontSize(context)
                 ),
                 textAlign: TextAlign.center
               )

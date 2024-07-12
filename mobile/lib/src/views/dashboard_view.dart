@@ -19,16 +19,6 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  void _showBottomPanel(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      builder: (BuildContext context) {
-        return const BottomPanel();
-      }
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final sessionState = Provider.of<SessionState>(context, listen: false);
@@ -44,7 +34,7 @@ class _DashboardViewState extends State<DashboardView> {
     return Scaffold(
       appBar: DashboardAppBar(
         session: sessionState.session!,
-        onProfileTap: () => _showBottomPanel(context)
+        onProfileTap: () => showInteractivePanel(context, const BottomPanel())
       ),
       body: Padding(
         padding: const EdgeInsets.only(
@@ -79,7 +69,8 @@ class _DashboardViewState extends State<DashboardView> {
             ]
           )
         )
-      )
+      ),
+      bottomNavigationBar: null
     );
   }
 

@@ -90,19 +90,12 @@ class _RotationSelectState extends State<RotationSelect> {
       _isEditingRotations = false;
     });
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return InputPanel(
-          hintText: 'Enter rotation name',
-          errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
-          regex: nameRegex,
-          onConfirm: _attemptCreateRotation
-        );
-      }
-    );
+    showInteractivePanel(context, InputPanel(
+      hintText: 'Enter rotation name',
+      errorMessage: 'Rotation name must contain only letters and spaces and be within 1 and 35 characters long',
+      regex: nameRegex,
+      onConfirm: _attemptCreateRotation
+    ));
   }
 
   @override
