@@ -19,18 +19,54 @@ class SearchUsersDrawer extends StatelessWidget {
             right: 20,
             bottom: 15
           ),
-          child: const Column(
+          child: Column(
             children: <Widget>[
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   SectionHeading(title: 'Search Users'),
                 ]
-              )
+              ),
+              const SizedBox(height: 12),
+              _buildSearchField(context)
             ]
-          ),
+          )
         )
+      )
+    );
+  }
+
+  Widget _buildSearchField(BuildContext context) {
+    final size = standardFontSize(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor3,
+        borderRadius: BorderRadius.circular(18)
       ),
+      child: TextField(
+        style: TextStyle(
+          color: textColor,
+          fontSize: size
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search...',
+          hintStyle: TextStyle(
+            color: textColor.withOpacity(0.5),
+            fontSize: size
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 17,
+            vertical: 17
+          ),
+          suffixIcon: Icon(
+            Icons.search,
+            color: textColor.withOpacity(0.5),
+            size: size * 1.65
+          )
+        )
+      )
     );
   }
 }
