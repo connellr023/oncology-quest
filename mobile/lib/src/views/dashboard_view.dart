@@ -72,7 +72,7 @@ class _DashboardViewState extends State<DashboardView> {
           )
         )
       ),
-      drawer: const SearchUsersDrawer(),
+      drawer: SearchUsersDrawer(jwt: sessionState.jwt!),
       bottomNavigationBar: sessionState.session!.user.isAdmin ? Builder(
         builder: (context) => BottomNavigationArea(
           onSearchTap: () => Scaffold.of(context).openDrawer()

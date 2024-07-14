@@ -127,7 +127,7 @@ class _LoginViewState extends State<LoginView> {
                 onErrorChanged: _updatePasswordError,
                 onChanged: (String input) => _password = input
               ),
-              SizedBox(height: spacing),
+              SizedBox(height: spacing + 15),
               ThematicElevatedButton(
                 width: buttonWidth,
                 height: buttonHeight,

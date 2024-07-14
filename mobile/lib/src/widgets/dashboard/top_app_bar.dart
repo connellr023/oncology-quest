@@ -33,7 +33,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           children: <Widget>[
             DefaultProfileIcon(
-              size: size,
+              size: size * 2,
               name: session.user.name,
               onTap: () => onProfileTap(),
             ),
