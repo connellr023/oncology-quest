@@ -69,7 +69,7 @@ where
     let mut jwt = None;
 
     match login(client, ADMIN_USERNAME, ADMIN_PASSWORD).await {
-        Ok((status, _, token)) if status == StatusCode::OK => { jwt = token},
+        Ok((status, _, token)) if status == StatusCode::OK => { jwt = token },
         Ok((status, _, _)) => return Err(anyhow!("Unexpected admin login status code: {}", status)),
         Err(error) => return Err(error),
     }

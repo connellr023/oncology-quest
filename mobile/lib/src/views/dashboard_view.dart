@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
+import 'package:oncology_quest_mobile/src/state/selected_user_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_navigation_area.dart';
@@ -51,15 +52,25 @@ class _DashboardViewState extends State<DashboardView> {
               Consumer<SelectedRotationState>(
                 builder: (context, selectedRotationState, child) => Column(
                   children: <Widget>[
-                    if (selectedRotationState.selectedRotationId != null) ...<Widget>[
-                      const SizedBox(height: 35),
-                      SectionHeading(title: sessionState.session!.user.isAdmin ? 'Task Entries' : 'My Progress'),
-                      Entries(
-                        rotationId: selectedRotationState.selectedRotationId!,
-                        session: sessionState.session!,
-                        jwt: sessionState.jwt!
+                    if (selectedRotationState.selectedRotationId != null) Consumer<SelectedUserState>(
+                      builder: (context, selectedUserState, child) => Column(
+                        children: <Widget>[
+                          const SizedBox(height: 35),
+                          SectionHeading(
+                            title: !sessionState.session!.user.isAdmin
+                              ? 'My Progress'
+                              : selectedUserState.selectedUser == null
+                                ? 'Task Entries'
+                                : '${selectedUserState.selectedUser!.name}\'s Progress'
+                          ),
+                          Entries(
+                            rotationId: selectedRotationState.selectedRotationId!,
+                            session: sessionState.session!,
+                            jwt: sessionState.jwt!
+                          )
+                        ]
                       )
-                    ]
+                    )
                     else ...<Widget>[
                       const SizedBox(height: 60),
                       _buildNoRotationSelected(context)

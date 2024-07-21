@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/client_user.dart';
+import 'package:oncology_quest_mobile/src/state/selected_user_state.dart';
 import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/default_profile_icon.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/section_heading.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class SearchUsersDrawer extends StatefulWidget {
   final String jwt;
@@ -46,11 +49,21 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
         return "Failed to search for users. Please try again later.";
       }
     }
-    catch (e) {
+    catch (_) {
       return "Failed to connect to the server. Please try again later.";
     }
 
     return null;
+  }
+
+  bool _isUserSelected(ClientUser user) {
+    final selectedUserState = Provider.of<SelectedUserState>(context, listen: false);
+    return selectedUserState.selectedUser?.id == user.id;
+  }
+
+  void _selectUser(ClientUser? user) {
+    final selectedUserState = Provider.of<SelectedUserState>(context, listen: false);
+    selectedUserState.selectUser(user);
   }
 
   @override
@@ -77,8 +90,12 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
               const SizedBox(height: 12),
               _buildSearchField(context),
               const SizedBox(height: 20),
-              if (_searchResults.isNotEmpty) ..._searchResults.entries.map(
-                (entry) => _buildSearchResult(context, entry.value)
+              if (_searchResults.isNotEmpty) Consumer<SelectedUserState>(
+                builder: (context, selectedUserState, _) => Column(
+                    children: _searchResults.values
+                      .map((user) => _buildSearchResult(context, user))
+                      .toList()
+                  )
               )
               else Text(
                 'No users found.',
@@ -88,7 +105,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
                 )
               )
             ]
-          ),
+          )
         )
       )
     );
@@ -97,6 +114,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
   Widget _buildSearchResult(BuildContext context, ClientUser user) {
     final size = standardFontSize(context);
     final borderRadius = BorderRadius.circular(18);
+    final isSelected = _isUserSelected(user);
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -108,7 +126,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
         borderRadius: borderRadius,
         child: InkWell(
           borderRadius: borderRadius,
-          onTap: () => {},
+          onTap: () => isSelected ? _selectUser(null) : _selectUser(user),
           splashColor: textColor.withOpacity(0.4),
           child: Padding(
             padding: const EdgeInsets.all(15),
@@ -120,11 +138,16 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
                   onTap: () => {}
                 ),
                 const SizedBox(width: 10),
+                if (isSelected) Icon(
+                  Icons.check,
+                  color: okColor,
+                  size: size * 1.65
+                ),
                 RichText(
                   text: TextSpan(
                     style: TextStyle(
                       fontSize: size,
-                      color: textColor,
+                      color: isSelected ? okColor : textColor,
                     ),
                     children: <TextSpan>[
                       TextSpan(
@@ -136,10 +159,10 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
                   )
                 )
               ]
-            ),
-          ),
-        ),
-      ),
+            )
+          )
+        )
+      )
     );
   }
 
@@ -168,15 +191,18 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
             horizontal: 17,
             vertical: 17
           ),
-          suffixIcon: IconButton(
-            hoverColor: textColor.withOpacity(0.1),
-            focusColor: textColor.withOpacity(0.3),
-            color: textColor.withOpacity(0.5),
-            icon: Icon(
-              Icons.search,
-              size: size * 1.65
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 5),
+            child: IconButton(
+              hoverColor: textColor.withOpacity(0.1),
+              focusColor: textColor.withOpacity(0.3),
+              color: textColor.withOpacity(0.5),
+              icon: Icon(
+                Icons.search,
+                size: size * 1.65
+              ),
+              onPressed: () => attemptFallible(context, () => _searchUsers())
             ),
-            onPressed: () => attemptFallible(context, () => _searchUsers())
           )
         )
       )
