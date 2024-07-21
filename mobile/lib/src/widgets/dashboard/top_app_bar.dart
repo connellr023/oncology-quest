@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/default_profile_icon.dart';
 
 class TopAppBar extends StatelessWidget implements PreferredSizeWidget {

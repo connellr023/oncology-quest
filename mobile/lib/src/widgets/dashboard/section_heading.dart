@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 
 class SectionHeading extends StatelessWidget {
   final String title;

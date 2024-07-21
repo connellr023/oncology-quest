@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 
 class BottomNavigationArea extends StatelessWidget {

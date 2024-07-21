@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/user_task.dart';
-import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';

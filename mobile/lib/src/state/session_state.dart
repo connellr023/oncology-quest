@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/rotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
-import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:http/http.dart' as http;
 
 import 'dart:convert';

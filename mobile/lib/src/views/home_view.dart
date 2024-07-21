@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/credit_footer.dart';

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:provider/provider.dart';
 

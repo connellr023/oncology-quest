@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/panel_option.dart';
 import 'package:provider/provider.dart';
 

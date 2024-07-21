@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_navigation_area.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/search_users_drawer.dart';

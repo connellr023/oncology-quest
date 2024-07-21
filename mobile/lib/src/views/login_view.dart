@@ -3,14 +3,12 @@ import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/buttons.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/main_logo.dart';
 import '../widgets/form_text_field.dart';
-import '../utilities/regex.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});

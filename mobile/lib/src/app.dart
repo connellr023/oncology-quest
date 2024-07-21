@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/views/home_view.dart';
 import 'package:oncology_quest_mobile/src/views/login_view.dart';
 import 'package:oncology_quest_mobile/src/views/dashboard_view.dart';

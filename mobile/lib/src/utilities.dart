@@ -1,6 +1,43 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final Uri apiEndpoint = Uri.parse(dotenv.env['API_ENDPOINT']!);
+
+const themeColor = Color(0xFF331BBF);
+const textColor = Color(0xFFE7E7E7);
+const errorColor = Color(0xFFE60A1C);
+const warningColor = Color(0xFFD7A51B);
+const okColor = Color(0xFF11B814);
+const backgroundColor1 = Color(0xFF080808);
+const backgroundColor2 = Color(0xFF181818);
+const backgroundColor3 = Color(0xFF1F1F1F);
+
+final RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9\-_\.]{1,25}$');
+final RegExp nameRegex = RegExp(r'^[a-zA-Z\s]{1,35}$');
+final RegExp passwordRegex = RegExp(r'^.{8,200}$');
+final RegExp commentRegex = RegExp(r'^[a-zA-Z0-9\s.,!?"()-]{0,150}$');
+final RegExp entryTitleRegex = RegExp(r'^[a-zA-Z0-9+\-/()\s]{1,100}$');
+final RegExp resetTokenRegex = RegExp(r'^[a-zA-Z0-9]{4}$');
+
+void displayError(BuildContext context, String errorMessage) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(errorMessage),
+    backgroundColor: errorColor
+  ));
+}
+
+Future<bool> attemptFallible(BuildContext context, Future<String?> Function() future) async {
+  final String? errorMessage = await future();
+
+  if (errorMessage != null && context.mounted) {
+    displayError(context, errorMessage);
+    return false;
+  }
+
+  return true;
+}
+
 
 void showInteractivePanel(BuildContext context, Widget panel) {
   if (inMobileViewport(context)) {
