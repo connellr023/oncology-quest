@@ -69,6 +69,12 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
         _comment = _userTask!.comment;
       });
     }
+    else {
+      setState(() {
+        _isCompleted = false;
+        _comment = '';
+      });
+    }
   }
 
   Future<void> _optimisticUpdateUserTask(bool isCompleted, String comment) async {

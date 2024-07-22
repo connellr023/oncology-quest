@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/models/client_user.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/user_task.dart';
 import 'package:oncology_quest_mobile/src/utilities.dart';
@@ -7,6 +8,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class UserTasksState extends ChangeNotifier {
+  ClientUser? _selectedUser;
+  ClientUser? get selectedUser => _selectedUser;
+
   /// Memoized user tasks.
   /// Map of rotation ID to map of subtask ID to user task.
   final Map<int, UserTaskStructure> _userTasksMemo = {};
@@ -23,8 +27,17 @@ class UserTasksState extends ChangeNotifier {
     }
   }
 
+  void selectUser(ClientUser? user) {
+    _selectedUser = user;
+    notifyListeners();
+  }
+
   void clearMemo() {
     _userTasksMemo.clear();
+    _progressMemo.clear();
+  }
+
+  void clearProgressMemo() {
     _progressMemo.clear();
   }
 
@@ -93,6 +106,10 @@ class UserTasksState extends ChangeNotifier {
   }
 
   Future<String?> fetchOwnUserTasks(String jwt, int rotationId) async {
+    if (_userTasksMemo[rotationId] != null) {
+      return null;
+    }
+
     try {
       final response = await http.get(apiEndpoint.resolve('/api/tasks/$rotationId'),
         headers: {
@@ -106,6 +123,38 @@ class UserTasksState extends ChangeNotifier {
         final userTasks = UserTaskStructure.deserialize(body);
 
         _userTasksMemo[rotationId] = userTasks;
+      }
+      else {
+        return 'Failed to fetch user tasks. Please try again later.';
+      }
+    }
+    catch (_) {
+      return 'Failed to connect to server. Please try again later.';
+    }
+
+    notifyListeners();
+    return null;
+  }
+
+  Future<String?> fetchUserTasks(String jwt, int rotationId, ClientUser user) async {
+    // if (_userTasksMemo[rotationId] != null && _selectedUser == user) {
+    //   return null;
+    // }
+
+    try {
+      final response = await http.get(apiEndpoint.resolve('/api/tasks/${user.id}/$rotationId'),
+        headers: {
+          'content-type': 'application/json',
+          'authorization': jwt
+        }
+      );
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final userTasks = UserTaskStructure.deserialize(body);
+
+        _userTasksMemo[rotationId] = userTasks;
+        _selectedUser = user;
       }
       else {
         return 'Failed to fetch user tasks. Please try again later.';

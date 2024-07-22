@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/client_user.dart';
-import 'package:oncology_quest_mobile/src/state/selected_user_state.dart';
+import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/default_profile_icon.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/section_heading.dart';
@@ -57,13 +58,27 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
   }
 
   bool _isUserSelected(ClientUser user) {
-    final selectedUserState = Provider.of<SelectedUserState>(context, listen: false);
-    return selectedUserState.selectedUser?.id == user.id;
+    final userTasksState = Provider.of<UserTasksState>(context, listen: false);
+    return userTasksState.selectedUser?.id == user.id;
   }
 
   void _selectUser(ClientUser? user) {
-    final selectedUserState = Provider.of<SelectedUserState>(context, listen: false);
-    selectedUserState.selectUser(user);
+    final userTasksState = Provider.of<UserTasksState>(context, listen: false);
+    final selectedRotationState = Provider.of<SelectedRotationState>(context, listen: false);
+
+    attemptFallible(context, () async {
+      // Update displayed progress if a rotation is selected.
+      if (selectedRotationState.selectedRotationId != null && user != null) {
+        userTasksState.clearProgressMemo();
+        String? error = await userTasksState.fetchUserTasks(widget.jwt, selectedRotationState.selectedRotationId!, user);
+        
+        if (error != null) {
+          return error;
+        }
+      }
+      
+      return null;
+    });
   }
 
   @override
@@ -90,7 +105,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
               const SizedBox(height: 12),
               _buildSearchField(context),
               const SizedBox(height: 20),
-              if (_searchResults.isNotEmpty) Consumer<SelectedUserState>(
+              if (_searchResults.isNotEmpty) Consumer<UserTasksState>(
                 builder: (context, selectedUserState, _) => Column(
                     children: _searchResults.values
                       .map((user) => _buildSearchResult(context, user))
@@ -116,6 +131,8 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
     final borderRadius = BorderRadius.circular(18);
     final isSelected = _isUserSelected(user);
 
+    const splashOpacity = 0.3;
+
     return Padding(
       padding: const EdgeInsets.only(
         top: 5,
@@ -127,7 +144,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
         child: InkWell(
           borderRadius: borderRadius,
           onTap: () => isSelected ? _selectUser(null) : _selectUser(user),
-          splashColor: textColor.withOpacity(0.4),
+          splashColor: isSelected ? textColor.withOpacity(splashOpacity) : okColor.withOpacity(splashOpacity),
           child: Padding(
             padding: const EdgeInsets.all(15),
             child: Row(
@@ -138,11 +155,14 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
                   onTap: () => {}
                 ),
                 const SizedBox(width: 10),
-                if (isSelected) Icon(
-                  Icons.check,
-                  color: okColor,
-                  size: size * 1.65
-                ),
+                if (isSelected) ...<Widget>[
+                  Icon(
+                    Icons.check,
+                    color: okColor,
+                    size: size * 1.65
+                  ),
+                  const SizedBox(width: 10)
+                ],
                 RichText(
                   text: TextSpan(
                     style: TextStyle(

@@ -79,27 +79,27 @@ double uiElementVerticalSpacing(BuildContext context) {
 }
 
 double homeViewMainLogoSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.35).clamp(100, 200);
+  return (MediaQuery.of(context).size.width * 0.35).clamp(100, 190);
 }
 
 double secondaryViewMainLogoSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.3).clamp(80, 170);
+  return (MediaQuery.of(context).size.width * 0.3).clamp(80, 165);
 }
 
 double graphicWidth(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.65).clamp(200, 400);
+  return (MediaQuery.of(context).size.width * 0.65).clamp(200, 370);
 }
 
 double headingFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.04).clamp(25, 32);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(25, 29);
 }
 
 double uiFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.04).clamp(22, 29);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(22, 27);
 }
 
 double uiWidth(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.8).clamp(200, 500);
+  return (MediaQuery.of(context).size.width * 0.8).clamp(200, 430);
 }
 
 double mainUiButtonHeight(BuildContext context) {
@@ -111,5 +111,5 @@ double secondaryUiButtonHeight(BuildContext context) {
 }
 
 double standardFontSize(BuildContext context) {
-  return (MediaQuery.of(context).size.width * 0.04).clamp(18, 23);
+  return (MediaQuery.of(context).size.width * 0.04).clamp(18, 22);
 }

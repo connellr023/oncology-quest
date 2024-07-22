@@ -41,6 +41,14 @@ class _RotationSelectState extends State<RotationSelect> {
           return userTasksErrorMessage;
         }
       }
+      else if (userTasksState.selectedUser != null) {
+        userTasksState.clearProgressMemo();
+        final String? userTasksErrorMessage = await userTasksState.fetchUserTasks(sessionState.jwt!, rotationId, userTasksState.selectedUser!);
+        
+        if (userTasksErrorMessage != null) {
+          return userTasksErrorMessage;
+        }
+      }
 
       final String? entriesErrorMessage = await entriesState.fetchEntries(sessionState.jwt!, rotationId);
 
@@ -159,9 +167,15 @@ class _RotationSelectState extends State<RotationSelect> {
       color: backgroundColor2,
       borderRadius: BorderRadius.circular(borderRadius),
       child: InkWell(
-        splashColor: _isEditingRotations ? errorColor : isSelected ? textColor : okColor,
+        splashColor: _isEditingRotations
+          ? errorColor
+          : isSelected
+            ? textColor
+            : okColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        onTap: () => _isEditingRotations ? _attemptDeleteRotation(rotation.id) : _selectRotation(rotation.id),
+        onTap: () => _isEditingRotations
+          ? _attemptDeleteRotation(rotation.id)
+          : _selectRotation(rotation.id),
         child: Padding(
           padding: const EdgeInsets.all(17),
           child: Row(

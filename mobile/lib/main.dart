@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
-import 'package:oncology_quest_mobile/src/state/selected_user_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:provider/provider.dart';
@@ -16,8 +15,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => SessionState()),
         ChangeNotifierProvider(create: (context) => SelectedRotationState()),
         ChangeNotifierProvider(create: (context) => EntriesState()),
-        ChangeNotifierProvider(create: (context) => UserTasksState()),
-        ChangeNotifierProvider(create: (context) => SelectedUserState())
+        ChangeNotifierProvider(create: (context) => UserTasksState())
       ],
       child: _Initializer()
     )
