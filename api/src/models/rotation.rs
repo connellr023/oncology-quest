@@ -120,8 +120,6 @@ impl Rotation<Synced> {
     }
 
     pub async fn fetch_all_as_map(pool: &PgPool) -> Result<HashMap<i32, Self>> {
-        println!("Fetching all rotations as map.");
-
         let rotations = sqlx::query_as!(
             RotationModel,
             r#"

@@ -6,12 +6,13 @@ import { User } from "../../models/user"
 import useEntries from "../../hooks/useEntries"
 import useRotations from "../../hooks/useRotations"
 import useUserTasks from "../../hooks/useUserTasks"
+import useValidateName from "../../hooks/validation/useValidateName"
 
 import CheckIcon from "../vector/CheckIcon.vue"
-import EditIcon from "../vector/EditIcon.vue"
-import CancelIcon from "../vector/CancelIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
 import MessageModal from "../MessageModal.vue"
+import NewRotationIcon from "../vector/NewRotationIcon.vue"
+import InputModal from "../InputModal.vue"
 
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
@@ -20,10 +21,13 @@ const selectedUser = inject<Ref<User | null>>("selectedUser")!
 
 const { fetchEntries } = useEntries()
 const { fetchOwnTasks, fetchUserTasks } = useUserTasks()
-const { deleteRotation } = useRotations()
+const { deleteRotation, createRotation } = useRotations()
+const { name, nameError } = useValidateName()
 
-const isEditing = ref(false)
+const isDeleting = ref(false)
 const isErrorModalVisible = ref(false)
+const isCreateRotationLoading = ref(false)
+const isCreateRotationModalVisible = ref(false)
 const errorModalTitle = ref("")
 const errorModalMessage = ref("")
 
@@ -40,6 +44,24 @@ if (session.value.isAdmin) {
       handleFetchUserTasks(selectedRotation.value)
     }
   })
+}
+
+const confirmNewRotation = async () => {
+  if (nameError.value || name.value.length === 0) {
+    return
+  }
+
+  isCreateRotationLoading.value = true
+
+  if (await createRotation(name.value)) {
+    isCreateRotationModalVisible.value = false
+    name.value = ""
+  }
+  else {
+    nameError.value = "Failed to create rotation."
+  }
+
+  isCreateRotationLoading.value = false
 }
 
 const selectRotation = async (rotation: Rotation) => {
@@ -65,11 +87,11 @@ const unselectRotation = () => {
 
 const toggleIsEditing = () => {
   unselectRotation()
-  isEditing.value = !isEditing.value
+  isDeleting.value = !isDeleting.value
 }
 
 const onRotationClick = (rotation: Rotation) => {
-  if (isEditing.value) {
+  if (isDeleting.value) {
     deleteRotation(rotation.id)
   }
   else {
@@ -96,29 +118,45 @@ const displayErrorModal = (title: string, message: string) => {
     :error="errorModalMessage"
     @change="isErrorModalVisible = $event"
   />
+  <InputModal
+    v-if="session.isAdmin"
+    v-model="name"
+    title="New Rotation"
+    placeholder="Enter rotation name..."
+    :loading="isCreateRotationLoading"
+    :error="nameError"
+    :visible="isCreateRotationModalVisible"
+    :isPassword="false"
+    :onConfirm="confirmNewRotation"
+    :onCancel="() => { isCreateRotationModalVisible = false }"
+  />
   <div class="rotation-select-container">
     <div class="heading-container">
       <h1 class="section-heading">Rotations</h1>
-      <button :class="`icon-button ${isEditing ? 'red' : 'highlight'}`" v-if="session.isAdmin" @click="toggleIsEditing">
-        <template v-if="isEditing">
-          <CancelIcon  />
-          Cancel
+      <button class="icon-button green select-rotation-button" v-if="session.isAdmin" @click="() => { isCreateRotationModalVisible = true }">
+        <NewRotationIcon />
+        New
+      </button>
+      <button :class="`icon-button ${isDeleting ? 'green' : 'red'}`" v-if="session.isAdmin" @click="toggleIsEditing">
+        <template v-if="isDeleting">
+          <CheckIcon  />
+          Done
         </template>
         <template v-else>
-          <EditIcon />
-          Edit
+          <DeleteIcon />
+          Delete
         </template>
       </button>
     </div>
     <div class="rotations" v-if="Object.keys(rotations).length > 0">
       <button
         v-for="rotation in rotations"
-        :class="`rotation bubble ${isEditing ? 'red' : ''} ${selectedRotation?.id === rotation.id ? 'focused' : ''}`"
+        :class="`rotation bubble ${isDeleting ? 'red' : ''} ${selectedRotation?.id === rotation.id ? 'focused' : ''}`"
         :key="rotation.id"
         @click="onRotationClick(rotation)"
       >
         <CheckIcon v-show="selectedRotation?.id === rotation.id" />
-        <DeleteIcon v-if="isEditing" />
+        <DeleteIcon v-if="isDeleting" />
         {{ rotation.name }}
       </button>
     </div>
@@ -128,6 +166,10 @@ const displayErrorModal = (title: string, message: string) => {
 
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
+
+button.select-rotation-button {
+  margin-right: 20px;
+}
 
 div.rotation-select-container {
   margin-bottom: 40px;
@@ -167,7 +209,7 @@ div.rotations {
     &.focused {
       background-color: $tertiary-bg-color;
       color: $theme-color-green;
-      
+
       svg {
         fill: $theme-color-green;
       }

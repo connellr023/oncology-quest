@@ -5,60 +5,33 @@ import { Rotation } from "../models/rotation"
 import { UserTask } from "../models/tasks"
 
 import useLogout from "../hooks/useLogout"
-import useValidateName from "../hooks/validation/useValidateName"
 import useValidatePassword from "../hooks/validation/useValidatePassword"
-import useRotations from "../hooks/useRotations"
 import useDeleteUser from "../hooks/useDeleteUser"
 import useExportProgress from "../hooks/useExportProgress"
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
 import InputModal from "./InputModal.vue"
-import NewRotationIcon from "./vector/NewRotationIcon.vue"
 import DeleteIcon from "./vector/DeleteIcon.vue"
 import Dropdown from "./Dropdown.vue"
 import ExportIcon from "./vector/ExportIcon.vue"
 
 const resetAll = inject<() => void>("resetAll")!
 const session = inject<Ref<User>>("session")!
-const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
 const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
 
 const { logout } = useLogout()
-const { name, nameError } = useValidateName()
 const { password, passwordError } = useValidatePassword()
-const { createRotation } = useRotations()
 const { deleteSelf } = useDeleteUser()
 const { exportProgress } = useExportProgress()
 
 const showProfileOptions = ref(false)
-const showCreateRotationModal = ref(false)
 const showDeleteAccountModal = ref(false)
-
-const isCreateRotationLoading = ref(false)
 const isDeleteAccountLoading = ref(false)
 
 const toggleProfileOptions = () => {
   showProfileOptions.value = !showProfileOptions.value
-}
-
-const confirmNewRotation = async () => {
-  if (nameError.value || name.value.length === 0) {
-    return
-  }
-
-  isCreateRotationLoading.value = true
-
-  if (await createRotation(name.value)) {
-    showCreateRotationModal.value = false
-    name.value = ""
-  }
-  else {
-    nameError.value = "Failed to create rotation."
-  }
-
-  isCreateRotationLoading.value = false
 }
 
 const onLogoutClick = async () => {
@@ -116,26 +89,7 @@ const deleteAccount = async () => {
       </Dropdown>
     </div>
     <div class="name"><b>{{ session.name }}</b> ({{ session.username }})</div>
-    <div>
-      <button v-if="session.isAdmin" @click="() => { showCreateRotationModal = true }" class="green bubble highlight new-rotation">
-        <NewRotationIcon />
-        New Rotation
-      </button>
-      <p v-else-if="rotations ? Object.keys(rotations).length === 0 : true">Currently no rotations to select.</p>
-    </div>
   </div>
-  <InputModal
-    v-if="session.isAdmin"
-    v-model="name"
-    title="New Rotation"
-    placeholder="Enter rotation name..."
-    :loading="isCreateRotationLoading"
-    :error="nameError"
-    :visible="showCreateRotationModal"
-    :isPassword="false"
-    :onConfirm="confirmNewRotation"
-    :onCancel="() => { showCreateRotationModal = false }"
-  />
   <InputModal
     v-model="password"
     title="Delete Account"
@@ -174,9 +128,5 @@ div.name {
   margin-left: 10px;
   font-size: clamp(15px, 1.2lvw, 18px);
   flex-grow: 1;
-}
-
-button.new-rotation {
-  margin-top: -2px;
 }
 </style>

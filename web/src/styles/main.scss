@@ -104,13 +104,13 @@ button {
 
     &:disabled,
     &:hover {
-      background-color: darken($theme-color-1, 15%); 
+      background-color: darken($theme-color-1, 15%);
     }
   }
 
   &.minimal {
     $side-padding: 10px;
-  
+
     padding: 3px;
     padding-left: $side-padding;
     padding-right: $side-padding;
@@ -152,6 +152,7 @@ button {
     }
 
     &.green {
+      &.solid,
       &:hover {
         color: $theme-color-green;
 
@@ -162,6 +163,7 @@ button {
     }
 
     &.red {
+      &.solid,
       &:hover {
         color: $theme-color-red;
 
@@ -172,6 +174,7 @@ button {
     }
 
     &.yellow {
+      &.solid,
       &:hover {
         color: $theme-color-yellow;
 
@@ -196,7 +199,7 @@ button {
 
     &:hover {
       background: none;
-      
+
       svg {
         opacity: 1;
         fill: $theme-color-1;
@@ -204,13 +207,7 @@ button {
     }
 
     &:disabled {
-      opacity: 0.1;
-
-      &:hover {
-        svg {
-          fill: white;
-        }
-      }
+      opacity: 0.25;
     }
   }
 }
@@ -405,7 +402,7 @@ div.modal {
       margin: 8px;
     }
 
-    p { 
+    p {
       white-space: pre-wrap;
     }
 
