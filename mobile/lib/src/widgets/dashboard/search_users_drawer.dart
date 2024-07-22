@@ -69,7 +69,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
     attemptFallible(context, () async {
       // Update displayed progress if a rotation is selected.
       if (selectedRotationState.selectedRotationId != null && user != null) {
-        userTasksState.clearProgressMemo();
+        //userTasksState.clearMemo();
         String? error = await userTasksState.fetchUserTasks(widget.jwt, selectedRotationState.selectedRotationId!, user);
         
         if (error != null) {
@@ -98,9 +98,7 @@ class _SearchUsersDrawerState extends State<SearchUsersDrawer> {
             children: <Widget>[
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SectionHeading(title: 'Search Users'),
-                ]
+                children: [SectionHeading(title: 'Search Users')],
               ),
               const SizedBox(height: 12),
               _buildSearchField(context),

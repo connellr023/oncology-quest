@@ -3,7 +3,7 @@ import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
 import 'package:oncology_quest_mobile/src/utilities.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_navigation_area.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/search_users_drawer.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/top_app_bar.dart';
@@ -38,6 +38,9 @@ class _DashboardViewState extends State<DashboardView> {
         session: sessionState.session!,
         onProfileTap: () => showInteractivePanel(context, const BottomPanel())
       ),
+      drawer: sessionState.session!.user.isAdmin
+        ? SearchUsersDrawer(jwt: sessionState.jwt!)
+        : null,
       body: Padding(
         padding: const EdgeInsets.only(
           left: 15,
@@ -61,7 +64,15 @@ class _DashboardViewState extends State<DashboardView> {
                               ? 'My Progress'
                               : userTasksState.selectedUser == null
                                 ? 'Task Entries'
-                                : '${userTasksState.selectedUser!.name}\'s Progress'
+                                : '${userTasksState.selectedUser!.name}\'s Progress',
+                            children: <Widget>[
+                              if (sessionState.session!.user.isAdmin) BasicOption(
+                                title: 'View User Tasks',
+                                color: textColor,
+                                icon: Icons.search,
+                                onTap: () => Scaffold.of(context).openDrawer()
+                              )
+                            ]
                           ),
                           Entries(
                             rotationId: selectedRotationState.selectedRotationId!,
@@ -81,13 +92,7 @@ class _DashboardViewState extends State<DashboardView> {
             ]
           )
         )
-      ),
-      drawer: SearchUsersDrawer(jwt: sessionState.jwt!),
-      bottomNavigationBar: sessionState.session!.user.isAdmin ? Builder(
-        builder: (context) => BottomNavigationArea(
-          onSearchTap: () => Scaffold.of(context).openDrawer()
-        )
-      ) : null
+      )
     );
   }
 

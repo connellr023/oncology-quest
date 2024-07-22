@@ -3,10 +3,12 @@ import 'package:oncology_quest_mobile/src/utilities.dart';
 
 class SectionHeading extends StatelessWidget {
   final String title;
+  final List<Widget> children;
 
   const SectionHeading({
     super.key,
     required this.title,
+    this.children = const []
   });
 
   @override
@@ -14,7 +16,7 @@ class SectionHeading extends StatelessWidget {
     return Column(
       children: <Widget>[
         Row(
-          children: [
+          children: <Widget>[
             Text(
               title,
               textAlign: TextAlign.left,
@@ -22,7 +24,11 @@ class SectionHeading extends StatelessWidget {
                 color: textColor,
                 fontSize: headingFontSize(context)
               )
-            )
+            ),
+            if (children.isNotEmpty) ...<Widget>[
+              const Spacer(),
+              ...children
+            ]
           ]
         ),
         const SizedBox(height: 13)

@@ -35,14 +35,14 @@ class _RotationSelectState extends State<RotationSelect> {
     attemptFallible(context, () async {
       if (!sessionState.session!.user.isAdmin) {
         // User tasks must be loaded first to ensure that the user's progress is displayed correctly.
-        final String? userTasksErrorMessage = await userTasksState.fetchOwnUserTasks(sessionState.jwt!, rotationId);
+        final String? userTasksErrorMessage = await userTasksState.fetchOwnUserTasks(sessionState.jwt!, rotationId, sessionState.session!.user);
 
         if (userTasksErrorMessage != null) {
           return userTasksErrorMessage;
         }
       }
       else if (userTasksState.selectedUser != null) {
-        userTasksState.clearProgressMemo();
+        //userTasksState.clearMemo();
         final String? userTasksErrorMessage = await userTasksState.fetchUserTasks(sessionState.jwt!, rotationId, userTasksState.selectedUser!);
         
         if (userTasksErrorMessage != null) {
@@ -107,35 +107,29 @@ class _RotationSelectState extends State<RotationSelect> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Row(
+        SectionHeading(
+          title: 'Rotations',
           children: <Widget>[
-            const SectionHeading(title: 'Rotations'),
-            const Expanded(child: SizedBox()),
-            if (widget.session.user.isAdmin) Container(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: <Widget>[
-                  BasicOption(
-                    title: 'New',
-                    color: okColor,
-                    icon: Icons.add,
-                    onTap: () => _showInputModal(context)
-                  ),
-                  const SizedBox(width: 5),
-                  TwoVariantOption(
-                    firstColor: errorColor,
-                    secondColor: okColor,
-                    firstIcon: Icons.delete_forever,
-                    secondIcon: Icons.done,
-                    firstText: 'Delete',
-                    secondText: 'Done',
-                    context: context,
-                    inFirstVariant: !_isEditingRotations,
-                    onTap: () => _toggleEditRotations()
-                  )
-                ]
+            if (widget.session.user.isAdmin) ...<Widget>[
+              BasicOption(
+                title: 'New',
+                color: okColor,
+                icon: Icons.add,
+                onTap: () => _showInputModal(context)
+              ),
+              const SizedBox(width: 10),
+              TwoVariantOption(
+                firstColor: errorColor,
+                secondColor: okColor,
+                firstIcon: Icons.delete_forever,
+                secondIcon: Icons.done,
+                firstText: 'Delete',
+                secondText: 'Done',
+                context: context,
+                inFirstVariant: !_isEditingRotations,
+                onTap: () => _toggleEditRotations()
               )
-            )
+            ]
           ]
         ),
         Center(
@@ -158,7 +152,7 @@ class _RotationSelectState extends State<RotationSelect> {
   Widget _buildRotationOption(BuildContext context, Rotation rotation) {
     final selectedRotationId = Provider.of<SelectedRotationState>(context).selectedRotationId;
 
-    const double borderRadius = 18;
+    const double borderRadius = 20;
     final bool isSelected = selectedRotationId == rotation.id;
     
     double size = standardFontSize(context);

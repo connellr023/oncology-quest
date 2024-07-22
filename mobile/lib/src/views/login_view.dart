@@ -48,6 +48,7 @@ class _LoginViewState extends State<LoginView> {
 
     Provider.of<EntriesState>(context, listen: false).clearMemo();
     Provider.of<UserTasksState>(context, listen: false).clearMemo();
+    Provider.of<UserTasksState>(context, listen: false).selectUser(null);
     Provider.of<SelectedRotationState>(context, listen: false).selectRotation(null);
 
     final success = await attemptFallible(context, () => Provider.of<SessionState>(context, listen: false).login(username, plaintextPassword));

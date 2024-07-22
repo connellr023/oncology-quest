@@ -79,7 +79,7 @@ class Entries extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
         child: ProgressableEntryLayer(
           calculateProgress: (state) => state.calculateSupertaskProgress(rotationId, supertaskLevel),
           session: session,
