@@ -98,8 +98,8 @@ $logo-vert-offset: 170px;
 }
 
 svg {
-  width: 15lvw;
-  min-width: 100px;
+  width: 13lvh;
+  min-width: 90px;
   max-width: 125px;
 
   &.logo {

@@ -3,6 +3,7 @@ import useLogin from "../../hooks/useLogin";
 
 import LabeledFormInput from "./LabeledFormInput.vue"
 import LoadingButton from "../LoadingButton.vue"
+import BackButton from "./BackButton.vue"
 
 defineProps<{ onBack: () => void }>()
 
@@ -44,6 +45,6 @@ const handleSubmit = (_: Event) => {
     />
     <div class="form-error error-label" v-if="loginError">{{ loginError }}</div>
     <LoadingButton :loading="loading" text="Login" />
-    <button type="button" class="back" @click="onBack">Back</button>
+    <BackButton :onBack="onBack" />
   </form>
 </template>

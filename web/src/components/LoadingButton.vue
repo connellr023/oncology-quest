@@ -10,18 +10,28 @@ defineProps<{
 
 <template>
   <button :disabled="loading" class="form-button std" type="submit" @click="$emit('click')">
-    {{ text }}
-    <Spinner class="spinner" v-show="loading" />
+    <span>
+      <span :style="`opacity: ${loading ? 0 : 1};`">{{ text }}</span>
+      <Spinner class="spinner" v-if="loading" />
+    </span>
   </button>
 </template>
 
 <style scoped lang="scss">
-svg {
-  height: 20px;
-  margin: auto;
-  position: absolute;
-  right: 12px;
-  opacity: 0;
-  top: 10px;
+button {
+  & > span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    & > span {
+      flex-grow: 1;
+    }
+
+    & > svg {
+      height: 22px;
+      position: absolute;
+    }
+  }
 }
 </style>

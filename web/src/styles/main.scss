@@ -25,13 +25,13 @@ svg {
 }
 
 input {
-  padding: 9px;
-  border: 2px solid $theme-color-1;
-  border-radius: 6px;
+  padding: 11px;
+  border: 3px solid $theme-color-1;
+  border-radius: $ui-border-radius;
   background: none;
   color: darken($main-txt-color, 20%);
   font-family: $main-font;
-  font-size: 19px;
+  font-size: clamp(17px, 1.2vw, 21px);
   outline: none;
   transition: all 0.15s ease-in-out;
 
@@ -82,12 +82,12 @@ body {
 button {
   cursor: pointer;
   appearance: none;
-  border: 2px solid $main-txt-color;
-  border-radius: 10px;
+  border: 3px solid $main-txt-color;
+  border-radius: $ui-border-radius;
   background: none;
   color: $main-txt-color;
-  padding: 9px;
-  font-size: clamp(17px, 2vw, 19px);
+  padding: 12px;
+  font-size: clamp(18px, 2vw, 21px);
   font-family: $main-font;
   transition: all 0.07s ease-in-out;
 
