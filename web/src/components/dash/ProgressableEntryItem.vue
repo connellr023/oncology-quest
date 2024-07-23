@@ -41,9 +41,7 @@ li {
   padding: 5px;
   padding-left: $side-padding;
   padding-right: $side-padding;
-  margin-bottom: 15px;
   margin-top: 10px;
-  border-radius: 10px;
 
   & > ul {
     margin-left: calc(10px + 2%);
@@ -54,7 +52,7 @@ li {
   margin-bottom: 15px;
   padding-left: 15px;
   padding-right: 15px;
-  border-radius: 10px;
+  border-radius: 15px;
 
   &.focused,
   &:hover {

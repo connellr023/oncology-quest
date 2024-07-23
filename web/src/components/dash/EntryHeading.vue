@@ -96,7 +96,10 @@ onUnmounted(() => {
         </button>
       </template>
       <button class="edit icon-button" v-else :disabled="isEditing" @click.stop="toggleEditMode">
-        <EditIcon @click.stop="toggleEditMode" />
+        <span class="icon-text">
+          <EditIcon @click.stop="toggleEditMode" />
+          Edit
+        </span>
       </button>
     </div>
   </div>
@@ -106,6 +109,7 @@ onUnmounted(() => {
 @import "../../styles/variables.scss";
 
 h3.entry-heading {
+  word-break: break-word;
   font-size: clamp(14px, 1.5lvw, 17px);
   font-weight: normal;
   color: $main-txt-color;
@@ -138,7 +142,6 @@ div.edit-buttons-container {
     margin-left: 5px;
 
     &.edit {
-      margin-right: 15px;
       margin-left: auto;
     }
   }

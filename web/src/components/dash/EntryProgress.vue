@@ -45,10 +45,10 @@ onMounted(computeColorClass)
 
 div.container {
   flex-grow: 1;
-  margin-left: 30px;
   margin-left: auto;
   margin-top: 9px;
-  max-width: 300px;
+  min-width: 70px;
+  max-width: 250px;
 }
 
 div.percentage {

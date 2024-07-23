@@ -51,6 +51,7 @@ const confirmNewRotation = async () => {
     return
   }
 
+
   isCreateRotationLoading.value = true
 
   if (await createRotation(name.value)) {
@@ -133,19 +134,23 @@ const displayErrorModal = (title: string, message: string) => {
   <div class="rotation-select-container">
     <div class="heading-container">
       <h1 class="section-heading">Rotations</h1>
-      <button class="icon-button green select-rotation-button" v-if="session.isAdmin" @click="() => { isCreateRotationModalVisible = true }">
-        <NewRotationIcon />
-        New
+      <button class="icon-button solid green select-rotation-button" v-if="session.isAdmin" @click="() => { isCreateRotationModalVisible = true }">
+        <span class="icon-text">
+          <NewRotationIcon />
+          New
+        </span>
       </button>
-      <button :class="`icon-button ${isDeleting ? 'green' : 'red'}`" v-if="session.isAdmin" @click="toggleIsEditing">
-        <template v-if="isDeleting">
-          <CheckIcon  />
-          Done
-        </template>
-        <template v-else>
-          <DeleteIcon />
-          Delete
-        </template>
+      <button :class="`icon-button solid ${isDeleting ? 'green' : 'red'}`" v-if="session.isAdmin" @click="toggleIsEditing">
+        <span class="icon-text">
+          <template v-if="isDeleting">
+            <CheckIcon  />
+            Done
+          </template>
+          <template v-else>
+            <DeleteIcon />
+            Delete
+          </template>
+        </span>
       </button>
     </div>
     <div class="rotations" v-if="Object.keys(rotations).length > 0">
@@ -198,6 +203,7 @@ div.rotations {
 
   button.rotation {
     background-color: $secondary-bg-color;
+    border-radius: 13px;
     flex: 1 0 auto;
     min-width: 130px;
     height: 50px;

@@ -72,21 +72,25 @@ onUpdated(() => nextTick(adjustHeight))
 <template>
   <li>
     <div class="container">
-      <div class="task-heading-container">
+      <div class="task-entry-container">
         <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
         <button :disabled="commentError ? true : false" v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
-          <CheckIcon />
-          {{ isSaved ? "Saved" : "Not Saved" }}
+          <span class="icon-text">
+            <CheckIcon />
+            {{ isSaved ? "Saved" : "Not Saved" }}
+          </span>
         </button>
         <button :disabled="session.isAdmin" :class="`icon-button check solid ${isComplete ? 'green' : 'red'}`" @click.stop="toggleCompleted">
-          <template v-if="isComplete">
-            <CheckIcon  />
-            Complete
-          </template>
-          <template v-else>
-            <CancelIcon />
-            Working
-          </template>
+          <span class="icon-text">
+            <template v-if="isComplete">
+              <CheckIcon  />
+              Complete
+            </template>
+            <template v-else>
+              <CancelIcon />
+              Working
+            </template>
+          </span>
         </button>
       </div>
       <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
@@ -115,10 +119,6 @@ div.subtask-entry {
   }
 }
 
-div.task-heading-container {
-  display: flex;
-}
-
 div.container {
   padding: 6px 0 6px 15px;
   margin-right: 13px;
@@ -138,7 +138,12 @@ div.save-container {
   }
 }
 
-button.check {
-  margin-left: 15px;
+div.task-entry-container {
+  display: flex;
+  flex-direction: row;
+
+  button.check {
+    margin-left: 15px;
+  }
 }
 </style>
