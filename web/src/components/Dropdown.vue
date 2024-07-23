@@ -40,6 +40,7 @@ div.dropdown-container {
   left: 2px;
 
   & > * {
+    flex-direction: row;
     flex-grow: 1;
     width: 100%;
     text-align: left;

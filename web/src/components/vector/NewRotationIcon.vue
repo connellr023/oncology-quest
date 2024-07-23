@@ -1,5 +1,5 @@
 <template>
-  <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88.35 80.18">
+  <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 98.35 90.18">
     <g>
       <rect class="cls-1" x="10.53" y="52.58" width="5.68" height="26.74" rx="2.84" ry="2.84"/>
       <rect class="cls-1" x="10.53" y="52.58" width="5.68" height="26.74" rx="2.84" ry="2.84" transform="translate(79.32 52.58) rotate(90)"/>

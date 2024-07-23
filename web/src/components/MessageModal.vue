@@ -23,8 +23,10 @@ const hide = () => {
       </p>
       <div class="modal-buttons"> 
         <button class="bubble yellow" @click="hide">
-          <CheckIcon />
-          Ok
+          <span>
+            <CheckIcon />
+            <span>OK</span>
+          </span>
         </button>
       </div>
     </div>

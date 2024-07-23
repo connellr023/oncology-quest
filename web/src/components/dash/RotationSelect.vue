@@ -13,6 +13,7 @@ import DeleteIcon from "../vector/DeleteIcon.vue"
 import MessageModal from "../MessageModal.vue"
 import NewRotationIcon from "../vector/NewRotationIcon.vue"
 import InputModal from "../InputModal.vue"
+import IconButton from "../IconButton.vue"
 
 const session = inject<Ref<User>>("session")!
 const rotations = inject<Ref<Record<number, Rotation>>>("rotations")!
@@ -134,24 +135,33 @@ const displayErrorModal = (title: string, message: string) => {
   <div class="rotation-select-container">
     <div class="heading-container">
       <h1 class="section-heading">Rotations</h1>
-      <button class="icon-button solid green select-rotation-button" v-if="session.isAdmin" @click="() => { isCreateRotationModalVisible = true }">
-        <span class="icon-text">
-          <NewRotationIcon />
-          New
-        </span>
-      </button>
-      <button :class="`icon-button solid ${isDeleting ? 'green' : 'red'}`" v-if="session.isAdmin" @click="toggleIsEditing">
-        <span class="icon-text">
-          <template v-if="isDeleting">
-            <CheckIcon  />
-            Done
+      <template v-if="session.isAdmin">
+        <IconButton
+          class="select-rotation-button"
+          firstClass="green"
+          firstText="New"
+          @click="() => { isCreateRotationModalVisible = true }"
+        >
+          <template #firstIcon>
+            <NewRotationIcon />
           </template>
-          <template v-else>
+        </IconButton>
+        <IconButton
+          :isToggled="isDeleting"
+          firstText="Delete"
+          firstClass="red"
+          secondText="Done"
+          secondClass="green"
+          @click="toggleIsEditing"
+        >
+          <template #firstIcon>
             <DeleteIcon />
-            Delete
           </template>
-        </span>
-      </button>
+          <template #secondIcon>
+            <CheckIcon />
+          </template>
+        </IconButton>
+      </template>
     </div>
     <div class="rotations" v-if="Object.keys(rotations).length > 0">
       <button
@@ -160,9 +170,11 @@ const displayErrorModal = (title: string, message: string) => {
         :key="rotation.id"
         @click="onRotationClick(rotation)"
       >
-        <CheckIcon v-show="selectedRotation?.id === rotation.id" />
-        <DeleteIcon v-if="isDeleting" />
-        {{ rotation.name }}
+        <span>
+          <CheckIcon v-show="selectedRotation?.id === rotation.id" />
+          <DeleteIcon v-if="isDeleting" />
+          {{ rotation.name }}
+        </span>
       </button>
     </div>
     <p class="no-rotations" v-else>No Rotations Available.</p>
@@ -173,7 +185,7 @@ const displayErrorModal = (title: string, message: string) => {
 @import "../../styles/variables.scss";
 
 button.select-rotation-button {
-  margin-right: 20px;
+  margin-right: 5px;
 }
 
 div.rotation-select-container {
@@ -189,6 +201,8 @@ p.no-rotations {
 
 div.heading-container {
   display: flex;
+  align-items: center;
+  flex-direction: row;
 
   h1 {
     margin-right: 20px;
@@ -203,7 +217,7 @@ div.rotations {
 
   button.rotation {
     background-color: $secondary-bg-color;
-    border-radius: 13px;
+    border-radius: $ui-border-radius;
     flex: 1 0 auto;
     min-width: 130px;
     height: 50px;

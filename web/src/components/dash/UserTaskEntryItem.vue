@@ -10,6 +10,7 @@ import useValidateComment from "../../hooks/validation/useValidateComment"
 import CheckIcon from "../vector/CheckIcon.vue"
 import CancelIcon from "../vector/CancelIcon.vue"
 import EntryHeading from "./EntryHeading.vue"
+import IconButton from "../IconButton.vue"
 
 const props = defineProps<{
   saveHeading: (title: string) => Promise<boolean>,
@@ -73,25 +74,43 @@ onUpdated(() => nextTick(adjustHeight))
   <li>
     <div class="container">
       <div class="task-entry-container">
-        <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
-        <button :disabled="commentError ? true : false" v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
-          <span class="icon-text">
+        <div class="spacer">
+          <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
+        </div>
+        <IconButton
+          v-if="!session.isAdmin"
+          :disabled="isSaved || commentError.length > 0"
+          :isToggled="!isSaved"
+          firstClass="green"
+          firstText="Saved"
+          secondClass="yellow"
+          secondText="Not Saved"
+          @click.stop="saveTask"
+        >
+          <template #firstIcon>
             <CheckIcon />
-            {{ isSaved ? "Saved" : "Not Saved" }}
-          </span>
-        </button>
-        <button :disabled="session.isAdmin" :class="`icon-button check solid ${isComplete ? 'green' : 'red'}`" @click.stop="toggleCompleted">
-          <span class="icon-text">
-            <template v-if="isComplete">
-              <CheckIcon  />
-              Complete
-            </template>
-            <template v-else>
-              <CancelIcon />
-              Working
-            </template>
-          </span>
-        </button>
+          </template>
+          <template #secondIcon>
+            <CheckIcon />
+          </template>
+        </IconButton>
+        <IconButton
+          class="check"
+          :disabled="session.isAdmin || commentError.length > 0"
+          :isToggled="!isComplete"
+          firstClass="green"
+          firstText="Complete"
+          secondClass="red"
+          secondText="Working"
+          @click.stop="toggleCompleted"
+        >
+          <template #firstIcon>
+            <CheckIcon />
+          </template>
+          <template #secondIcon>
+            <CancelIcon />
+          </template>
+        </IconButton>
       </div>
       <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
     </div>
@@ -105,7 +124,13 @@ li {
   margin-bottom: 5px;
 }
 
+div.spacer {
+  flex-grow: 1;
+}
+
 div.subtask-entry {
+  position: relative;
+
   &::before {
     $size: 10px;
 
@@ -115,7 +140,8 @@ div.subtask-entry {
     height: $size;
     border-radius: 100px;
     display: inline-block;
-    margin-right: 10px;
+    left: -20px;
+    position: absolute;
   }
 }
 
@@ -143,7 +169,7 @@ div.task-entry-container {
   flex-direction: row;
 
   button.check {
-    margin-left: 15px;
+    margin-left: 5px;
   }
 }
 </style>

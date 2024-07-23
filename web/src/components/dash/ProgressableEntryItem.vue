@@ -52,7 +52,7 @@ li {
   margin-bottom: 15px;
   padding-left: 15px;
   padding-right: 15px;
-  border-radius: 15px;
+  border-radius: $ui-border-radius;
 
   &.focused,
   &:hover {
