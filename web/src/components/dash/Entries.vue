@@ -130,7 +130,7 @@ const {
       </ProgressableEntryItem>
     </ul>
     <div class="empty-rotation" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
-    <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push green" v-if="session.isAdmin">
+    <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push supertask green" v-if="session.isAdmin">
       <span>
         <PushStackIcon />
         <span>Push New CBD Phase</span>
@@ -149,11 +149,19 @@ div.empty-rotation {
 
 button.push {
   width: 100%;
-  border-radius: $ui-border-radius;
+  border-radius: 0;
+  font-size: clamp(14px, 1.3lvw, 18px);
+
+  &.supertask {
+    border-radius: $ui-border-radius;
+  }
 }
 
 li.supertask {
   background-color: rgba($secondary-bg-color, 0.65);
+  border-radius: $ui-border-radius;
+  margin-bottom: 20px;
+  overflow: hidden;
 
   &:hover,
   &.focused {

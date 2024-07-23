@@ -112,7 +112,9 @@ onUpdated(() => nextTick(adjustHeight))
           </template>
         </IconButton>
       </div>
-      <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
+      <div class="comment-container">
+        <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
+      </div>
     </div>
   </li>
 </template>
@@ -124,9 +126,17 @@ li {
   margin-bottom: 5px;
 }
 
-div.spacer {
-  flex-grow: 1;
+div.comment-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  width: 100%;
+
+  textarea {
+    width: 100%;
+  }
 }
+
 
 div.subtask-entry {
   position: relative;
@@ -146,8 +156,7 @@ div.subtask-entry {
 }
 
 div.container {
-  padding: 6px 0 6px 15px;
-  margin-right: 13px;
+  padding: 6px 15px 6px 15px;
   margin-top: 10px;
   border-radius: 8px;
   transition: background-color 0.1s ease;
@@ -167,6 +176,7 @@ div.save-container {
 div.task-entry-container {
   display: flex;
   flex-direction: row;
+  margin-left: 25px;
 
   button.check {
     margin-left: 5px;

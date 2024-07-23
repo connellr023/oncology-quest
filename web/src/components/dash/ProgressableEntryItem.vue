@@ -5,7 +5,7 @@ import EntryHeading from "./EntryHeading.vue"
 import EntryProgress from "./EntryProgress.vue"
 import Arrow from "../vector/Arrow.vue"
 
-const childrenVisible = ref(false)
+const isExpanded = ref(false)
 
 defineProps<{
   saveHeading: (saveTitle: string) => Promise<boolean>,
@@ -15,44 +15,59 @@ defineProps<{
 }>()
 
 const toggleChildrenVisibility = () => {
-  childrenVisible.value = !childrenVisible.value
+  isExpanded.value = !isExpanded.value
 }
 </script>
 
 <template>
-  <li :class="`${childrenVisible ? 'focused' : ''}`">
+  <li :class="`${isExpanded ? 'focused' : ''}`">
     <div class="progressable-entry-container" @click="toggleChildrenVisibility">
-      <Arrow :class="`arrow ${childrenVisible ? 'focused' : ''}`" />
-      <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" :is-active="childrenVisible" :title="title" />
+      <Arrow :class="`arrow ${isExpanded ? 'focused' : ''}`" />
+      <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" :is-active="isExpanded" :title="title" />
       <EntryProgress :progress="progress" />
     </div>
-    <ul v-show="childrenVisible">
-      <slot></slot>
-    </ul>
+    <div class="expand-container">
+      <ul :class="`${isExpanded ? 'expanded' : 'collapsed'}`">
+        <slot></slot>
+      </ul>
+    </div>
   </li>
 </template>
 
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
 
-li {
-  $side-padding: 15px;
+div.progressable-entry-container {
+  $vertical-padding: 5px;
 
-  padding: 5px;
-  padding-left: $side-padding;
-  padding-right: $side-padding;
-  margin-top: 10px;
+  cursor: pointer;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
 
-  & > ul {
-    margin-left: calc(10px + 2%);
-    margin-bottom: 10px;
+svg.arrow {
+  user-select: none;
+  opacity: 0.6;
+  width: 17px;
+  margin-left: 15px;
+  margin-right: 10px;
+  display: inline-block;
+  transform: rotate(90deg);
+  transition: all 0.2s ease;
+
+  &.focused {
+    fill: $theme-color-1;
+    opacity: 1;
+    transform: rotate(180deg);
   }
+}
 
+li {
   transition: background-color 0.07s ease;
-  margin-bottom: 15px;
-  padding-left: 15px;
-  padding-right: 15px;
-  border-radius: $ui-border-radius;
 
   &.focused,
   &:hover {
@@ -64,26 +79,19 @@ li {
   }
 }
 
-div.progressable-entry-container {
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+div.expand-container {
+  overflow: hidden;
 
-svg.arrow {
-  user-select: none;
-  opacity: 0.6;
-  width: 17px;
-  margin-right: 10px;
-  display: inline-block;
-  transform: rotate(90deg);
-  transition: all 0.2s ease;
+  & > ul {
+    &.expanded {
+      transition: margin-top 0.17s ease;
+      margin-top: 0;
+    }
 
-  &.focused {
-    fill: $theme-color-1;
-    opacity: 1;
-    transform: rotate(180deg);
+    &.collapsed {
+      transition: margin-top 0.4s ease-in;
+      margin-top: -200%;
+    }
   }
 }
 </style>

@@ -123,6 +123,7 @@ button {
     font-size: 16px;
 
     &.focused,
+    &:focus,
     &:hover {
       color: $main-txt-color;
       background-color: rgba(255, 255, 255, 0.015);
@@ -138,6 +139,7 @@ button {
 
     &.green {
       &.solid,
+      &:focus,
       &:hover {
         color: $theme-color-green;
 
@@ -149,6 +151,7 @@ button {
 
     &.red {
       &.solid,
+      &:focus,
       &:hover {
         color: $theme-color-red;
 
@@ -160,6 +163,7 @@ button {
 
     &.yellow {
       &.solid,
+      &:focus,
       &:hover {
         color: $theme-color-yellow;
 
@@ -176,7 +180,7 @@ button {
       flex-direction: row;
 
       & > span {
-        margin-left: 6px;
+        margin-left: 7px;
       }
     }
 
@@ -197,9 +201,7 @@ textarea {
     color: $main-txt-color;
     font-family: $main-font;
     min-height: 30px;
-    width: calc(100% - 17px);
     padding: 12px;
-    margin-top: 10px;
     border-radius: 15px;
     resize: none;
     font-size: clamp(15px, 1.5vw, 18px);
@@ -233,10 +235,6 @@ input {
     border: 2px solid transparent;
     background-color: rgba(255, 255, 255, 0.015);
 
-    &:focus {
-      background-color: rgba(255, 255, 255, 0.04);
-    }
-
     &::placeholder {
       font-style: italic;
     }
@@ -262,7 +260,7 @@ h1 {
   padding-left: $side-padding;
   padding-right: $side-padding;
   font-weight: normal;
-  font-size: clamp(25px, 2.4lvw, 32px);
+  font-size: clamp(19px, 2.4lvw, 31px);
 
   &.section-heading {
     padding-left: 0;
@@ -410,6 +408,10 @@ div.modal {
 ul {
   list-style-type: none;
   padding-left: 0;
+}
+
+div.spacer {
+  flex-grow: 1;
 }
 
 ::-webkit-scrollbar {

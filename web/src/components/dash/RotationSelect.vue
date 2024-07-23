@@ -134,7 +134,9 @@ const displayErrorModal = (title: string, message: string) => {
   />
   <div class="rotation-select-container">
     <div class="heading-container">
-      <h1 class="section-heading">Rotations</h1>
+      <div class="spacer">
+        <h1 class="section-heading">Rotations</h1>
+      </div>
       <template v-if="session.isAdmin">
         <IconButton
           class="select-rotation-button"
@@ -173,7 +175,7 @@ const displayErrorModal = (title: string, message: string) => {
         <span>
           <CheckIcon v-show="selectedRotation?.id === rotation.id" />
           <DeleteIcon v-if="isDeleting" />
-          {{ rotation.name }}
+          <span>{{ rotation.name }}</span>
         </span>
       </button>
     </div>

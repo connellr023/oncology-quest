@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import IconButton from "../IconButton.vue"
-import ExportIcon from "../vector/ExportIcon.vue"
+import BackArrow from "../vector/BackArrow.vue"
 
 defineProps<{
   onBack: () => void
@@ -15,7 +15,7 @@ defineProps<{
     @click="onBack"
   >
     <template #firstIcon>
-      <ExportIcon />
+      <BackArrow />
     </template>
   </IconButton>
 </template>

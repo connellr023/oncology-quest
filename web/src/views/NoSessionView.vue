@@ -86,7 +86,7 @@ div.content-container {
       padding-left: $side-padding;
       padding-right: $side-padding;
       margin-top: -5px;
-      font-size: clamp(18px, 1.3lvw, 23px);
+      font-size: clamp(16px, 1.3lvw, 23px);
       white-space: pre-wrap;
     }
   }
