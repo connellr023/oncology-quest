@@ -68,7 +68,8 @@ body {
   color: $main-txt-color;
   font-family: $main-font;
   margin: auto;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .flex-wrapper {
@@ -379,7 +380,7 @@ div.modal {
   justify-content: center;
   align-items: center;
   text-align: center;
-  z-index: 5;
+  z-index: 300;
 
   div.modal-content {
     padding: 10px;

@@ -306,8 +306,8 @@ div.search-container {
 }
 
 div.account-bar-container {
-  position: absolute;
-  z-index: 2;
+  position: fixed;
+  z-index: 200;
   left: 0;
   height: 100%;
   width: 40lvw;

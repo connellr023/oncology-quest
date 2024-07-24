@@ -142,6 +142,10 @@ const {
 <style scoped lang="scss">
 @import "../../styles/variables.scss";
 
+div.entries-container {
+  margin-bottom: 20px;
+}
+
 div.empty-rotation {
   margin-bottom: 20px;
   opacity: 0.7;

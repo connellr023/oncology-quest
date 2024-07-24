@@ -183,6 +183,7 @@ button.select-rotation-button {
 }
 
 div.rotation-select-container {
+  margin-top: 40px;
   margin-bottom: 40px;
 }
 

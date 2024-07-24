@@ -67,7 +67,7 @@ const inStageOne = ref(true)
     :canGotoStageTwo="canGotoStageTwo"
     @update-stage="inStageOne = $event"
   >
-    <template #title>Register a <b><i>Oncology Quest</i></b> account below.</template>
+    <template #title>Register an <b><i>Oncology Quest</i></b> account below.</template>
     <template #stage-one>
       <LabeledFormInput
         title="Username"

@@ -65,6 +65,7 @@ const saveEdit = async () => {
 
   if (await props.saveHeading(title.value)) {
     toggleEditMode()
+    pushNotification("Task heading saved.", true)
   }
   else {
     pushNotification("Failed to save task heading.")

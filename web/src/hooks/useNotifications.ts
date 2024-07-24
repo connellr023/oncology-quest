@@ -20,7 +20,7 @@ const useNotifications = () => {
             isHidden: false
         }
 
-        const timeout = message.length * 65
+        const timeout = message.length * 75
 
         setTimeout(() => {
             notification.value.isHidden = true

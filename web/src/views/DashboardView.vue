@@ -38,7 +38,7 @@ if (session.value.isAdmin) {
 <template>
   <div class="dash-container">
     <ManageUsersBar v-if="session.isAdmin" />
-    <div class="dash">
+    <div :class="`dash ${session.isAdmin ? 'shifted' : ''}`">
       <TopBar />
       <div class="dash-content">
         <RotationSelect />
@@ -90,12 +90,18 @@ div.dash-container {
   height: 100lvh;
   
   div.dash {
-    padding: 13px 25px 0 30px;
+    $side-padding: 15px;
+    $shifted-left-padding: 30px;
+
+    padding: 13px $side-padding 0 $side-padding;
     height: 100%;
+
+    &.shifted {
+      padding-left: $shifted-left-padding;
+    }
 
     div.dash-content {
       height: calc(100% - 60px);
-      overflow-y: auto;
     }
   }
 }

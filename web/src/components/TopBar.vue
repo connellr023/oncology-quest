@@ -127,13 +127,18 @@ div.profile-icon {
 }
 
 div.topbar-container {
+  $vertical-padding: 10px;
+
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
   background-color: $main-bg-color;
-  padding-bottom: 12px;
-  position: relative;
+  top: 0;
+  position: fixed;
   display: flex;
   align-items: center;
   width: 100%;
   height: auto;
+  z-index: 100;
 }
 
 div.name {
