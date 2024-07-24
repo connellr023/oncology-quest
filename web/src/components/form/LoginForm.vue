@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import useLogin from "../../hooks/useLogin";
+import useLogin from "../../hooks/useLogin"
+import useNotifications from "../../hooks/useNotifications"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
 import LoadingButton from "../LoadingButton.vue"
@@ -7,6 +8,7 @@ import BackButton from "./BackButton.vue"
 
 defineProps<{ onBack: () => void }>()
 
+const { pushNotification } = useNotifications()
 const {
   loading,
   login,
@@ -17,11 +19,18 @@ const {
   usernameError
 } = useLogin()
 
-const handleSubmit = (_: Event) => {
+const handleSubmit = async (_: Event) => {
   const isError = (usernameError.value || passwordError.value)
 
   if (!isError) {
-    login()
+    await login()
+
+    if (loginError.value.length === 0) {
+      pushNotification("Logged in successfully.", true)
+    }
+    else {
+      pushNotification(loginError.value)
+    }
   }
 }
 </script>
@@ -43,7 +52,6 @@ const handleSubmit = (_: Event) => {
       :error="passwordError"
       v-model="password"
     />
-    <div class="form-error error-label" v-if="loginError">{{ loginError }}</div>
     <LoadingButton :loading="loading" text="Login" />
     <BackButton :onBack="onBack" />
   </form>

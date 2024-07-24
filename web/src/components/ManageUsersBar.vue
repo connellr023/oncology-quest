@@ -8,6 +8,7 @@ import useUserSearch from "../hooks/useUserSearch"
 import useDeleteUser from "../hooks/useDeleteUser"
 import useAllowResetPassword from "../hooks/useAllowResetPassword"
 import useExportProgress from "../hooks/useExportProgress"
+import useNotifications from "../hooks/useNotifications"
 
 import Spinner from "../components/vector/Spinner.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
@@ -29,6 +30,7 @@ const { search, results, loading, searchError } = useUserSearch()
 const { deleteUser } = useDeleteUser()
 const { allowReset } = useAllowResetPassword()
 const { exportProgress } = useExportProgress()
+const { pushNotification } = useNotifications()
 
 const query = ref("")
 const deleteUserError = ref("")
@@ -80,6 +82,8 @@ const confirmDeleteUser = () => {
       delete results.value[selectedUser.value.id]
       selectedUser.value = null
       showConfirmationModal.value = false
+
+      pushNotification("User deleted successfully.", true)
     }
     else {
       deleteUserError.value = "Failed to delete user."
@@ -102,6 +106,8 @@ const onAllowResetClicked = async () => {
   else {
     allowResetExpiryDate.value = result.passwordResetTimestamp.toLocaleTimeString()
     resetToken.value = result.resetToken
+
+    pushNotification("Password reset enabled successfully.", true)
   }
 }
 
@@ -124,10 +130,6 @@ onUnmounted(() => {
       <h3>Manage Users</h3>
       <div class="search-container">
         <input @keyup.enter="searchUser" v-model="query" type="text" placeholder="Search users..." class="bubble" />
-        <!-- <button class="icon-button" @click="searchUser">
-          <Spinner class="spinner" v-if="loading" />
-          <SearchIcon v-else />
-        </button> -->
         <IconButton
           @click="searchUser"
           :disabled="loading"

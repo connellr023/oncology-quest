@@ -10,8 +10,8 @@ const props = defineProps<{
   submitButtonText: string,
   inStageOne: boolean,
   canGotoStageTwo: boolean,
-  error: string,
-  loading: boolean
+  loading: boolean,
+  disableSubmit: boolean
 }>()
 
 const switchStage = () => {
@@ -34,10 +34,7 @@ const switchStage = () => {
     </div>
     <div class="stage-container" v-else>
       <slot name="stage-two"></slot>
-      <div>
-        <div class="error-label" v-if="error">{{ error }}</div>
-      </div>
-      <LoadingButton class="ripple" :loading="loading" :text="submitButtonText" />
+      <LoadingButton :disabled="disableSubmit" :loading="loading" :text="submitButtonText" />
       <button class="prev std" @click="switchStage">Previous Step</button>
     </div>
     <BackButton :onBack="onBack" />

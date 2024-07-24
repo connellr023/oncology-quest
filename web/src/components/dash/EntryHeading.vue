@@ -3,6 +3,7 @@ import { Ref, inject, onUnmounted, ref } from "vue"
 import { User } from "../../models/user"
 
 import useValidateTitle from "../../hooks/validation/useValidateTitle"
+import useNotifications from "../../hooks/useNotifications"
 
 import EditIcon from "../vector/EditIcon.vue"
 import CheckIcon from "../vector/CheckIcon.vue"
@@ -22,6 +23,7 @@ const session = inject<Ref<User>>("session")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
 const { title, titleError } = useValidateTitle()
+const { pushNotification } = useNotifications()
 
 title.value = props.title
 
@@ -64,11 +66,14 @@ const saveEdit = async () => {
   if (await props.saveHeading(title.value)) {
     toggleEditMode()
   }
+  else {
+    pushNotification("Failed to save task heading.")
+  }
 }
 
 const deleteTaskHeading = async () => {
   if (!await props.deleteHeading()) {
-    console.error("Failed to delete task")
+    pushNotification("Failed to delete task heading.")
   }
 
   toggleEditMode()

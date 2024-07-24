@@ -8,6 +8,7 @@ import useLogout from "../hooks/useLogout"
 import useValidatePassword from "../hooks/validation/useValidatePassword"
 import useDeleteUser from "../hooks/useDeleteUser"
 import useExportProgress from "../hooks/useExportProgress"
+import useNotifications from "../hooks/useNotifications"
 
 import UserProfileIcon from "./UserProfileIcon.vue"
 import LogoutIcon from "./vector/LogoutIcon.vue"
@@ -25,6 +26,7 @@ const { logout } = useLogout()
 const { password, passwordError } = useValidatePassword()
 const { deleteSelf } = useDeleteUser()
 const { exportProgress } = useExportProgress()
+const { pushNotification } = useNotifications()
 
 const showProfileOptions = ref(false)
 const showDeleteAccountModal = ref(false)
@@ -37,6 +39,8 @@ const toggleProfileOptions = () => {
 const onLogoutClick = async () => {
   resetAll()
   await logout()
+
+  pushNotification("Logged out successfully.", true)
 }
 
 const onDeleteAccountClick = () => {
@@ -59,6 +63,8 @@ const deleteAccount = async () => {
   if (await deleteSelf(password.value)) {
     showDeleteAccountModal.value = false
     await onLogoutClick()
+
+    pushNotification("Account deleted successfully.", true)
   }
   else {
     passwordError.value = "Failed to delete account. Check your password."

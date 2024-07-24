@@ -7,10 +7,10 @@ import useEntries from "../../hooks/useEntries"
 import useRotations from "../../hooks/useRotations"
 import useUserTasks from "../../hooks/useUserTasks"
 import useValidateName from "../../hooks/validation/useValidateName"
+import useNotifications from "../../hooks/useNotifications"
 
 import CheckIcon from "../vector/CheckIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
-import MessageModal from "../MessageModal.vue"
 import NewRotationIcon from "../vector/NewRotationIcon.vue"
 import InputModal from "../InputModal.vue"
 import IconButton from "../IconButton.vue"
@@ -24,17 +24,15 @@ const { fetchEntries } = useEntries()
 const { fetchOwnTasks, fetchUserTasks } = useUserTasks()
 const { deleteRotation, createRotation } = useRotations()
 const { name, nameError } = useValidateName()
+const { pushNotification } = useNotifications()
 
 const isDeleting = ref(false)
-const isErrorModalVisible = ref(false)
 const isCreateRotationLoading = ref(false)
 const isCreateRotationModalVisible = ref(false)
-const errorModalTitle = ref("")
-const errorModalMessage = ref("")
 
 const handleFetchUserTasks = async (rotation: Rotation) => {
   if (selectedUser.value && !await fetchUserTasks(rotation.id, selectedUser.value.id)) {
-    displayErrorModal("Tasks Request Error", "Failed to fetch user tasks. Please try again later.")
+    pushNotification("Failed to fetch user tasks. Please try again later.")
     return
   }
 }
@@ -52,12 +50,13 @@ const confirmNewRotation = async () => {
     return
   }
 
-
   isCreateRotationLoading.value = true
 
   if (await createRotation(name.value)) {
     isCreateRotationModalVisible.value = false
     name.value = ""
+
+    pushNotification("Rotation created successfully.", true)
   }
   else {
     nameError.value = "Failed to create rotation."
@@ -71,12 +70,12 @@ const selectRotation = async (rotation: Rotation) => {
     await handleFetchUserTasks(rotation)
   }
   else if (!await fetchOwnTasks(rotation.id)) {
-    displayErrorModal("Tasks Request Error", "Failed to fetch own tasks. Please try again later.")
+    pushNotification("Failed to fetch own tasks. Please try again later.")
     return
   }
 
   if (!await fetchEntries(rotation.id)) {
-    displayErrorModal("Entries Request Error", "Failed to fetch entries. Please try again later.")
+    pushNotification("Failed to fetch entries. Please try again later.")
     return
   }
 
@@ -87,14 +86,19 @@ const unselectRotation = () => {
   selectedRotation.value = null
 }
 
-const toggleIsEditing = () => {
+const toggleIsDeleting = () => {
   unselectRotation()
   isDeleting.value = !isDeleting.value
 }
 
-const onRotationClick = (rotation: Rotation) => {
+const onRotationClick = async (rotation: Rotation) => {
   if (isDeleting.value) {
-    deleteRotation(rotation.id)
+    if (await deleteRotation(rotation.id)) {
+      pushNotification("Rotation deleted successfully.", true)
+    }
+    else {
+      pushNotification("Failed to delete rotation.")
+    }
   }
   else {
     if (selectedRotation.value?.id === rotation.id) {
@@ -105,21 +109,9 @@ const onRotationClick = (rotation: Rotation) => {
     }
   }
 }
-
-const displayErrorModal = (title: string, message: string) => {
-  errorModalTitle.value = title
-  errorModalMessage.value = message
-  isErrorModalVisible.value = true
-}
 </script>
 
 <template>
-  <MessageModal
-    :title="errorModalTitle"
-    :visible="isErrorModalVisible"
-    :error="errorModalMessage"
-    @change="isErrorModalVisible = $event"
-  />
   <InputModal
     v-if="session.isAdmin"
     v-model="name"
@@ -154,7 +146,7 @@ const displayErrorModal = (title: string, message: string) => {
           firstClass="red"
           secondText="Done"
           secondClass="green"
-          @click="toggleIsEditing"
+          @click="toggleIsDeleting"
         >
           <template #firstIcon>
             <DeleteIcon />

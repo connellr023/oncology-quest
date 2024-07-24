@@ -79,24 +79,6 @@ body {
   height: 100vh;
 }
 
-.ripple {
-  background-position: center;
-  transition: background 0.8s ease;
-
-  $opacity: 0.35;
-  $col: rgba(0, 0, 0, $opacity);
-
-  &:hover {
-    background: $col radial-gradient(circle, transparent 1%, $col 1%) center/15000%;
-  }
-
-  &:active {
-    background-color: $col;
-    background-size: 100%;
-    transition: background 0s;
-  }
-}
-
 button {
   cursor: pointer;
   appearance: none;
@@ -108,6 +90,24 @@ button {
   font-size: clamp(18px, 2vw, 21px);
   font-family: $main-font;
   transition: all 0.07s ease-in-out;
+
+  &.ripple {
+    background-position: center;
+    transition: background 0.8s ease;
+  
+    $opacity: 0.35;
+    $col: rgba(0, 0, 0, $opacity);
+  
+    &:hover {
+      background: $col radial-gradient(circle, transparent 1%, $col 1%) center/15000%;
+    }
+  
+    &:active {
+      background-color: $col;
+      background-size: 100%;
+      transition: background 0s;
+    }
+  }
 
   &:hover {
     background-color: $main-txt-color;
@@ -145,7 +145,6 @@ button {
     }
 
     &.focused,
-    &:focus,
     &:hover {
       color: $main-txt-color;
       background-color: rgba(255, 255, 255, 0.015);
@@ -161,7 +160,6 @@ button {
 
     &.green {
       &.solid,
-      &:focus,
       &:hover {
         color: $theme-color-green;
 
@@ -173,7 +171,6 @@ button {
 
     &.red {
       &.solid,
-      &:focus,
       &:hover {
         color: $theme-color-red;
 
@@ -185,7 +182,6 @@ button {
 
     &.yellow {
       &.solid,
-      &:focus,
       &:hover {
         color: $theme-color-yellow;
 

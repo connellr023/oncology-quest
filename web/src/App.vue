@@ -9,6 +9,7 @@ import useSession from "./hooks/useSession"
 import DashboardView from "./views/DashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
+import Notifier from "./components/Notifier.vue"
 
 const {
   fetchSession,
@@ -63,6 +64,7 @@ provide("resetAll", resetAll)
       </div>
     </div>
   </main>
+  <Notifier />
 </template>
 
 <style scoped lang="scss">
