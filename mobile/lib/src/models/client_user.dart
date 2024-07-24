@@ -51,3 +51,19 @@ class ClientUser {
     );
   }
 }
+
+Map<int, ClientUser> deserializeSearchResults(Map<String, dynamic> json) {
+  final results = <int, ClientUser>{};
+
+  for (final entry in json.entries) {
+    final id = int.tryParse(entry.key);
+
+    if (id == null) {
+      throw ErrorDescription('Failed to parse user ID.');
+    }
+
+    results[id] = ClientUser.deserialize(entry.value);
+  }
+
+  return results;
+}

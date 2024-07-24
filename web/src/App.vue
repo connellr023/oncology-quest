@@ -9,6 +9,7 @@ import useSession from "./hooks/useSession"
 import DashboardView from "./views/DashboardView.vue"
 import NoSessionView from "./views/NoSessionView.vue"
 import MainLogo from "./components/vector/MainLogo.vue"
+import Notifier from "./components/Notifier.vue"
 
 const {
   fetchSession,
@@ -63,6 +64,7 @@ provide("resetAll", resetAll)
       </div>
     </div>
   </main>
+  <Notifier />
 </template>
 
 <style scoped lang="scss">
@@ -98,8 +100,8 @@ $logo-vert-offset: 170px;
 }
 
 svg {
-  width: 15lvw;
-  min-width: 100px;
+  width: 13lvh;
+  min-width: 80px;
   max-width: 125px;
 
   &.logo {
@@ -146,6 +148,12 @@ div.logo-container {
   100% {
     transform: translateY(0) scale(0.8);
     opacity: 0.9;
+  }
+}
+
+@media (max-height: 400px) {
+  svg.logo {
+    display: none;
   }
 }
 </style>

@@ -42,7 +42,7 @@ onMounted(() => {
         <h1>Welcome to <b><i>Oncology Quest</i></b></h1>
         <p>an aid for Medical Oncology Trainees</p>
       </div>
-      <button @click="gotoLogin" class="std">Login</button>
+      <button @click="gotoLogin" class="std start">Login</button>
       <button @click="setView(Views.REGISTER)" class="std">Register</button>
       <button @click="setView(Views.RESET_PASSWORD)" class="std">Reset Password</button>
     </div>
@@ -68,12 +68,12 @@ div.content-container {
   text-align: center;
 
   button {
-    width: 35%;
+    width: 38%;
     min-width: 250px;
-    max-width: 290px;
+    max-width: 300px;
     margin: auto;
     margin-bottom: 18px;
-    padding: 15px
+    padding: 17px
   }
 
   div.greeting-container {
@@ -86,7 +86,7 @@ div.content-container {
       padding-left: $side-padding;
       padding-right: $side-padding;
       margin-top: -5px;
-      font-size: clamp(18px, 1.3lvw, 23px);
+      font-size: clamp(16px, 1.3lvw, 23px);
       white-space: pre-wrap;
     }
   }

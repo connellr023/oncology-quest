@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/bottom_panel.dart';
-import 'package:oncology_quest_mobile/src/widgets/dashboard/dashboard_app_bar.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/search_users_drawer.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/top_app_bar.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/entries.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/graphic.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/rotation_select.dart';
@@ -19,16 +21,6 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  void _showBottomPanel(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      builder: (BuildContext context) {
-        return const BottomPanel();
-      }
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final sessionState = Provider.of<SessionState>(context, listen: false);
@@ -42,10 +34,13 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     return Scaffold(
-      appBar: DashboardAppBar(
+      appBar: TopAppBar(
         session: sessionState.session!,
-        onProfileTap: () => _showBottomPanel(context)
+        onProfileTap: () => showInteractivePanel(context, const BottomPanel())
       ),
+      drawer: sessionState.session!.user.isAdmin
+        ? SearchUsersDrawer(jwt: sessionState.jwt!)
+        : null,
       body: Padding(
         padding: const EdgeInsets.only(
           left: 15,
@@ -60,15 +55,33 @@ class _DashboardViewState extends State<DashboardView> {
               Consumer<SelectedRotationState>(
                 builder: (context, selectedRotationState, child) => Column(
                   children: <Widget>[
-                    if (selectedRotationState.selectedRotationId != null) ...<Widget>[
-                      const SizedBox(height: 35),
-                      SectionHeading(context: context, title: sessionState.session!.user.isAdmin ? 'Task Entries' : 'My Progress'),
-                      Entries(
-                        rotationId: selectedRotationState.selectedRotationId!,
-                        session: sessionState.session!,
-                        jwt: sessionState.jwt!
+                    if (selectedRotationState.selectedRotationId != null) Consumer<UserTasksState>(
+                      builder: (context, userTasksState, child) => Column(
+                        children: <Widget>[
+                          const SizedBox(height: 35),
+                          SectionHeading(
+                            title: !sessionState.session!.user.isAdmin
+                              ? 'My Progress'
+                              : userTasksState.selectedUser == null
+                                ? 'Task Entries'
+                                : '${userTasksState.selectedUser!.name}\'s Progress',
+                            children: <Widget>[
+                              if (sessionState.session!.user.isAdmin) BasicOption(
+                                title: 'View User Tasks',
+                                color: textColor,
+                                icon: Icons.search,
+                                onTap: () => Scaffold.of(context).openDrawer()
+                              )
+                            ]
+                          ),
+                          Entries(
+                            rotationId: selectedRotationState.selectedRotationId!,
+                            session: sessionState.session!,
+                            jwt: sessionState.jwt!
+                          )
+                        ]
                       )
-                    ]
+                    )
                     else ...<Widget>[
                       const SizedBox(height: 60),
                       _buildNoRotationSelected(context)

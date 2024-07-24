@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/default_profile_icon.dart';
 
-class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
+class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double padding;
   final Session session;
   final void Function() onProfileTap;
 
-  const DashboardAppBar({
+  const TopAppBar({
     super.key,
     required this.session,
     required this.onProfileTap,
@@ -33,7 +32,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           children: <Widget>[
             DefaultProfileIcon(
-              size: size,
+              size: size * 2,
               name: session.user.name,
               onTap: () => onProfileTap(),
             ),

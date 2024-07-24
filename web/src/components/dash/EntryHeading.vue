@@ -2,14 +2,17 @@
 import { Ref, inject, onUnmounted, ref } from "vue"
 import { User } from "../../models/user"
 
-import useValidateTitle from "../../hooks/validation/useValidateTitle";
+import useValidateTitle from "../../hooks/validation/useValidateTitle"
+import useNotifications from "../../hooks/useNotifications"
 
 import EditIcon from "../vector/EditIcon.vue"
 import CheckIcon from "../vector/CheckIcon.vue"
 import CancelIcon from "../vector/CancelIcon.vue"
 import DeleteIcon from "../vector/DeleteIcon.vue"
+import IconButton from "../IconButton.vue"
 
 defineEmits(["click"])
+
 const props = defineProps<{
   saveHeading: (saveTitle: string) => Promise<boolean>,
   deleteHeading: () => Promise<boolean>,
@@ -20,6 +23,7 @@ const session = inject<Ref<User>>("session")!
 const isEditing = inject<Ref<boolean>>("isEditing")!
 
 const { title, titleError } = useValidateTitle()
+const { pushNotification } = useNotifications()
 
 title.value = props.title
 
@@ -62,11 +66,14 @@ const saveEdit = async () => {
   if (await props.saveHeading(title.value)) {
     toggleEditMode()
   }
+  else {
+    pushNotification("Failed to save task heading.")
+  }
 }
 
 const deleteTaskHeading = async () => {
   if (!await props.deleteHeading()) {
-    console.error("Failed to delete task")
+    pushNotification("Failed to delete task heading.")
   }
 
   toggleEditMode()
@@ -85,19 +92,40 @@ onUnmounted(() => {
     </div>
     <div class="edit-buttons-container" v-if="session.isAdmin">
       <template v-if="inEditMode">
-        <button class="cancel icon-button red" @click.stop="cancelEdit">
-          <CancelIcon />
-        </button>
-        <button class="icon-button green" @click.stop="saveEdit" :disabled="titleError ? true : false">
-          <CheckIcon />
-        </button>
-        <button class="icon-button red" @click.stop="deleteTaskHeading">
-          <DeleteIcon />
-        </button>
+        <IconButton
+          firstClass="green"
+          @click.stop="saveEdit"
+        >
+          <template #firstIcon>
+            <CheckIcon />
+          </template>
+        </IconButton>
+        <IconButton
+          firstClass="red"
+          @click.stop="cancelEdit"
+        >
+          <template #firstIcon>
+            <CancelIcon />
+          </template>
+        </IconButton>
+        <IconButton
+          firstClass="red"
+          @click.stop="deleteTaskHeading"
+        >
+          <template #firstIcon>
+            <DeleteIcon />
+          </template>
+        </IconButton>
       </template>
-      <button class="edit icon-button" v-else :disabled="isEditing" @click.stop="toggleEditMode">
-        <EditIcon @click.stop="toggleEditMode" />
-      </button>
+      <IconButton
+        v-else
+        :disabled="isEditing"
+        @click.stop="toggleEditMode"
+      >
+        <template #firstIcon>
+          <EditIcon />
+        </template>
+      </IconButton>
     </div>
   </div>
 </template>
@@ -106,6 +134,7 @@ onUnmounted(() => {
 @import "../../styles/variables.scss";
 
 h3.entry-heading {
+  word-break: break-word;
   font-size: clamp(14px, 1.5lvw, 17px);
   font-weight: normal;
   color: $main-txt-color;
@@ -135,10 +164,9 @@ div.edit-buttons-container {
 
   button {
     margin: auto;
-    margin-left: 5px;
+    margin-left: 2px;
 
     &.edit {
-      margin-right: 15px;
       margin-left: auto;
     }
   }

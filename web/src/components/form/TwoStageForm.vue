@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import LoadingButton from "../LoadingButton.vue"
+import BackButton from "./BackButton.vue"
 
 const emits = defineEmits(["update-stage"])
+
 const props = defineProps<{
   onBack: () => void,
   handleSubmit: () => void,
   submitButtonText: string,
   inStageOne: boolean,
   canGotoStageTwo: boolean,
-  error: string,
-  loading: boolean
+  loading: boolean,
+  disableSubmit: boolean
 }>()
 
 const switchStage = () => {
@@ -32,13 +34,10 @@ const switchStage = () => {
     </div>
     <div class="stage-container" v-else>
       <slot name="stage-two"></slot>
-      <div>
-        <div class="error-label" v-if="error">{{ error }}</div>
-      </div>
-      <LoadingButton :loading="loading" :text="submitButtonText" />
+      <LoadingButton :disabled="disableSubmit" :loading="loading" :text="submitButtonText" />
       <button class="prev std" @click="switchStage">Previous Step</button>
     </div>
-    <button class="back" @click="onBack">Back</button>
+    <BackButton :onBack="onBack" />
   </form>
 </template>
 

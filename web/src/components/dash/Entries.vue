@@ -114,21 +114,27 @@ const {
             :saveHeading="(saveTitle: string) => updateSubtask(selectedRotation!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"
             :deleteHeading="() => deleteSubtask(selectedRotation!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id)"
           />
-          <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal('Create Clinical Experience Entry', (confirmTitle: string) => createSubtask(confirmTitle, selectedRotation!.id, task.entry.id, supertaskIndex, taskIndex))">
-            <PushStackIcon />
-            Push New Clinical Experience
+          <button class="bubble crisp push green" v-if="session.isAdmin" @click="showCreateEntryModal('Create Clinical Experience Entry', (confirmTitle: string) => createSubtask(confirmTitle, selectedRotation!.id, task.entry.id, supertaskIndex, taskIndex))">
+            <span>
+              <PushStackIcon />
+              <span>Push New Clinical Experience</span>
+            </span>
           </button>
         </ProgressableEntryItem>
-        <button class="bubble push highlight" v-if="session.isAdmin" @click="showCreateEntryModal('Create EPA Entry', (confirmTitle: string) => createTask(confirmTitle, selectedRotation!.id, supertask.entry.id, supertaskIndex))">
-          <PushStackIcon />
-          Push New EPA
+        <button class="bubble crisp push green" v-if="session.isAdmin" @click="showCreateEntryModal('Create EPA Entry', (confirmTitle: string) => createTask(confirmTitle, selectedRotation!.id, supertask.entry.id, supertaskIndex))">
+          <span>
+            <PushStackIcon />
+            <span>Push New EPA</span>
+          </span>
         </button>
       </ProgressableEntryItem>
     </ul>
     <div class="empty-rotation" v-if="entries[selectedRotation.id].length === 0">This rotation is looking sparse.</div>
-    <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push highlight" v-if="session.isAdmin">
-      <PushStackIcon />
-      Push New CBD Phase
+    <button @click="showCreateEntryModal('Create CBD Phase Entry', (confirmTitle: string) => createSupertask(confirmTitle, selectedRotation!.id))" class="bubble push green" v-if="session.isAdmin">
+      <span>
+        <PushStackIcon />
+        <span>Push New CBD Phase</span>
+      </span>
     </button>
   </div>
 </template>
@@ -143,10 +149,14 @@ div.empty-rotation {
 
 button.push {
   width: 100%;
+  font-size: clamp(14px, 1.3lvw, 18px);
 }
 
 li.supertask {
   background-color: rgba($secondary-bg-color, 0.65);
+  border-radius: $ui-border-radius;
+  margin-bottom: 20px;
+  overflow: hidden;
 
   &:hover,
   &.focused {

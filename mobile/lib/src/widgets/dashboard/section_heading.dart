@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 
 class SectionHeading extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+
   const SectionHeading({
     super.key,
-    required this.context,
     required this.title,
+    this.children = const []
   });
-
-  final BuildContext context;
-  final String title;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Row(
-          children: [
+          children: <Widget>[
             Text(
               title,
               textAlign: TextAlign.left,
@@ -25,7 +24,11 @@ class SectionHeading extends StatelessWidget {
                 color: textColor,
                 fontSize: headingFontSize(context)
               )
-            )
+            ),
+            if (children.isNotEmpty) ...<Widget>[
+              const Spacer(),
+              ...children
+            ]
           ]
         ),
         const SizedBox(height: 13)

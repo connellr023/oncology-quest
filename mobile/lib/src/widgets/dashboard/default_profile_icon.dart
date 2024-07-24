@@ -21,19 +21,24 @@ class DefaultProfileIcon extends StatelessWidget {
       borderRadius: BorderRadius.circular(50),
       splashColor: Colors.white,
       child: Ink(
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Theme.of(context).primaryColor,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
+        child: Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
           child: Text(
             initials,
             style: TextStyle(
               color: Theme.of(context).textTheme.bodyLarge!.color,
-              fontSize: size
-            )
-          )
+              fontSize: size * 0.5
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.clip
+          ),
         )
       )
     );

@@ -2,6 +2,7 @@
 import { computed, ref } from "vue"
 
 import useRegister from "../../hooks/useRegister"
+import useNotifications from "../../hooks/useNotifications"
 
 import LabeledFormInput from "./LabeledFormInput.vue"
 import TwoStageForm from "./TwoStageForm.vue"
@@ -11,6 +12,7 @@ const props = defineProps<{
   onBack: () => void
 }>()
 
+const { pushNotification } = useNotifications()
 const {
   username,
   name,
@@ -42,8 +44,12 @@ const handleSubmit = async () => {
     await register()
   }
 
-  if (!serverError.value) {
+  if (serverError.value.length === 0) {
     props.onRegister()
+    pushNotification("Registered successfully.", true)
+  }
+  else {
+    pushNotification(serverError.value)
   }
 }
 
@@ -53,7 +59,7 @@ const inStageOne = ref(true)
 <template>
   <TwoStageForm
     submitButtonText="Register"
-    :error="serverError"
+    :disableSubmit="isStageTwoErrors"
     :loading="loading"
     :onBack="onBack"
     :handleSubmit="handleSubmit"

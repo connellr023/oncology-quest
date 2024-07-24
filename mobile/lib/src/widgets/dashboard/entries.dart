@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/state/entries_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
-import 'package:oncology_quest_mobile/src/utilities/regex.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/progressable_entry_layer.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/input_panel.dart';
@@ -25,18 +22,12 @@ class Entries extends StatelessWidget {
   });
 
   void _showCreateEntryModal(BuildContext context, String title, void Function(String) onConfirm) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor2,
-      builder: (BuildContext context) {
-        return InputPanel(
-          hintText: title,
-          errorMessage: '$title title can only contain letters, numbers, and the characters +, -, (, ), and / and be within 1 and 100 characters.',
-          regex: entryTitleRegex,
-          onConfirm: onConfirm
-        );
-      }
-    );
+    showInteractivePanel(context, InputPanel(
+      hintText: title,
+      errorMessage: '$title title can only contain letters, numbers, and the characters +, -, (, ), and / and be within 1 and 100 characters.',
+      regex: entryTitleRegex,
+      onConfirm: onConfirm
+    ));
   }
   
   @override
@@ -66,7 +57,6 @@ class Entries extends StatelessWidget {
             if (session.user.isAdmin) ...<Widget>[
               BasicOption(
                 backgroundColor: backgroundColor2,
-                context: context,
                 title: 'New CBD Phase',
                 color: okColor,
                 icon: Icons.add,
@@ -89,7 +79,7 @@ class Entries extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
         child: ProgressableEntryLayer(
           calculateProgress: (state) => state.calculateSupertaskProgress(rotationId, supertaskLevel),
           session: session,
@@ -130,7 +120,6 @@ class Entries extends StatelessWidget {
 
   Widget _buildNewEntryButton(BuildContext context, String title, void Function(String) onConfirm) {
     return BasicOption(
-      context: context,
       title: title,
       color: okColor,
       icon: Icons.add,

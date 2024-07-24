@@ -2,13 +2,15 @@
 import { Ref, VNodeRef, inject, nextTick, onMounted, onUpdated, ref } from "vue"
 import { UserTask } from "../../models/tasks"
 import { User } from "../../models/user"
-import { Rotation } from "../../models/rotation";
+import { Rotation } from "../../models/rotation"
 
-import useUserTasks from "../../hooks/useUserTasks";
+import useUserTasks from "../../hooks/useUserTasks"
+import useValidateComment from "../../hooks/validation/useValidateComment"
 
 import CheckIcon from "../vector/CheckIcon.vue"
+import CancelIcon from "../vector/CancelIcon.vue"
 import EntryHeading from "./EntryHeading.vue"
-import useValidateComment from "../../hooks/validation/useValidateComment";
+import IconButton from "../IconButton.vue"
 
 const props = defineProps<{
   saveHeading: (title: string) => Promise<boolean>,
@@ -71,15 +73,48 @@ onUpdated(() => nextTick(adjustHeight))
 <template>
   <li>
     <div class="container">
-      <div class="task-heading-container">
-        <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
-        <button :disabled="commentError ? true : false" v-if="!session.isAdmin" class="icon-button green" @click="saveTask">
-          <CheckIcon />
-          {{ isSaved ? "Saved" : "Not Saved" }}
-        </button>
-        <button @click.stop="toggleCompleted" :disabled="session.isAdmin" class="check" :class="`${isComplete ? 'active' : ''}`" />
+      <div class="task-entry-container">
+        <div class="spacer">
+          <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" class="subtask-entry" :title="value"/>
+        </div>
+        <IconButton
+          v-if="!session.isAdmin"
+          :disabled="isSaved || commentError.length > 0"
+          :isToggled="!isSaved"
+          firstClass="green"
+          firstText="Saved"
+          secondClass="yellow"
+          secondText="Not Saved"
+          @click.stop="saveTask"
+        >
+          <template #firstIcon>
+            <CheckIcon />
+          </template>
+          <template #secondIcon>
+            <CheckIcon />
+          </template>
+        </IconButton>
+        <IconButton
+          class="check"
+          :disabled="session.isAdmin || commentError.length > 0"
+          :isToggled="!isComplete"
+          firstClass="green"
+          firstText="Complete"
+          secondClass="red"
+          secondText="Working"
+          @click.stop="toggleCompleted"
+        >
+          <template #firstIcon>
+            <CheckIcon />
+          </template>
+          <template #secondIcon>
+            <CancelIcon />
+          </template>
+        </IconButton>
       </div>
-      <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
+      <div class="comment-container">
+        <textarea :class="`bubble ${commentError ? 'error' : ''}`" v-show="(session.isAdmin && comment) || !session.isAdmin" :disabled="session.isAdmin" @input="onInput" ref="textArea" spellcheck="false" placeholder="Add a comment..." v-model="comment" :readonly="session.isAdmin"></textarea>
+      </div>
     </div>
   </li>
 </template>
@@ -91,36 +126,21 @@ li {
   margin-bottom: 5px;
 }
 
-button.check {
-  $size: 13px;
+div.comment-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  width: 100%;
 
-  cursor: pointer;
-  width: $size;
-  height: $size;
-  border: 3px solid $theme-color-green;
-  border-radius: 100px;
-  background-color: transparent;
-  margin-left: auto;
-  margin-top: 6px;
-  transition: all 0.07s ease;
-  opacity: 0.7;
-
-  &.active,
-  &:hover {
-    opacity: 1;
-  }
-
-  &.active {
-    background-color: $theme-color-green;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+  textarea {
+    width: 100%;
   }
 }
 
+
 div.subtask-entry {
+  position: relative;
+
   &::before {
     $size: 10px;
 
@@ -130,17 +150,13 @@ div.subtask-entry {
     height: $size;
     border-radius: 100px;
     display: inline-block;
-    margin-right: 10px;
+    left: -20px;
+    position: absolute;
   }
 }
 
-div.task-heading-container {
-  display: flex;
-}
-
 div.container {
-  padding: 6px 0 6px 15px;
-  margin-right: 13px;
+  padding: 6px 15px 6px 15px;
   margin-top: 10px;
   border-radius: 8px;
   transition: background-color 0.1s ease;
@@ -157,39 +173,13 @@ div.save-container {
   }
 }
 
-div.check-container {
+div.task-entry-container {
   display: flex;
-  justify-content: center;
-  margin-top: 3px;
-  margin-left: auto;
-  opacity: 0.8;
-  transition: opacity 0.3s ease;
-  cursor: pointer;
+  flex-direction: row;
+  margin-left: 25px;
 
-  &:hover {
-    opacity: 1;
-  }
-
-  div {
-    $size: 13px;
-
-    width: $size;
-    height: $size;
-    border-radius: 50%;
-    background-color: #ffffff;
-    opacity: 0.7;
-    margin: 0 4px;
-    transition: all 0.2s ease;
-  }
-
-  div.active {
-    opacity: 1;
-    border-radius: 8px;
-    width: 30px;
-  }
-
-  div.completed {
-    background-color: $theme-color-green;
+  button.check {
+    margin-left: 5px;
   }
 }
 </style>

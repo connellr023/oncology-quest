@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:oncology_quest_mobile/src/state/entries_state.dart';
+import 'package:oncology_quest_mobile/src/state/selected_rotation_state.dart';
 import 'package:oncology_quest_mobile/src/state/session_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:oncology_quest_mobile/src/widgets/buttons.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/main_logo.dart';
 import '../widgets/form_text_field.dart';
-import '../utilities/regex.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -44,7 +45,14 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _attemptLogin(String username, String plaintextPassword) async {
     _updateLoading(true);
+
+    Provider.of<EntriesState>(context, listen: false).clearMemo();
+    Provider.of<UserTasksState>(context, listen: false).clearMemo();
+    Provider.of<UserTasksState>(context, listen: false).selectUser(null);
+    Provider.of<SelectedRotationState>(context, listen: false).selectRotation(null);
+
     final success = await attemptFallible(context, () => Provider.of<SessionState>(context, listen: false).login(username, plaintextPassword));
+    
     _updateLoading(false);
 
     if (success && mounted) {
@@ -118,7 +126,7 @@ class _LoginViewState extends State<LoginView> {
                 onErrorChanged: _updatePasswordError,
                 onChanged: (String input) => _password = input
               ),
-              SizedBox(height: spacing),
+              SizedBox(height: spacing + 15),
               ThematicElevatedButton(
                 width: buttonWidth,
                 height: buttonHeight,

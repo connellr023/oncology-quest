@@ -25,13 +25,13 @@ svg {
 }
 
 input {
-  padding: 9px;
-  border: 2px solid $theme-color-1;
-  border-radius: 6px;
+  padding: 11px;
+  border: 3px solid $theme-color-1;
+  border-radius: $ui-border-radius;
   background: none;
   color: darken($main-txt-color, 20%);
   font-family: $main-font;
-  font-size: 19px;
+  font-size: clamp(17px, 1.2vw, 21px);
   outline: none;
   transition: all 0.15s ease-in-out;
 
@@ -82,14 +82,32 @@ body {
 button {
   cursor: pointer;
   appearance: none;
-  border: 2px solid $main-txt-color;
-  border-radius: 8px;
+  border: 3px solid $main-txt-color;
+  border-radius: $ui-border-radius;
   background: none;
   color: $main-txt-color;
-  padding: 9px;
-  font-size: clamp(17px, 2vw, 19px);
+  padding: 12px;
+  font-size: clamp(18px, 2vw, 21px);
   font-family: $main-font;
   transition: all 0.07s ease-in-out;
+
+  &.ripple {
+    background-position: center;
+    transition: background 0.8s ease;
+  
+    $opacity: 0.35;
+    $col: rgba(0, 0, 0, $opacity);
+  
+    &:hover {
+      background: $col radial-gradient(circle, transparent 1%, $col 1%) center/15000%;
+    }
+  
+    &:active {
+      background-color: $col;
+      background-size: 100%;
+      transition: background 0s;
+    }
+  }
 
   &:hover {
     background-color: $main-txt-color;
@@ -104,30 +122,31 @@ button {
 
     &:disabled,
     &:hover {
-      background-color: darken($theme-color-1, 15%); 
+      background-color: darken($theme-color-1, 15%);
     }
   }
 
   &.minimal {
     $side-padding: 10px;
-  
+
     padding: 3px;
     padding-left: $side-padding;
     padding-right: $side-padding;
     font-size: clamp(9px, 1lvw, 12px);
   }
 
-  &.icon-button,
   &.bubble {
     background-color: none;
     border-color: transparent;
     font-size: 16px;
-    opacity: 0.6;
+
+    &.crisp {
+      border-radius: 0;
+    }
 
     &.focused,
     &:hover {
       color: $main-txt-color;
-      opacity: 1;
       background-color: rgba(255, 255, 255, 0.015);
     }
 
@@ -136,22 +155,11 @@ button {
 
       width: $size;
       height: $size;
-      margin-right: 5px;
-      margin-bottom: -5px;
       transition: all 0.1s ease;
     }
 
-    &.highlight {
-      &:hover {
-        color: $theme-color-1;
-
-        svg {
-          fill: $theme-color-1;
-        }
-      }
-    }
-
     &.green {
+      &.solid,
       &:hover {
         color: $theme-color-green;
 
@@ -162,6 +170,7 @@ button {
     }
 
     &.red {
+      &.solid,
       &:hover {
         color: $theme-color-red;
 
@@ -172,6 +181,7 @@ button {
     }
 
     &.yellow {
+      &.solid,
       &:hover {
         color: $theme-color-yellow;
 
@@ -181,36 +191,25 @@ button {
       }
     }
 
+    & > span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: row;
+
+      & > span {
+        margin-left: 7px;
+      }
+    }
+
+    &.left {
+      & > span {
+        justify-content: flex-start;
+      }
+    }
+
     &:disabled {
       opacity: 0.2;
-    }
-  }
-
-  &.icon-button {
-    background: none;
-    padding: 0;
-
-    svg {
-      opacity: 0.7;
-    }
-
-    &:hover {
-      background: none;
-      
-      svg {
-        opacity: 1;
-        fill: $theme-color-1;
-      }
-    }
-
-    &:disabled {
-      opacity: 0.1;
-
-      &:hover {
-        svg {
-          fill: white;
-        }
-      }
     }
   }
 }
@@ -220,10 +219,8 @@ textarea {
     color: $main-txt-color;
     font-family: $main-font;
     min-height: 30px;
-    width: calc(100% - 17px);
     padding: 12px;
-    margin-top: 10px;
-    border-radius: 10px;
+    border-radius: 15px;
     resize: none;
     font-size: clamp(15px, 1.5vw, 18px);
     border: 2px solid transparent;
@@ -251,14 +248,10 @@ textarea {
 
 input {
   &.bubble {
-    border-radius: 10px;
+    border-radius: 15px;
     padding: 10px;
     border: 2px solid transparent;
     background-color: rgba(255, 255, 255, 0.015);
-
-    &:focus {
-      background-color: rgba(255, 255, 255, 0.04);
-    }
 
     &::placeholder {
       font-style: italic;
@@ -285,7 +278,7 @@ h1 {
   padding-left: $side-padding;
   padding-right: $side-padding;
   font-weight: normal;
-  font-size: clamp(25px, 2.4lvw, 32px);
+  font-size: clamp(19px, 2.4lvw, 31px);
 
   &.section-heading {
     padding-left: 0;
@@ -405,7 +398,7 @@ div.modal {
       margin: 8px;
     }
 
-    p { 
+    p {
       white-space: pre-wrap;
     }
 
@@ -433,6 +426,10 @@ div.modal {
 ul {
   list-style-type: none;
   padding-left: 0;
+}
+
+div.spacer {
+  flex-grow: 1;
 }
 
 ::-webkit-scrollbar {

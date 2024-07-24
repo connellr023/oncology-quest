@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 
 class BasicOption extends StatelessWidget {
   final Color backgroundColor;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
+  final String title;
+  final Color color;
+  final IconData icon;
+  final void Function() onTap;
 
   const BasicOption({
     super.key,
-    required this.context,
     required this.title,
     required this.color,
     required this.icon,
@@ -17,12 +20,6 @@ class BasicOption extends StatelessWidget {
     this.padding = const EdgeInsets.all(7),
     this.borderRadius = 15
   });
-
-  final BuildContext context;
-  final String title;
-  final Color color;
-  final IconData icon;
-  final void Function() onTap;
 
   @override
   Widget build(BuildContext context) {

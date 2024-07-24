@@ -2,6 +2,7 @@
 import { Ref, computed, nextTick, reactive, ref, watch } from "vue"
 
 import useResetPassword from "../../hooks/useResetPassword"
+import useNotifications from "../../hooks/useNotifications"
 
 import TwoStageForm from "./TwoStageForm.vue"
 import LabeledFormInput from "./LabeledFormInput.vue"
@@ -11,6 +12,7 @@ const props = defineProps<{
   onBack: () => void
 }>()
 
+const { pushNotification } = useNotifications()
 const {
   username,
   password,
@@ -52,6 +54,10 @@ const handleSubmit = async () => {
 
   if (!resetError.value) {
     props.onReset()
+    pushNotification("Password reset successfully.", true)
+  }
+  else {
+    pushNotification(resetError.value)
   }
 }
 
@@ -71,10 +77,10 @@ const gotoNextInputField = (index: number) => {
 <template>
   <TwoStageForm
     submitButtonText="Confirm"
-    :error="resetError"
     :loading="loading"
     :onBack="onBack"
     :handleSubmit="handleSubmit"
+    :disableSubmit="tokenError.length > 0 || joinedTokenInputs.length < 4"
     :inStageOne="inStageOne"
     :canGotoStageTwo="canGotoStageTwo"
     @update-stage="inStageOne = $event"

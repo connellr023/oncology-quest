@@ -1,5 +1,5 @@
 import { ref } from "vue"
-import { API_ENDPOINT, isPasswordBanned } from "../utilities"
+import { API_ENDPOINT } from "../utilities"
 
 import useValidateUsername from "./validation/useValidateUsername"
 import useValidateName from "./validation/useValidateName"
@@ -20,45 +20,41 @@ const useRegister = () => {
 
     const register = async () => {
         loading.value = true
+        serverError.value = ""
 
-        if (isPasswordBanned(password.value)) {
-            serverError.value = "Password is too weak. Please choose a stronger password."
-        }
-        else {
-            try {
-                const response = await fetch(`${API_ENDPOINT}/api/users/register`, {
-                    credentials: "include",
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        username: username.value,
-                        name: name.value,
-                        password: password.value,
-                    }),
-                })
+        try {
+            const response = await fetch(`${API_ENDPOINT}/api/users/register`, {
+                credentials: "include",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username.value,
+                    name: name.value,
+                    password: password.value,
+                }),
+            })
 
-                if (!response.ok) {
-                    switch (response.status) {
-                        case 400:
-                            serverError.value = "Invalid registration data. Please check your inputs."
-                            break
-                        case 409:
-                            serverError.value = "That username is already taken. Please choose another."
-                            break
-                        case 429:
-                            serverError.value = "Too many requests. Please try again later."
-                            break
-                        default:
-                            serverError.value = "Server error. Please try again later."
-                            break
-                    }
+            if (!response.ok) {
+                switch (response.status) {
+                    case 400:
+                        serverError.value = "Invalid registration data. Please check your inputs."
+                        break
+                    case 409:
+                        serverError.value = "That username is already taken. Please choose another."
+                        break
+                    case 429:
+                        serverError.value = "Too many requests. Please try again later."
+                        break
+                    default:
+                        serverError.value = "Server error. Please try again later."
+                        break
                 }
             }
-            catch (error) {
-                serverError.value = "Server error. Please try again later."
-            }
+        }
+        catch (error) {
+            serverError.value = "Server error. Please try again later."
         }
 
         loading.value = false

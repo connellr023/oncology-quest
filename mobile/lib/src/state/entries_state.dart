@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
-import 'package:oncology_quest_mobile/src/utilities/endpoint.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 import 'package:http/http.dart' as http;
 
 import 'dart:convert';
@@ -16,7 +16,15 @@ class EntriesState extends ChangeNotifier {
     _entriesMemo[rotationId] = entries;
   }
 
+  void clearMemo() {
+    _entriesMemo.clear();
+  }
+
   Future<String?> fetchEntries(String jwt, int rotationId) async {
+    if (_entriesMemo[rotationId] != null) {
+      return null;
+    }
+
     try {
       final response = await http.get(apiEndpoint.resolve('/api/entries/$rotationId'),
         headers: {

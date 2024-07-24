@@ -20,12 +20,16 @@ defineProps<{
       <p v-if="error" class="error">{{ error }}</p>
       <div class="modal-buttons"> 
         <button class="bubble green" @click="onConfirm">
-          <CheckIcon />
-          Confirm
+          <span>
+            <CheckIcon />
+            <span>Confirm</span>
+          </span>
         </button>
         <button class="bubble red" @click="onCancel">
-          <CancelIcon />
-          Cancel
+          <span>
+            <CancelIcon />
+            <span>Cancel</span>
+          </span>
         </button>
       </div>
     </div>

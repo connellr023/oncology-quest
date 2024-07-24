@@ -3,10 +3,8 @@ import 'package:oncology_quest_mobile/src/models/entry_levels.dart';
 import 'package:oncology_quest_mobile/src/models/session.dart';
 import 'package:oncology_quest_mobile/src/models/user_task.dart';
 import 'package:oncology_quest_mobile/src/state/user_tasks_state.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/error_handling.dart';
-import 'package:oncology_quest_mobile/src/utilities/regex.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
+import 'package:oncology_quest_mobile/src/widgets/dashboard/basic_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/panel_input_option.dart';
 import 'package:oncology_quest_mobile/src/widgets/dashboard/two_variant_option.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +32,7 @@ class SubtaskEntry extends StatefulWidget {
 
 class _SubtaskEntryState extends State<SubtaskEntry> {
   late UserTasksState _userTasksStateNotifier;
-  UserTask? get _userTask => _userTasksStateNotifier.userTasks[widget.subtask.rotationId]?.structure[widget.subtask.id];
+  UserTask? get _userTask => _userTasksStateNotifier.userTasks[widget.session.user.id]?[widget.subtask.rotationId]?.structure[widget.subtask.id];
 
   late bool _isCommentError;
   late bool _isCommentSaved;
@@ -70,6 +68,12 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
       setState(() {
         _isCompleted = _userTask!.isCompleted;
         _comment = _userTask!.comment;
+      });
+    }
+    else {
+      setState(() {
+        _isCompleted = false;
+        _comment = '';
       });
     }
   }
@@ -117,36 +121,41 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
   Widget build(BuildContext context) {
     final size = standardFontSize(context);
 
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 27,
-        right: 15,
-        bottom: 20,
-      ),
-      child: Material(
-        color: Colors.transparent,
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          right: 10,
+          left: 15,
+          bottom: 18
+        ),
         child: Column(
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(
-                  Icons.circle,
-                  color: themeColor,
-                  size: size
-                ),
-                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    widget.subtask.title,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: size
+                  child: ListTile(
+                    title: Text(
+                      widget.subtask.title,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: size
+                      )
+                    ),
+                    leading: Icon(
+                      Icons.circle,
+                      color: themeColor,
+                      size: size * 0.8
                     )
                   )
                 ),
                 const SizedBox(width: 10),
-                if (!widget.session.user.isAdmin) ...<Widget>[
-                  TwoVariantOption(
+                Padding(
+                  padding: const EdgeInsets.only(
+                    right: 10,
+                    left: 10
+                  ),
+                  child: !widget.session.user.isAdmin ? TwoVariantOption(
                     firstColor: okColor,
                     secondColor: textColor,
                     firstIcon: Icons.done,
@@ -157,9 +166,14 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
                     inFirstVariant: _isCommentSaved,
                     isDisabled: _isCommentSaved || _isCommentError,
                     onTap: () => _optimisticUpdateUserTask(_isCompleted, _comment)
-                  ),
-                  const SizedBox(width: 5)
-                ],
+                  )
+                  : BasicOption(
+                    title: 'Edit',
+                    color: textColor,
+                    icon: Icons.edit,
+                    onTap: () => {}
+                  )
+                ),
                 TwoVariantOption(
                   firstColor: errorColor,
                   secondColor: okColor,
@@ -177,7 +191,7 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
             const SizedBox(height: 5),
             _buildCommentField(context, widget.session.user.isAdmin)
           ]
-        )
+        ),
       )
     );
   }
@@ -185,12 +199,13 @@ class _SubtaskEntryState extends State<SubtaskEntry> {
   Widget _buildCommentField(BuildContext context, bool isDisabled) {
     return Row(
       children: <Widget>[
-        Expanded(
+        if (_comment.isNotEmpty) Expanded(
           child: PanelInputOption(
             isError: _isCommentError,
             defaultValue: _comment,
             backgroundColor: backgroundColor2,
-            hintText: 'Type a comment...',
+            isDisabled: isDisabled,
+            hintText: isDisabled ? '' : 'Enter a comment',
             onChanged: _onCommentChanged
           )
         )

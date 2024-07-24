@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 
 class CreditFooter extends StatelessWidget {
   const CreditFooter({super.key});

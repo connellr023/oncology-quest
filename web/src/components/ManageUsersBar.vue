@@ -8,6 +8,7 @@ import useUserSearch from "../hooks/useUserSearch"
 import useDeleteUser from "../hooks/useDeleteUser"
 import useAllowResetPassword from "../hooks/useAllowResetPassword"
 import useExportProgress from "../hooks/useExportProgress"
+import useNotifications from "../hooks/useNotifications"
 
 import Spinner from "../components/vector/Spinner.vue"
 import UserProfileIcon from "./UserProfileIcon.vue"
@@ -18,6 +19,7 @@ import UnlockIcon from "./vector/UnlockIcon.vue"
 import ConfirmationModal from "./ConfirmationModal.vue"
 import MessageModal from "./MessageModal.vue"
 import ExportIcon from "./vector/ExportIcon.vue"
+import IconButton from "./IconButton.vue"
 
 const selectedUser = inject<Ref<User | null>>("selectedUser")!
 const selectedUserTasks = inject<Ref<UserTaskStructure | null>>("selectedUserTasks")!
@@ -28,6 +30,7 @@ const { search, results, loading, searchError } = useUserSearch()
 const { deleteUser } = useDeleteUser()
 const { allowReset } = useAllowResetPassword()
 const { exportProgress } = useExportProgress()
+const { pushNotification } = useNotifications()
 
 const query = ref("")
 const deleteUserError = ref("")
@@ -79,6 +82,8 @@ const confirmDeleteUser = () => {
       delete results.value[selectedUser.value.id]
       selectedUser.value = null
       showConfirmationModal.value = false
+
+      pushNotification("User deleted successfully.", true)
     }
     else {
       deleteUserError.value = "Failed to delete user."
@@ -101,6 +106,8 @@ const onAllowResetClicked = async () => {
   else {
     allowResetExpiryDate.value = result.passwordResetTimestamp.toLocaleTimeString()
     resetToken.value = result.resetToken
+
+    pushNotification("Password reset enabled successfully.", true)
   }
 }
 
@@ -123,10 +130,15 @@ onUnmounted(() => {
       <h3>Manage Users</h3>
       <div class="search-container">
         <input @keyup.enter="searchUser" v-model="query" type="text" placeholder="Search users..." class="bubble" />
-        <button class="icon-button" @click="searchUser">
-          <Spinner class="spinner" v-if="loading" />
-          <SearchIcon v-else />
-        </button>
+        <IconButton
+          @click="searchUser"
+          :disabled="loading"
+        >
+          <template #firstIcon>
+            <Spinner v-if="loading" />
+            <SearchIcon v-else />
+          </template>
+        </IconButton>
       </div>
       <div class="results-container" @click="() => { showUserOptions = false }">
         <div v-if="searchError" class="status">An error occurred while searching for users.</div>
@@ -136,17 +148,23 @@ onUnmounted(() => {
             <UserProfileIcon :initials="result.name.substring(0, 2)" @click.stop="() => { if (selectedUser?.id === result.id) { toggleUserOptions() } else { setSelectedUser(result) } }" />
             <Dropdown :isVisible="showUserOptions && selectedUser?.id === result.id" @change="showUserOptions = $event">
               <span class="login-count"><b>{{ result.loginCount }}</b>Login(s)</span>
-              <button class="bubble" @click="onExportProgressClicked" :disabled="selectedUserTasks === null || selectedRotation === null">
-                <ExportIcon />
-                Export Progress
+              <button class="left crisp bubble" @click="onExportProgressClicked" :disabled="selectedUserTasks === null || selectedRotation === null">
+                <span>
+                  <ExportIcon />
+                  <span>Export Progress</span>
+                </span>
               </button>
-              <button class="bubble" @click="onAllowResetClicked">
-                <UnlockIcon />
-                Enable Password Reset
+              <button class="left crisp bubble" @click="onAllowResetClicked">
+                <span>
+                  <UnlockIcon />
+                  <span>Allow Password Reset</span>
+                </span>
               </button>
-              <button class="bubble red" @click="onDeleteUserClicked">
-                <DeleteIcon />
-                Delete User
+              <button class="left crisp bubble red" @click="onDeleteUserClicked">
+                <span>
+                  <DeleteIcon />
+                  <span>Delete User</span>
+                </span>
               </button>
             </Dropdown>
             <div class="user-info">
@@ -247,7 +265,7 @@ div.results-container {
     cursor: pointer;
     position: relative;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: $ui-border-radius;
     background-color: transparent;
     margin-bottom: 12px;
     transition: background-color 0.15s ease;
@@ -281,11 +299,9 @@ div.search-container {
 
   button {
     position: absolute;
-    min-width: 17px;
-    width: 8%;
-    right: 13px;
-    top: 8px;
-    transition: all 0.12s ease;
+    right: 2px;
+    top: 1px;
+    transform: scale(0.8);
   }
 }
 

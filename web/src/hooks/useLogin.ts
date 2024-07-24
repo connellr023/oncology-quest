@@ -20,6 +20,7 @@ const useLogin = () => {
 
     const login = async () => {
         loading.value = true
+        loginError.value = ""
 
         try {
             const response = await fetch(`${API_ENDPOINT}/api/users/login`, {

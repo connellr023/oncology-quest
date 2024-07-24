@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:oncology_quest_mobile/src/utilities/colors.dart';
-import 'package:oncology_quest_mobile/src/utilities/sizing.dart';
+import 'package:oncology_quest_mobile/src/utilities.dart';
 
 class PanelInputOption extends StatelessWidget {
   final bool isError;
+  final bool isDisabled;
   final String hintText;
   final String? defaultValue;
   final Color backgroundColor;
@@ -12,6 +12,7 @@ class PanelInputOption extends StatelessWidget {
   const PanelInputOption({
     super.key,
     this.isError = false,
+    this.isDisabled = false,
     required this.hintText,
     this.defaultValue,
     this.backgroundColor = backgroundColor3,
@@ -20,13 +21,14 @@ class PanelInputOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = standardFontSize(context);
+    final size = modalFontSize(context);
     final outlinedBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(20),
       borderSide: isError ? const BorderSide(color: errorColor, width: 3) : BorderSide.none
     );
 
     return TextFormField(
+      enabled: !isDisabled,
       initialValue: defaultValue,
       style: TextStyle(
         color: isError ? errorColor : textColor,
@@ -39,6 +41,7 @@ class PanelInputOption extends StatelessWidget {
           fontSize: size
         ),
         enabledBorder: outlinedBorder,
+        disabledBorder: outlinedBorder,
         focusedBorder: outlinedBorder,
         filled: true,
         fillColor: backgroundColor

@@ -1,22 +1,4 @@
-use crate::{
-    client,
-    delete_self,
-    delete_user,
-    login,
-    rand_password,
-    register,
-    search_users,
-    session,
-    allow_reset_password,
-    reset_password,
-    try_admin_authorized_test,
-    try_authorized_test
-};
-use crate::endpoint;
-use chrono::Utc;
-use reqwest::Client;
-use reqwest::StatusCode;
-use anyhow::{Result, anyhow};
+use crate::prelude::*;
 
 #[tokio::test]
 async fn test_get_session_not_logged_in() -> Result<()> {
@@ -27,7 +9,6 @@ async fn test_get_session_not_logged_in() -> Result<()> {
     Ok(())
 }
 
-
 #[tokio::test]
 async fn test_get_session_logged_in() -> Result<()> {
     let client = client()?;
@@ -35,7 +16,7 @@ async fn test_get_session_logged_in() -> Result<()> {
 
     try_authorized_test(&client, |jwt| async move {
         let (status, json) = session(&client_clone, Some(jwt.as_str())).await?;
-        
+
         assert_eq!(status, StatusCode::OK);
         assert!(!json.unwrap().user.is_admin);
 
@@ -48,10 +29,10 @@ async fn test_get_session_logged_in() -> Result<()> {
 #[tokio::test]
 async fn test_logout() -> Result<()> {
     let client = client()?;
-    
+
     let status = register(&client, "logout-user", "Logout User", "whatthesigma").await?;
     assert_eq!(status, StatusCode::CREATED);
-    
+
     let (status, _, jwt) = login(&client, "logout-user", "whatthesigma").await?;
     assert_eq!(status, StatusCode::OK);
 
