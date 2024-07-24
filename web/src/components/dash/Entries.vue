@@ -114,14 +114,14 @@ const {
             :saveHeading="(saveTitle: string) => updateSubtask(selectedRotation!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id, saveTitle)"
             :deleteHeading="() => deleteSubtask(selectedRotation!.id, supertaskIndex, taskIndex, subtaskIndex, subtask.id)"
           />
-          <button class="bubble push green" v-if="session.isAdmin" @click="showCreateEntryModal('Create Clinical Experience Entry', (confirmTitle: string) => createSubtask(confirmTitle, selectedRotation!.id, task.entry.id, supertaskIndex, taskIndex))">
+          <button class="bubble crisp push green" v-if="session.isAdmin" @click="showCreateEntryModal('Create Clinical Experience Entry', (confirmTitle: string) => createSubtask(confirmTitle, selectedRotation!.id, task.entry.id, supertaskIndex, taskIndex))">
             <span>
               <PushStackIcon />
               <span>Push New Clinical Experience</span>
             </span>
           </button>
         </ProgressableEntryItem>
-        <button class="bubble push green" v-if="session.isAdmin" @click="showCreateEntryModal('Create EPA Entry', (confirmTitle: string) => createTask(confirmTitle, selectedRotation!.id, supertask.entry.id, supertaskIndex))">
+        <button class="bubble crisp push green" v-if="session.isAdmin" @click="showCreateEntryModal('Create EPA Entry', (confirmTitle: string) => createTask(confirmTitle, selectedRotation!.id, supertask.entry.id, supertaskIndex))">
           <span>
             <PushStackIcon />
             <span>Push New EPA</span>
@@ -151,10 +151,6 @@ button.push {
   width: 100%;
   border-radius: 0;
   font-size: clamp(14px, 1.3lvw, 18px);
-
-  &.supertask {
-    border-radius: $ui-border-radius;
-  }
 }
 
 li.supertask {

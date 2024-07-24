@@ -26,11 +26,9 @@ const toggleChildrenVisibility = () => {
       <EntryHeading :saveHeading="saveHeading" :deleteHeading="deleteHeading" :is-active="isExpanded" :title="title" />
       <EntryProgress :progress="progress" />
     </div>
-    <div class="expand-container">
-      <ul :class="`${isExpanded ? 'expanded' : 'collapsed'}`">
-        <slot></slot>
-      </ul>
-    </div>
+    <ul v-show="isExpanded">
+      <slot></slot>
+    </ul>
   </li>
 </template>
 
@@ -75,22 +73,6 @@ li {
 
     &.layer-2 {
       background-color: $tertiary-bg-color;
-    }
-  }
-}
-
-div.expand-container {
-  overflow: hidden;
-
-  & > ul {
-    &.expanded {
-      transition: margin-top 0.17s ease;
-      margin-top: 0;
-    }
-
-    &.collapsed {
-      transition: margin-top 0.4s ease-in;
-      margin-top: -200%;
     }
   }
 }

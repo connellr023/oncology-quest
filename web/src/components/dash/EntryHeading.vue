@@ -112,7 +112,11 @@ onUnmounted(() => {
           </template>
         </IconButton>
       </template>
-      <IconButton v-else :disabled="isEditing" :firstIcon="EditIcon" @click.stop="toggleEditMode">
+      <IconButton
+        v-else
+        :disabled="isEditing"
+        @click.stop="toggleEditMode"
+      >
         <template #firstIcon>
           <EditIcon />
         </template>

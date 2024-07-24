@@ -79,6 +79,24 @@ body {
   height: 100vh;
 }
 
+.ripple {
+  background-position: center;
+  transition: background 0.8s ease;
+
+  $opacity: 0.35;
+  $col: rgba(0, 0, 0, $opacity);
+
+  &:hover {
+    background: $col radial-gradient(circle, transparent 1%, $col 1%) center/15000%;
+  }
+
+  &:active {
+    background-color: $col;
+    background-size: 100%;
+    transition: background 0s;
+  }
+}
+
 button {
   cursor: pointer;
   appearance: none;
@@ -121,6 +139,10 @@ button {
     background-color: none;
     border-color: transparent;
     font-size: 16px;
+
+    &.crisp {
+      border-radius: 0;
+    }
 
     &.focused,
     &:focus,

@@ -146,19 +146,19 @@ onUnmounted(() => {
             <UserProfileIcon :initials="result.name.substring(0, 2)" @click.stop="() => { if (selectedUser?.id === result.id) { toggleUserOptions() } else { setSelectedUser(result) } }" />
             <Dropdown :isVisible="showUserOptions && selectedUser?.id === result.id" @change="showUserOptions = $event">
               <span class="login-count"><b>{{ result.loginCount }}</b>Login(s)</span>
-              <button class="left bubble" @click="onExportProgressClicked" :disabled="selectedUserTasks === null || selectedRotation === null">
+              <button class="left crisp bubble" @click="onExportProgressClicked" :disabled="selectedUserTasks === null || selectedRotation === null">
                 <span>
                   <ExportIcon />
                   <span>Export Progress</span>
                 </span>
               </button>
-              <button class="left bubble" @click="onAllowResetClicked">
+              <button class="left crisp bubble" @click="onAllowResetClicked">
                 <span>
                   <UnlockIcon />
                   <span>Allow Password Reset</span>
                 </span>
               </button>
-              <button class="left bubble red" @click="onDeleteUserClicked">
+              <button class="left crisp bubble red" @click="onDeleteUserClicked">
                 <span>
                   <DeleteIcon />
                   <span>Delete User</span>

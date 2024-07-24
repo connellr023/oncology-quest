@@ -74,19 +74,19 @@ const deleteAccount = async () => {
       <UserProfileIcon @click.stop="toggleProfileOptions" class="profile-icon" :initials="session.name.substring(0, 2)" />
       <Dropdown :isVisible="showProfileOptions" @change="showProfileOptions = $event">
         <span class="login-count"><b>{{ session.loginCount }}</b>Login(s)</span>
-        <button class="left bubble" :disabled="!selectedRotation" v-if="!session.isAdmin" @click="onExportProgressClick">
+        <button class="left crisp bubble" :disabled="!selectedRotation" v-if="!session.isAdmin" @click="onExportProgressClick">
           <span>
             <ExportIcon />
             <span>Export Progress</span>
           </span>
         </button>
-        <button class="left bubble" @click="onLogoutClick">
+        <button class="left crisp bubble" @click="onLogoutClick">
           <span>
             <LogoutIcon />
             <span>Logout</span>
           </span>
         </button>
-        <button class="left bubble red" @click="onDeleteAccountClick">
+        <button class="left crisp bubble red" @click="onDeleteAccountClick">
           <span>
             <DeleteIcon />
             <span>Delete Account</span>

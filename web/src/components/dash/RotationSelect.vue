@@ -168,7 +168,7 @@ const displayErrorModal = (title: string, message: string) => {
     <div class="rotations" v-if="Object.keys(rotations).length > 0">
       <button
         v-for="rotation in rotations"
-        :class="`rotation bubble ${isDeleting ? 'red' : ''} ${selectedRotation?.id === rotation.id ? 'focused' : ''}`"
+        :class="`ripple rotation bubble ${isDeleting ? 'red' : ''} ${selectedRotation?.id === rotation.id ? 'focused' : ''}`"
         :key="rotation.id"
         @click="onRotationClick(rotation)"
       >
@@ -220,6 +220,7 @@ div.rotations {
   button.rotation {
     background-color: $secondary-bg-color;
     border-radius: $ui-border-radius;
+    border: none;
     flex: 1 0 auto;
     min-width: 130px;
     height: 50px;

@@ -98,8 +98,8 @@ $logo-vert-offset: 170px;
 }
 
 svg {
-  width: 10lvh;
-  min-width: 70px;
+  width: 13lvh;
+  min-width: 80px;
   max-width: 125px;
 
   &.logo {
@@ -146,6 +146,12 @@ div.logo-container {
   100% {
     transform: translateY(0) scale(0.8);
     opacity: 0.9;
+  }
+}
+
+@media (max-height: 400px) {
+  svg.logo {
+    display: none;
   }
 }
 </style>

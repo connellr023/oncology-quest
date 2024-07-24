@@ -35,9 +35,10 @@ div.dropdown-container {
   align-items: center;
   z-index: 1;
   background-color: $tertiary-bg-color;
-  border-radius: 8px;
+  border-radius: $ui-border-radius;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
   left: 2px;
+  overflow: hidden;
 
   & > * {
     flex-direction: row;
