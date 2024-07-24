@@ -2,7 +2,7 @@
 import { Ref, inject, ref } from "vue"
 import { User } from "../models/user"
 import { Rotation } from "../models/rotation"
-import { UserTask } from "../models/tasks"
+import { UserTaskStructure } from "../models/tasks"
 
 import useLogout from "../hooks/useLogout"
 import useValidatePassword from "../hooks/validation/useValidatePassword"
@@ -20,7 +20,7 @@ import ExportIcon from "./vector/ExportIcon.vue"
 const resetAll = inject<() => void>("resetAll")!
 const session = inject<Ref<User>>("session")!
 const selectedRotation = inject<Ref<Rotation | null>>("selectedRotation")!
-const tasks = inject<Ref<Record<number, UserTask>>>("tasks")!
+const tasks = inject<Ref<Record<number, UserTaskStructure>>>("tasks")!
 
 const { logout } = useLogout()
 const { password, passwordError } = useValidatePassword()
@@ -49,7 +49,7 @@ const onDeleteAccountClick = () => {
 }
 
 const onExportProgressClick = () => {
-  exportProgress(session.value.name, tasks.value)
+  exportProgress(session.value.name, tasks.value[selectedRotation.value!.id])
   showProfileOptions.value = false
 }
 

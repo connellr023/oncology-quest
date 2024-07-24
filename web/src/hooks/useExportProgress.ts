@@ -12,7 +12,7 @@ const useExportProgress = () => {
         if (!selectedRotation.value) {
             return
         }
-    
+
         const offset = 15
         const indent = 15
         const multiplier = 10
@@ -24,7 +24,7 @@ const useExportProgress = () => {
         })
     
         pdf.setFontSize(10)
-        pdf.text(`"${name}" Export`, 15, 10)
+        pdf.text(`"${name}" Export for ${selectedRotation.value.name}`, 15, 10)
     
         let currentHeight = 0
         let lineCount = 0
@@ -58,8 +58,8 @@ const useExportProgress = () => {
                     checkPageBreak()
     
                     y = offset + (spacing * 3) + (lineCount * multiplier)
-                    pdf.text(`- ${subtask.title}${tasks[subtask.id]?.isCompleted ? " - Complete" : ""}`, indent * 3, y)
-    
+                    pdf.text(`- ${subtask.title}${tasks[subtask.id]?.isCompleted ? " - Complete" : " - Not Complete"}`, indent * 3, y)
+
                     const comment = tasks[subtask.id]?.comment
                     if (comment) {
                         checkPageBreak()
@@ -93,9 +93,7 @@ const useExportProgress = () => {
         pdf.save(`${name.toLowerCase().replace(" ", "-")}-export.pdf`)
     }
     
-    return {
-        exportProgress
-    }
+    return { exportProgress }
 }
 
 export default useExportProgress
