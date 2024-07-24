@@ -8,6 +8,7 @@ services:
       HOST_PORT: 8000
       HOST_IP: 0.0.0.0
       JWT_SECRET: testsecret69420
+      ACCESS_CODE: testcode
     ports:
       - "8000:8000"
     depends_on:

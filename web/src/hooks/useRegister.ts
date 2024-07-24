@@ -15,6 +15,7 @@ const useRegister = () => {
         confirmedPasswordError,
     } = useValidateConfirmedPassword()
 
+    const accessCode = ref("")
     const serverError = ref("")
     const loading = ref(false)
 
@@ -33,6 +34,7 @@ const useRegister = () => {
                     username: username.value,
                     name: name.value,
                     password: password.value,
+                    accessCode: accessCode.value
                 }),
             })
 
@@ -40,6 +42,9 @@ const useRegister = () => {
                 switch (response.status) {
                     case 400:
                         serverError.value = "Invalid registration data. Please check your inputs."
+                        break
+                    case 401:
+                        serverError.value = "Invalid access code. Please check your access code."
                         break
                     case 409:
                         serverError.value = "That username is already taken. Please choose another."
@@ -61,6 +66,7 @@ const useRegister = () => {
     }
 
     return {
+        accessCode,
         username,
         usernameError,
         name,

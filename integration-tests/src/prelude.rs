@@ -5,6 +5,7 @@ pub use crate::rotations::utilities::*;
 pub use crate::tasks::utilities::*;
 pub use crate::users::utilities::*;
 pub use crate::utilities::*;
+pub use crate::{ACCESS_CODE, ADMIN_USERNAME, ADMIN_PASSWORD};
 pub use crate::{endpoint, update_entry_fn, delete_entry_fn};
 
 pub use chrono::{DateTime, Utc};

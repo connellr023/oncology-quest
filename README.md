@@ -113,6 +113,7 @@ HOST_IP=127.0.0.1
 HOST_PORT=8080
 DATABASE_URL=postgres://admin:password@localhost:5432/bqdev
 JWT_SECRET=...
+ACCESS_CODE=...
 ```
 
 <br />

@@ -29,7 +29,7 @@ where
     let name = "Test User";
     let password = rand_password();
 
-    match register(client, username.as_str(), name, password.as_str()).await {
+    match register(client, username.as_str(), name, password.as_str(), ACCESS_CODE).await {
         Ok(status) if status == StatusCode::CREATED => (),
         Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
         Err(error) => return Err(error),
@@ -61,10 +61,6 @@ where
     F: Future<Output = Result<V>>,
     T: FnOnce(String) -> F,
 {
-    // Admin account is assumed to exist in the test database
-    const ADMIN_USERNAME: &str = "admin";
-    const ADMIN_PASSWORD: &str = "complexpass123";
-
     #[allow(unused)]
     let mut jwt = None;
 

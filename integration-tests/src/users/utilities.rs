@@ -14,12 +14,13 @@ pub async fn session(client: &Client, jwt: Option<&str>) -> Result<(StatusCode, 
     Ok((response.status(), response.json().await.ok()))
 }
 
-pub async fn register(client: &Client, username: &str, name: &str, password: &str) -> Result<StatusCode> {
+pub async fn register(client: &Client, username: &str, name: &str, password: &str, access_code: &str) -> Result<StatusCode> {
     let response = client.post(endpoint!("/api/users/register"))
         .json(&json!({
             "username": username,
             "name": name,
-            "password": password
+            "password": password,
+            "accessCode": access_code
         }))
         .send()
         .await?;

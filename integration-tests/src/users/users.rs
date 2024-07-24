@@ -30,7 +30,7 @@ async fn test_get_session_logged_in() -> Result<()> {
 async fn test_logout() -> Result<()> {
     let client = client()?;
 
-    let status = register(&client, "logout-user", "Logout User", "whatthesigma").await?;
+    let status = register(&client, "logout-user", "Logout User", "whatthesigma", ACCESS_CODE).await?;
     assert_eq!(status, StatusCode::CREATED);
 
     let (status, _, jwt) = login(&client, "logout-user", "whatthesigma").await?;
@@ -61,10 +61,10 @@ async fn test_no_duplicate_users() -> Result<()> {
 
     let client = client()?;
 
-    let status = register(&client, "test", "Test User", PASSWORD).await?;
+    let status = register(&client, "test", "Test User", PASSWORD, ACCESS_CODE).await?;
     assert_eq!(status, StatusCode::CREATED);
 
-    let status = register(&client, "test", "Tester", PASSWORD).await?;
+    let status = register(&client, "test", "Tester", PASSWORD, ACCESS_CODE).await?;
     assert_eq!(status, StatusCode::CONFLICT);
 
     // Delete the user
@@ -81,7 +81,7 @@ async fn test_no_duplicate_users() -> Result<()> {
 async fn test_invalid_username_is_rejected() -> Result<()> {
     let client = client()?;
 
-    match register(&client, "test<script></script>", "Test User", "goodpass2189389").await {
+    match register(&client, "test<script></script>", "Test User", "goodpass2189389", ACCESS_CODE).await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -94,7 +94,7 @@ async fn test_invalid_username_is_rejected() -> Result<()> {
 async fn test_invalid_name_is_rejected() -> Result<()> {
     let client = client()?;
 
-    match register(&client, "test", "Test User123", "goodpass2189389").await {
+    match register(&client, "test", "Test User123", "goodpass2189389", ACCESS_CODE).await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -107,7 +107,7 @@ async fn test_invalid_name_is_rejected() -> Result<()> {
 async fn test_invalid_password_is_rejected() -> Result<()> {
     let client = client()?;
 
-    match register(&client, "test", "Test User", "").await {
+    match register(&client, "test", "Test User", "", ACCESS_CODE).await {
         Ok(status) if status == StatusCode::BAD_REQUEST => (),
         Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
         Err(error) => return Err(error),
@@ -158,7 +158,7 @@ async fn test_search_users() -> Result<()> {
         let name = "Search Test User";
         let password = rand_password();
 
-        match register(&client, username.as_str(), name, password.as_str()).await {
+        match register(&client, username.as_str(), name, password.as_str(), ACCESS_CODE).await {
             Ok(status) if status == StatusCode::CREATED => (),
             Ok(status) => return Err(anyhow!("Unexpected register status code: {}", status)),
             Err(error) => return Err(error),
@@ -199,7 +199,7 @@ async fn test_reset_password() -> Result<()> {
     const NEW_PASSWORD: &str = "newpass69420";
 
     // Create a dummy user
-    let status = register(&client, USERNAME, "Reset Password", ORIGINAL_PASSWORD).await?;
+    let status = register(&client, USERNAME, "Reset Password", ORIGINAL_PASSWORD, ACCESS_CODE).await?;
     assert_eq!(status, StatusCode::CREATED);
 
     // Login as the dummy user
@@ -257,6 +257,19 @@ async fn test_admin_cannot_delete_admin() -> Result<()> {
 
         Ok(())
     }).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_invalid_access_code_is_rejected() -> Result<()> {
+    let client = client()?;
+
+    match register(&client, "test", "Test User", "testpass123", "invalid-access-code").await {
+        Ok(status) if status == StatusCode::UNAUTHORIZED => (),
+        Ok(status) => return Err(anyhow!("Unexpected status code: {}", status)),
+        Err(error) => return Err(error),
+    }
 
     Ok(())
 }

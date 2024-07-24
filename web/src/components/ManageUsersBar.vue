@@ -275,7 +275,7 @@ div.results-container {
 
     &.selected,
     &:hover {
-      background-color: $main-bg-color;
+      background-color: $tertiary-bg-color;
     }
 
     &.selected {

@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const { pushNotification } = useNotifications()
 const {
+  accessCode,
   username,
   name,
   password,
@@ -98,6 +99,13 @@ const inStageOne = ref(true)
         type="password"
         :error="confirmedPasswordError"
         v-model="confirmedPassword"
+      />
+      <LabeledFormInput
+        title="Access Code"
+        name="access-code"
+        type="text"
+        :error="''"
+        v-model="accessCode"
       />
     </template>
   </TwoStageForm>
