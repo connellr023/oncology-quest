@@ -1,5 +1,5 @@
 # $\text{Oncology Quest}$
-> A progressive web app architected to aid Medical Oncology trainees and rotation directors. 
+> A web app architected to aid Medical Oncology trainees and rotation directors. 
 
 > [!IMPORTANT]
 > This app is only meant for trainees. If that is not you, then *please* do **not** try using this service as it will place unnecassary load on the webserver and illegitimate accounts will be removed.
@@ -40,6 +40,7 @@
 
 #### Security Measures
  - Role based authentication for admins and regular users
+ - Access code for ensuring only intended users can register
  - Password hashing with **BCRYPT** combined with 64-bit integer nonce used as a **salt**
  - Simple rate limiter on sensitive **API** routes
  - **HTTPS** connection in production with appropriate **cookies** and **CORS** policies
