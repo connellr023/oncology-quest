@@ -1,6 +1,6 @@
 use crate::models::client_user::ClientUser;
 use std::{future::{ready, Ready}, env::var};
-use actix_web::{dev::Payload, error::{Error, ErrorInternalServerError, ErrorUnauthorized}, http::header, FromRequest, HttpRequest};
+use actix_web::{dev::Payload, error::{ErrorInternalServerError, ErrorUnauthorized}, http::header, FromRequest, HttpRequest};
 use jsonwebtoken::{encode, decode, EncodingKey, Header, DecodingKey, Validation};
 use chrono::{Utc, Duration};
 use serde::{Deserialize, Serialize};
@@ -37,7 +37,7 @@ impl JwtClaim<String> {
 }
 
 impl TryFrom<JwtClaim<String>> for JwtUserClaim {
-    type Error = Error;
+    type Error = anyhow::Error;
 
     fn try_from(value: JwtClaim<String>) -> Result<Self, Self::Error> {
         Ok(JwtClaim {
@@ -48,7 +48,7 @@ impl TryFrom<JwtClaim<String>> for JwtUserClaim {
 }
 
 impl FromRequest for JwtUserClaim {
-    type Error = Error;
+    type Error = actix_web::Error;
     type Future = Ready<Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
