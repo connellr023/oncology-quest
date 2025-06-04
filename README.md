@@ -5,7 +5,7 @@
 > This app is only meant for trainees. If that is not you, then *please* do **not** try using this service as it will place unnecassary load on the webserver and illegitimate accounts will be removed.
 
 > [!NOTE]
-> A flutter client is in development to facilitate a mobile app and *possibly* replace the web client in the future so that the client code lives on a single code base.
+> This application is no longer in use. Previously hosted [here](https://www.oncologyquest.net).
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Actix](https://img.shields.io/badge/actix-%23ffffff.svg?style=for-the-badge&logo=actix&logoColor=black)
